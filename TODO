@@ -1,0 +1,20 @@
+BVH
+
+AV
+
+transforms
+'-constructors: look_at, rotate_on_axis
+
+Lerp
+
+lights
+
+DL
+
+warping
+
+parallel
+
+YAML config parsing
+
+avoid unwraps and assumptions
