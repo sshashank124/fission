@@ -33,6 +33,16 @@ impl B {
     }
 
     #[inline]
+    pub fn center(self) -> F {
+        0.5 * self.0 + 0.5 * self.1
+    }
+
+    #[inline]
+    pub fn extent(&self) -> F {
+        self.1 - self.0
+    }
+
+    #[inline]
     pub fn intersect(self, o: F, d: F, tb: B) -> Option<B> {
         if d.abs() < F::EPSILON {
             if self.bounds(o) {

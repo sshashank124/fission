@@ -19,6 +19,25 @@ impl BBox {
             .and_then(|b| { (self.0).2.intersect(o.z(), d.z(), b) })
             .is_some()
     }
+    
+    #[inline]
+    pub fn center(&self) -> P {
+        P(self.0.map(B::center))
+    }
+
+    #[inline]
+    pub fn max_extent(&self) -> (Axis, F) {
+        let xe = (self.0).0.extent();
+        let ye = (self.0).1.extent();
+        let ze = (self.0).2.extent();
+        if ye > xe {
+            if ze > ye { (Axis::Z, ze) }
+            else { (Axis::Y, ye) }
+        } else {
+            if ze > xe { (Axis::Z, ze) }
+            else { (Axis::X, xe) }
+        }
+    }
 
     pub const EMPTY: BBox = BBox(A3(B::EMPTY, B::EMPTY, B::EMPTY));
 }

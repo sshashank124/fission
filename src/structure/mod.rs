@@ -1,10 +1,9 @@
-mod aggregate;
 mod bvh;
 pub mod mesh;
 mod sphere;
+mod vec;
 
 use crate::geometry::*;
-pub use aggregate::Sequence;
 pub use mesh::Mesh;
 pub use sphere::Sphere;
 
@@ -12,7 +11,7 @@ pub use sphere::Sphere;
 pub enum StructureType {
     Mesh(Mesh),
     Sphere(Sphere),
-    Sequence(Sequence),
+    Sequence(Vec<Structure>),
 }
 
 pub trait Intersectable {
@@ -22,7 +21,7 @@ pub trait Intersectable {
 }
 
 pub struct Structure {
-    structure: StructureType,
+    structure: StructureType,  // use Box<StructureType> here?
     bbox: BBox,
     to_world: T,
 }
@@ -106,9 +105,9 @@ impl From<Sphere> for StructureType {
     }
 }
 
-impl From<Sequence> for StructureType {
+impl From<Vec<Structure>> for StructureType {
     #[inline]
-    fn from(sequence: Sequence) -> StructureType {
+    fn from(sequence: Vec<Structure>) -> StructureType {
         StructureType::Sequence(sequence)
     }
 }

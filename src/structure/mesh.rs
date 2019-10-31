@@ -2,10 +2,9 @@ use std::ops::BitOr;
 use std::rc::Rc;
 
 use super::*;
-use aggregate::Aggregate;
 
 
-pub type Mesh = Aggregate<Triangle, Vec<Triangle>>;
+pub type Mesh = Vec<Triangle>;
 
 #[derive(Debug)]
 pub struct Triangle {

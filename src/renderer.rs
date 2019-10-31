@@ -38,11 +38,11 @@ impl<I, S> Renderer<I, S> where I: Integrator,
         for pixel in img.pixels() {
             let mut sampler = self.sampler.clone_seeded(img.flatten(pixel));
             let mut c = Color::BLACK;
-            for _ in 0..1 {
+            for _ in 0..100 {
                 let primary_ray = camera.ray_at(pixel + sampler.gen_2d());
                 c += self.integrator.sample(&self.scene, primary_ray);
             }
-            img[pixel] = c / 1.;
+            img[pixel] = c / 100.;
         }
         println!("{:?}", t.elapsed());
 

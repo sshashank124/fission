@@ -21,7 +21,7 @@ use util::*;
 
 
 fn main() -> Res<()> {
-    let mesh = obj::load_from_file("teapot.obj")
+    let mesh = obj::load_from_file("plane.obj")
                    .with_msg("Failed to load OBJ")?;
 
     let root = Structure::new(mesh, T::translate(A3(0.,-2.,8.)));

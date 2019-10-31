@@ -1,3 +1,4 @@
+Cargo.lock
 target
 *.obj
-Cargo.lock
+*.exr

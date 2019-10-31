@@ -60,7 +60,7 @@ impl ObjLoader {
             f, mesh_data: mesh_data.clone(),
         }).collect();
 
-        Ok(Mesh::new(triangles))
+        Ok(triangles)
     }
 
     #[inline]

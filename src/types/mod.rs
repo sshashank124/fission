@@ -1,10 +1,12 @@
 mod array;
+mod axis;
 mod color;
 mod f3;
 mod float;
 mod point2;
 
 pub use array::*;
+pub use axis::Axis;
 pub use color::Color;
 pub use f3::*;
 pub use float::*;
