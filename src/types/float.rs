@@ -26,12 +26,12 @@ impl Float for f32 {
     const ONE: f32 = 1.;
     const EPSILON: f32 = 1e-7;
 
-    #[inline]
+    #[inline(always)]
     fn inv(self) -> f32 {
         self.recip()
     }
 
-    #[inline]
+    #[inline(always)]
     fn tand(self) -> f32 {
         self.to_radians().tan()
     }
@@ -44,12 +44,12 @@ impl Float for f64 {
     const ONE: f64 = 1.;
     const EPSILON: f64 = 1e-7;
 
-    #[inline]
+    #[inline(always)]
     fn inv(self) -> f64 {
         self.recip()
     }
 
-    #[inline]
+    #[inline(always)]
     fn tand(self) -> f64 {
         self.to_radians().tan()
     }

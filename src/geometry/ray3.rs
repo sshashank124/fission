@@ -11,22 +11,30 @@ pub struct R {
 }
 
 impl R {
-    #[inline]
+    #[inline(always)]
     pub fn new(o: P, d: V, tb: B) -> R {
         R { o, d, tb }
     }
 
-    #[inline]
+    #[inline(always)]
     pub fn unbounded(o: P, d: V) -> R {
         R::new(o, d, B::POSITIVE)
     }
 
-    #[inline]
+    #[inline(always)]
     pub fn clip_max(self, t: F) -> R {
         R::new(self.o, self.d, self.tb.with_upper(t))
     }
 
-    #[inline]
+    #[inline(always)]
+    pub fn clip_from_its(self, its: &Option<Its>) -> R {
+        match its {
+            None => self,
+            Some(its) => self.clip_max(its.t),
+        }
+    }
+
+    #[inline(always)]
     pub fn at(self, t: F) -> P {
         self.o + t * self.d
     }
@@ -34,7 +42,7 @@ impl R {
 
 impl Mul<R> for T {
     type Output = R;
-    #[inline]
+    #[inline(always)]
     fn mul(self, R{o, d, tb}: R) -> R {
         R::new(self * o, self * d, tb)
     }
@@ -42,7 +50,7 @@ impl Mul<R> for T {
 
 impl Div<R> for T {
     type Output = R;
-    #[inline]
+    #[inline(always)]
     fn div(self, R{o, d, tb}: R) -> R {
         R::new(self / o, self / d, tb)
     }

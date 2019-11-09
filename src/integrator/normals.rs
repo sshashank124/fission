@@ -4,14 +4,14 @@ use super::*;
 pub struct Normals;
 
 impl Normals {
-    #[inline]
+    #[inline(always)]
     pub fn new() -> Normals {
         Normals { }
     }
 }
 
 impl Integrator for Normals {
-    #[inline]
+    #[inline(always)]
     fn sample(&self, scene: &Scene, ray: R) -> Color {
         match scene.intersect(ray) {
             None => Color::BLACK,

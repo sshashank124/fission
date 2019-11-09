@@ -4,14 +4,14 @@ use super::*;
 pub struct AverageVisibility;
 
 impl AverageVisibility {
-    #[inline]
+    #[inline(always)]
     pub fn new() -> AverageVisibility {
         AverageVisibility { }
     }
 }
 
 impl Integrator for AverageVisibility {
-    #[inline]
+    #[inline(always)]
     fn sample(&self, scene: &Scene, ray: R) -> Color {
         match scene.intersect(ray) {
             None => Color::WHITE,

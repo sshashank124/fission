@@ -10,7 +10,7 @@ pub struct Scene {
 }
 
 impl Scene {
-    #[inline]
+    #[inline(always)]
     pub fn new(camera: Camera, structure: Structure) -> Scene {
         Scene {
             camera,
@@ -21,17 +21,17 @@ impl Scene {
 }
 
 impl Intersectable for Scene {
-    #[inline]
+    #[inline(always)]
     fn bbox(&self, t: T) -> BBox {
         t * self.bbox
     }
 
-    #[inline]
+    #[inline(always)]
     fn intersects(&self, ray: R) -> bool {
         self.bbox.intersects(ray) && self.structure.intersects(ray)
     }
 
-    #[inline]
+    #[inline(always)]
     fn intersect(&self, ray: R) -> Option<Its> {
         if self.bbox.intersects(ray) {
             self.structure.intersect(ray)

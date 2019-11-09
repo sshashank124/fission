@@ -10,7 +10,7 @@ pub struct Norm2 {
 }
 
 impl Norm2 {
-    #[inline]
+    #[inline(always)]
     pub fn translate(P2(x, y): F2) -> Norm2 {
         Norm2 {
             _11: 1.,   _13: x,
@@ -18,7 +18,7 @@ impl Norm2 {
         }
     }
 
-    #[inline]
+    #[inline(always)]
     pub fn scale(P2(x, y): F2) -> Norm2 {
         Norm2 {
             _11: x,   _13: 0.,
@@ -29,7 +29,7 @@ impl Norm2 {
 
 impl Mul for Norm2 {
     type Output = Norm2;
-    #[inline]
+    #[inline(always)]
     fn mul(self, o: Norm2) -> Norm2 {
         Norm2 {
             _11: self._11 * o._11,   _13: self._11 * o._13 + self._13,
@@ -40,7 +40,7 @@ impl Mul for Norm2 {
 
 impl Mul<F2> for Norm2 {
     type Output = F2;
-    #[inline]
+    #[inline(always)]
     fn mul(self, P2(x, y): F2) -> F2 {
         P2(self._11 * x + self._13,
            self._22 * y + self._23)

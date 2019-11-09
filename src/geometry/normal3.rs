@@ -7,22 +7,22 @@ use super::*;
 pub struct N(pub V);
 
 impl N {
-    #[inline]
+    #[inline(always)]
     pub fn unit(self) -> N {
         N(self.0.unit())
     }
 
-    #[inline]
+    #[inline(always)]
     pub fn x(&self) -> F {
         self.0.x()
     }
 
-    #[inline]
+    #[inline(always)]
     pub fn y(&self) -> F {
         self.0.y()
     }
 
-    #[inline]
+    #[inline(always)]
     pub fn z(&self) -> F {
         self.0.z()
     }
@@ -30,7 +30,7 @@ impl N {
 
 impl Mul<N> for T {
     type Output = N;
-    #[inline]
+    #[inline(always)]
     fn mul(self, N(v): N) -> N {
         N(self.inv().t() * v)
     }
@@ -38,7 +38,7 @@ impl Mul<N> for T {
 
 impl Div<N> for T {
     type Output = N;
-    #[inline]
+    #[inline(always)]
     fn div(self, N(v): N) -> N {
         N(self.inv().t() / v)
     }

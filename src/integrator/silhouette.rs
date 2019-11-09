@@ -4,14 +4,14 @@ use super::*;
 pub struct Silhouette;
 
 impl Silhouette {
-    #[inline]
+    #[inline(always)]
     pub fn new() -> Silhouette {
         Silhouette { }
     }
 }
 
 impl Integrator for Silhouette {
-    #[inline]
+    #[inline(always)]
     fn sample(&self, scene: &Scene, ray: R) -> Color {
         if scene.intersects(ray) {
             Color::BLACK

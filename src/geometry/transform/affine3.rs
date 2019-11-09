@@ -11,17 +11,17 @@ pub struct Affine3 {
 }
 
 impl Affine3 {
-    #[inline]
+    #[inline(always)]
     pub const fn new(r: RotScale3, t: F3) -> Affine3 {
         Affine3 { r, t }
     }
 
-    #[inline]
+    #[inline(always)]
     pub fn t(self) -> Affine3 {
         Affine3::new(self.r.t(), F3::ZERO)
     }
 
-    #[inline]
+    #[inline(always)]
     pub fn rot(self) -> Affine3 {
         Affine3::new(self.r, F3::ZERO)
     }
@@ -31,7 +31,7 @@ impl Affine3 {
 
 impl Mul for Affine3 {
     type Output = Affine3;
-    #[inline]
+    #[inline(always)]
     fn mul(self, m: Affine3) -> Affine3 {
         Affine3::new(self.r * m.r, self * m.t)
     }
@@ -41,7 +41,7 @@ impl<B, Z> Mul<A3<B>> for Affine3 where B: Copy + Mul<F, Output=Z>,
                                         Z: Add<Z, Output=Z>,
                                         Z: Add<F, Output=Z> {
     type Output = A3<Z>;
-    #[inline]
+    #[inline(always)]
     fn mul(self, o: A3<B>) -> A3<Z> {
         zip(self.r * o, self.t, Add::add)
     }
@@ -49,7 +49,7 @@ impl<B, Z> Mul<A3<B>> for Affine3 where B: Copy + Mul<F, Output=Z>,
 
 impl Add<F3> for Affine3 {
     type Output = Affine3;
-    #[inline]
+    #[inline(always)]
     fn add(self, v: F3) -> Affine3 {
         Affine3::new(self.r, self.t + v)
     }
@@ -57,7 +57,7 @@ impl Add<F3> for Affine3 {
 
 impl Sub<F3> for Affine3 {
     type Output = Affine3;
-    #[inline]
+    #[inline(always)]
     fn sub(self, v: F3) -> Affine3 {
         Affine3::new(self.r, self.t - v)
     }

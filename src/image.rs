@@ -1,5 +1,5 @@
 use std::fs::File;
-use std::ops::{Index, IndexMut};
+use std::ops::{Deref, DerefMut};
 
 use openexr::{frame_buffer::{FrameBuffer, PixelStruct},
               ScanlineOutputFile,
@@ -10,47 +10,39 @@ use crate::types::*;
 
 
 pub struct Image {
-    w: I,
-    h: I,
     data: Vec<Color>,
+    dims: I2,
 }
 
 impl Image {
-    pub fn new(P2(w, h): I2) -> Image {
-        Image {
-            w,
-            h,
-            data: vec![Color::BLACK; (w * h) as usize],
+    pub fn new(dims: I2) -> Self {
+        Self {
+            data: vec![Color::BLACK; (dims.0 * dims.1) as usize],
+            dims,
         }
     }
 
-    #[inline]
-    pub fn flatten(&self, P2(x, y): I2) -> I {
-        y * self.w + x
-    }
-
-    #[inline]
-    pub fn pixels(&self) -> impl Iterator<Item=I2> {
-        CartesianProduct {
-            a_max: self.w,
-            b_max: self.h,
-            a: 0,
-            b: 0,
+    pub fn as_block(&mut self) -> Block {
+        Block {
+            pos: I2::ZERO,
+            dims: self.dims,
+            img: self,
         }
     }
 
     pub fn save_exr(&self, filename: &str) -> Result<(), String> {
         let mut f = File::create(filename).map_err(|e| e.to_string())?;
         let mut of = self.prepare_file_for_writing(&mut f)?;
-        let mut fb = FrameBuffer::new(self.w, self.h);
+        let mut fb = FrameBuffer::new(self.dims.0, self.dims.1);
 
         fb.insert_channels(&["R", "G", "B"], &self.data);
         of.write_pixels(&fb).map_err(|e| e.to_string())
     }
 
-    fn prepare_file_for_writing<'a>(&self, f: &'a mut File)
-            -> Result<ScanlineOutputFile<'a>, String> {
-        ScanlineOutputFile::new(f, Header::new().set_resolution(self.w, self.h)
+    fn prepare_file_for_writing<'b>(&self, f: &'b mut File)
+            -> Result<ScanlineOutputFile<'b>, String> {
+        ScanlineOutputFile::new(f, Header::new().set_resolution(self.dims.0,
+                                                                self.dims.1)
                                                 .add_channel("R", FLOAT)
                                                 .add_channel("G", FLOAT)
                                                 .add_channel("B", FLOAT))
@@ -58,65 +50,157 @@ impl Image {
     }
 }
 
-impl Index<I2> for Image {
-    type Output = Color;
-    #[inline]
-    fn index(&self, p: I2) -> &Color {
-        &self.data[self.flatten(p) as usize]
+pub struct Block {
+    img: *mut Image,
+    pub pos: I2,
+    pub dims: I2,
+}
+
+unsafe impl Send for Block { }
+
+impl Block {
+    #[inline(always)]
+    pub fn blocks<'a>(&'a mut self, dims: I2) -> BlockIter<'a> {
+        BlockIter {
+            pos: I2::ZERO,
+            dims: dims,
+            grid: (self.dims + dims - 1) / dims,
+            block: self,
+        }
+    }
+
+    #[inline(always)]
+    pub fn pixels<'a>(&'a mut self) -> PixelIter<'a> {
+        PixelIter {
+            block: self,
+            pos: I2::ZERO,
+        }
+    }
+
+    #[inline(always)]
+    pub fn flat_pos(&self) -> I {
+        self.pos.1 * unsafe {&*self.img}.dims.0 + self.pos.0
     }
 }
 
-impl IndexMut<I2> for Image {
-    #[inline]
-    fn index_mut(&mut self, p: I2) -> &mut Color {
-        let i = self.flatten(p) as usize;
-        &mut self.data[i]
-    }
+pub struct BlockIter<'a> {
+    block: &'a mut Block,
+    pos: I2,
+    dims: I2,
+    grid: I2,
 }
 
-pub struct CartesianProduct {
-    a_max: I,
-    b_max: I,
-    a: I,
-    b: I,
-}
-
-impl Iterator for CartesianProduct {
-    type Item = I2;
-    #[inline]
-    fn next(&mut self) -> Option<I2> {
-        let an = if self.a < self.a_max {
-            self.a += 1;
-            self.a - 1
+impl<'a> Iterator for BlockIter<'a> {
+    type Item = Block;
+    #[inline(always)]
+    fn next(&mut self) -> Option<Block> {
+        let a = if self.pos.0 < self.grid.0 {
+            let a = self.pos.0;
+            self.pos.0 += 1;
+            a
         } else {
-            self.a = 0;
-            self.b += 1;
-            self.a
+            self.pos.0 = 1;
+            self.pos.1 += 1;
+            0
         };
-        if self.b < self.b_max {
-            Some(P2(an, self.b))
+        if self.pos.1 < self.grid.1 {
+            let pos = P2(a, self.pos.1) * self.dims;
+            Some(Block {
+                img: self.block.img as *mut Image,
+                pos: self.block.pos + pos,
+                dims: self.dims.cw_min(self.block.dims - pos),
+            })
         } else {
             None
         }
     }
 
-    #[inline]
+    #[inline(always)]
     fn size_hint(&self) -> (usize, Option<usize>) {
-        let size = (self.b_max - self.b - 1) * self.a_max
-                 + (self.a_max - self.a);
+        let size = (self.grid.1 - self.pos.1 - 1) * self.grid.0
+                 + (self.grid.0 - self.pos.0);
         (size as usize, Some(size as usize))
     }
 }
 
-impl ExactSizeIterator for CartesianProduct { }
+impl<'a> ExactSizeIterator for BlockIter<'a> { }
+
+
+pub struct Pixel {
+    img: *mut Image,
+    pub pos: I2,
+}
+
+impl Pixel {
+    #[inline(always)]
+    pub fn flat_pos(&self) -> I {
+        self.pos.1 * unsafe {&*self.img}.dims.0 + self.pos.0
+    }
+}
+
+impl Deref for Pixel {
+    type Target = Color;
+    #[inline(always)]
+    fn deref(&self) -> &Color {
+        &unsafe {&*self.img}.data[self.flat_pos() as usize]
+    }
+}
+
+impl DerefMut for Pixel {
+    #[inline(always)]
+    fn deref_mut(&mut self) -> &mut Color {
+        let pos = self.flat_pos() as usize;
+        &mut unsafe {&mut *self.img}.data[pos]
+    }
+}
+
+pub struct PixelIter<'a> {
+    block: &'a mut Block,
+    pos: I2,
+}
+
+impl<'a> Iterator for PixelIter<'a> {
+    type Item = Pixel;
+    #[inline(always)]
+    fn next(&mut self) -> Option<Pixel> {
+        let a = if self.pos.0 < self.block.dims.0 {
+            let a = self.pos.0;
+            self.pos.0 += 1;
+            a
+        } else {
+            self.pos.0 = 1;
+            self.pos.1 += 1;
+            0
+        };
+        if self.pos.1 < self.block.dims.1 {
+            let pos = P2(a, self.pos.1);
+            Some(Pixel {
+                img: self.block.img,
+                pos: self.block.pos + pos,
+            })
+        } else {
+            None
+        }
+    }
+
+    #[inline(always)]
+    fn size_hint(&self) -> (usize, Option<usize>) {
+        let size = (self.block.dims.1 - self.pos.1 - 1) * self.block.dims.0
+                 + (self.block.dims.0 - self.pos.0);
+        (size as usize, Some(size as usize))
+    }
+}
+
+impl<'a> ExactSizeIterator for PixelIter<'a> { }
+
 
 unsafe impl PixelStruct for Color {
-    #[inline]
+    #[inline(always)]
     fn channel_count() -> usize {
         3
     }
 
-    #[inline]
+    #[inline(always)]
     fn channel(i: usize) -> (PixelType, usize) {
         (FLOAT, 4 * i)
     }

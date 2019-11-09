@@ -11,12 +11,12 @@ pub struct Its {
 }
 
 impl Its {
-    #[inline]
+    #[inline(always)]
     pub fn new(p: P, t: F, n: N, ng: N) -> Its {
         Its { p, t, n, ng }
     }
 
-    #[inline]
+    #[inline(always)]
     pub fn ideal(p: P, t: F, n: N) -> Its {
         Its::new(p, t, n, n)
     }
@@ -24,7 +24,7 @@ impl Its {
 
 impl Mul<Its> for T {
     type Output = Its;
-    #[inline]
+    #[inline(always)]
     fn mul(self, Its{p, t, n, ng}: Its) -> Its {
         Its::new(self * p, t, self * n, self * ng)
     }
@@ -32,7 +32,7 @@ impl Mul<Its> for T {
 
 impl Div<Its> for T {
     type Output = Its;
-    #[inline]
+    #[inline(always)]
     fn div(self, Its{p, t, n, ng}: Its) -> Its {
         Its::new(self / p, t, self / n, self / ng)
     }

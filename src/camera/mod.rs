@@ -20,7 +20,7 @@ pub struct Camera {
 }
 
 impl Camera {
-    #[inline]
+    #[inline(always)]
     fn new(model: CameraType, resolution: I2, to_world: T) -> Camera {
         Camera {
             from_pixel: T2::scale(P2(2., -2.) / resolution.1 as F) *
@@ -31,24 +31,24 @@ impl Camera {
         }
     }
 
-    #[inline]
+    #[inline(always)]
     pub fn default() -> Camera {
         Camera::new(Perspective::default().into(), P2(1280, 720), T::I)
     }
 
-    #[inline]
+    #[inline(always)]
     pub fn ray_at(&self, point: F2) -> R {
         self.to_world * self.model.ray_at(self.from_pixel * point)
     }
 
-    #[inline]
+    #[inline(always)]
     pub fn resolution(&self) -> I2 {
         self.resolution
     }
 }
 
 impl CameraModel for CameraType {
-    #[inline]
+    #[inline(always)]
     fn ray_at(&self, point: F2) -> R {
         match self {
             CameraType::Perspective(model) => model.ray_at(point),
@@ -57,7 +57,7 @@ impl CameraModel for CameraType {
 }
 
 impl From<Perspective> for CameraType {
-    #[inline]
+    #[inline(always)]
     fn from(perspective: Perspective) -> CameraType {
         CameraType::Perspective(perspective)
     }

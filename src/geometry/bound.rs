@@ -7,42 +7,42 @@ use super::*;
 pub struct B(pub F, pub F);
 
 impl B {
-    #[inline]
+    #[inline(always)]
     pub fn point(f: F) -> B {
         B(f, f)
     }
 
-    #[inline]
+    #[inline(always)]
     pub fn ordered(a: F, b: F) -> B {
         B(a.min(b), a.max(b))
     }
 
-    #[inline]
+    #[inline(always)]
     pub fn with_upper(self, u: F) -> B {
         B(self.0, u)
     }
 
-    #[inline]
-    pub fn bounds(&self, f: F) -> bool {
+    #[inline(always)]
+    pub fn bounds(self, f: F) -> bool {
         self.0 <= f && f <= self.1
     }
 
-    #[inline]
-    pub fn degen(&self) -> bool {
+    #[inline(always)]
+    pub fn degen(self) -> bool {
         self.0 > self.1
     }
 
-    #[inline]
+    #[inline(always)]
     pub fn center(self) -> F {
         0.5 * self.0 + 0.5 * self.1
     }
 
-    #[inline]
-    pub fn extent(&self) -> F {
+    #[inline(always)]
+    pub fn extent(self) -> F {
         self.1 - self.0
     }
 
-    #[inline]
+    #[inline(always)]
     pub fn intersect(self, o: F, d: F, tb: B) -> Option<B> {
         if d.abs() < F::EPSILON {
             if self.bounds(o) {
@@ -67,7 +67,7 @@ impl B {
 
 impl Add for B {
     type Output = B;
-    #[inline]
+    #[inline(always)]
     fn add(self, B(l, u): B) -> B {
         B(self.0 + l, self.1 + u)
     }
@@ -75,7 +75,7 @@ impl Add for B {
 
 impl Add<F> for B {
     type Output = B;
-    #[inline]
+    #[inline(always)]
     fn add(self, f: F) -> B {
         B(self.0 + f, self.1 + f)
     }
@@ -83,7 +83,7 @@ impl Add<F> for B {
 
 impl Sub<F> for B {
     type Output = B;
-    #[inline]
+    #[inline(always)]
     fn sub(self, f: F) -> B {
         B(self.0 - f, self.1 - f)
     }
@@ -91,7 +91,7 @@ impl Sub<F> for B {
 
 impl Mul<F> for B {
     type Output = B;
-    #[inline]
+    #[inline(always)]
     fn mul(self, f: F) -> B {
         B::ordered(self.0 * f, self.1 * f)
     }
@@ -99,7 +99,7 @@ impl Mul<F> for B {
 
 impl Mul<B> for F {
     type Output = B;
-    #[inline]
+    #[inline(always)]
     fn mul(self, b: B) -> B {
         b * self
     }
@@ -107,7 +107,7 @@ impl Mul<B> for F {
 
 impl Div<F> for B {
     type Output = B;
-    #[inline]
+    #[inline(always)]
     fn div(self, f: F) -> B {
         self * f.inv()
     }
@@ -116,7 +116,7 @@ impl Div<F> for B {
 // Union
 impl BitOr for B {
     type Output = B;
-    #[inline]
+    #[inline(always)]
     fn bitor(self, B(l, u): B) -> B {
         B(self.0.min(l), self.1.max(u))
     }
@@ -124,7 +124,7 @@ impl BitOr for B {
 
 impl BitOr<F> for B {
     type Output = B;
-    #[inline]
+    #[inline(always)]
     fn bitor(self, f: F) -> B {
         self | B::point(f)
     }
@@ -133,7 +133,7 @@ impl BitOr<F> for B {
 // Intersection
 impl BitAnd for B {
     type Output = B;
-    #[inline]
+    #[inline(always)]
     fn bitand(self, B(l, u): B) -> B {
         B(self.0.max(l), self.1.min(u))
     }

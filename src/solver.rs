@@ -1,7 +1,7 @@
 use crate::types::*;
 
 
-#[inline]
+#[inline(always)]
 pub fn quad(a: F, b: F, c: F) -> Option<F2> {
     let dis = b * b - 4. * a * c;
     if dis < 0. {

@@ -8,7 +8,8 @@ edition = "2018"
 openexr = "*"
 rand_core = "*"
 rand_pcg = "*"
+rayon = "*"
 
 [profile.release]
-opt-level = 3
 lto = true
+debug = true

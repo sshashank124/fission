@@ -8,14 +8,14 @@ pub struct Sphere {
 }
 
 impl Sphere {
-    #[inline]
+    #[inline(always)]
     pub fn new(r: F) -> Sphere {
         Sphere {
             r,
         }
     }
 
-    #[inline]
+    #[inline(always)]
     fn intersection_point(&self, R{o, d, tb}: R) -> Option<F> {
         solver::quad(d.norm2(),
                      2. * d.dot(V::p(o)),
@@ -33,17 +33,17 @@ impl Sphere {
 }
 
 impl Intersectable for Sphere {
-    #[inline]
+    #[inline(always)]
     fn bbox(&self, t: T) -> BBox {
         t * BBox::cube(B(-self.r, self.r))
     }
 
-    #[inline]
+    #[inline(always)]
     fn intersects(&self, r: R) -> bool {
         self.intersection_point(r).is_some()
     }
 
-    #[inline]
+    #[inline(always)]
     fn intersect(&self, r: R) -> Option<Its> {
         self.intersection_point(r).map(|t| {
             let p = r.at(t);

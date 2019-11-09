@@ -1,9 +1,9 @@
 use std::collections::HashMap;
 use std::fmt::Display;
 use std::fs::File;
-use std::io::{self, BufRead, BufReader};
-use std::rc::Rc;
+use std::io::{BufRead, BufReader};
 use std::str::FromStr;
+use std::sync::Arc;
 
 use crate::geometry::*;
 use crate::structure::mesh::{Face, Mesh, MeshData, Triangle};
@@ -12,7 +12,7 @@ use crate::util::*;
 
 pub fn load_from_file(filename: &str) -> Res<Mesh> {
     let f = File::open(filename).with_msg("Error opening OBJ file")?;
-    ObjLoader::new().load(BufReader::new(f).lines())
+    ObjLoader::new().load(BufReader::new(f))
 }
 
 struct ObjLoader {
@@ -30,7 +30,7 @@ struct Vertex {
 }
 
 impl ObjLoader {
-    #[inline]
+    #[inline(always)]
     fn new() -> ObjLoader {
         ObjLoader {
             tmp_data: MeshData::new(),
@@ -40,10 +40,9 @@ impl ObjLoader {
         }
     }
 
-    fn load<S>(mut self, supplier: S) -> Res<Mesh>
-            where S: Iterator<Item=Result<String, io::Error>> {
-        for line_result in supplier {
-            let line = line_result.with_msg("Error reading line")?;
+    fn load<B>(mut self, mut buf: B) -> Res<Mesh> where B: BufRead {
+        let mut line = String::with_capacity(120);
+        while buf.read_line(&mut line).with_msg("Error reading line")? > 0 {
             let mut tokens = line[..].split_whitespace();
 
             match tokens.next() {
@@ -52,36 +51,41 @@ impl ObjLoader {
                 Some("vn") => self.add_normal(&mut tokens),
                 Some("f")  => self.add_face(&mut tokens),
                 _ => Ok(()),
-            }?
+            }?;
+
+            line.clear();
         }
 
-        let mesh_data = Rc::new(self.obj_data);
+        let mesh_data = Arc::new(self.obj_data);
         let triangles = self.faces.into_iter().map(|f| Triangle {
             f, mesh_data: mesh_data.clone(),
         }).collect();
 
-        Ok(triangles)
+        Ok(Mesh::new(triangles))
     }
 
-    #[inline]
+    #[inline(always)]
     fn add_point<'a, It>(&mut self, tokens: &mut It) -> Res<()>
             where It: Iterator<Item=&'a str> {
-        Ok(self.tmp_data.p.push(P(parse_f3(tokens)?)))
+        self.tmp_data.p.push(P(parse_f3(tokens)?));
+        Ok(())
     }
 
-    #[inline]
+    #[inline(always)]
     fn add_uv<'a, It>(&mut self, tokens: &mut It) -> Res<()>
             where It: Iterator<Item=&'a str> {
-        Ok(self.tmp_data.uv.push(parse_f2(tokens)?))
+        self.tmp_data.uv.push(parse_f2(tokens)?);
+        Ok(())
     }
 
-    #[inline]
+    #[inline(always)]
     fn add_normal<'a, It>(&mut self, tokens: &mut It) -> Res<()>
             where It: Iterator<Item=&'a str> {
-        Ok(self.tmp_data.n.push(N(V(parse_f3(tokens)?).unit())))
+        self.tmp_data.n.push(N(V(parse_f3(tokens)?).unit()));
+        Ok(())
     }
 
-    #[inline]
+    #[inline(always)]
     fn add_face<'a, It>(&mut self, tokens: &mut It) -> Res<()>
             where It: Iterator<Item=&'a str> {
         let vertices: Result<Vec<I>, _> = tokens.map(|st| {
@@ -96,16 +100,17 @@ impl ObjLoader {
         let v = vertices?;
 
         match v.len() {
-            3 => Ok(self.faces.push(Face::new(v[0], v[1], v[2]))),
-            4 => Ok({
+            3 => self.faces.push(Face::new(v[0], v[1], v[2])),
+            4 => {
                 self.faces.push(Face::new(v[0], v[1], v[2]));
                 self.faces.push(Face::new(v[0], v[2], v[3]));
-            }),
-            _ => Err("unexpected number of vertices".into()),
+            },
+            _ => return Err("unexpected number of vertices".into()),
         }
+        Ok(())
     }
     
-    #[inline]
+    #[inline(always)]
     fn add_vertex(&mut self, v: Vertex) -> I {
         self.obj_data.p.push(self.tmp_data.p[v.p as usize]);
         if v.t != -1 { self.obj_data.uv.push(self.tmp_data.uv[v.t as usize]); }
@@ -115,7 +120,7 @@ impl ObjLoader {
         n
     }
 
-    #[inline]
+    #[inline(always)]
     fn parse_vertex(&mut self, token: &str) -> Res<Vertex> {
         let mut tokens = token.split('/');
         Ok(Vertex {
@@ -127,29 +132,57 @@ impl ObjLoader {
     }
 }
 
-#[inline]
+#[inline(always)]
 fn parse_index<'a, It>(tokens: &mut It, n: usize) -> Res<i32>
         where It: Iterator<Item=&'a str> {
     parse(tokens).map(|i: i32| if i > 0 { i - 1 } else { i + n as i32 })
 }
 
-#[inline]
+#[inline(always)]
 fn parse_f3<'a, It>(tokens: &mut It) -> Res<F3>
         where It: Iterator<Item=&'a str> {
     Ok(A3(parse(tokens)?, parse(tokens)?, parse(tokens)?))
 }
 
-#[inline]
+#[inline(always)]
 fn parse_f2<'a, It>(tokens: &mut It) -> Res<F2>
         where It: Iterator<Item=&'a str> {
     Ok(P2(parse(tokens)?, parse(tokens)?))
 }
 
-#[inline]
+#[inline(always)]
 fn parse<'a, S, It>(tokens: &mut It) -> Res<S>
         where It: Iterator<Item=&'a str>,
               S: FromStr,
               <S as FromStr>::Err: Display {
     tokens.next().ok_or("missing scalar")?
           .parse::<S>().with_msg("malformed scalar")
+}
+
+
+#[cfg(test)]
+mod benches {
+    extern crate test;
+
+    use super::*;
+    use test::Bencher;
+
+    macro_rules! bench_obj {
+        ($name: ident, $file: expr) => {
+            #[bench]
+            fn $name(b: &mut Bencher) {
+                b.iter(|| {
+                    load_from_file($file);
+                });
+            }
+        }
+    }
+
+    bench_obj!(plane, "obj/plane.obj");
+    bench_obj!(disk, "obj/disk.obj");
+    bench_obj!(teapot, "obj/teapot.obj");
+    bench_obj!(sphere, "obj/sphere.obj");
+    bench_obj!(camelhead, "obj/camelhead.obj");
+    bench_obj!(sponza, "obj/sponza.obj");
+    bench_obj!(ajax, "obj/ajax.obj");
 }

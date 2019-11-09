@@ -8,7 +8,7 @@ pub trait ErrorContext<C> {
 }
 
 impl<T, E> ErrorContext<Res<T>> for Result<T, E> where E: Display {
-    #[inline]
+    #[inline(always)]
     fn with_msg(self, msg: &str) -> Res<T> {
         self.map_err(|e| format!("{}: {}", msg, e))
     }
