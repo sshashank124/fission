@@ -81,22 +81,22 @@ impl Triangle {
     }
 
     #[inline(always)]
-    fn intersection_point(&self, r: R) -> Option<F> {
-        let pv = r.d * self.ac();
+    fn intersection_point(&self, ray: R) -> Option<F> {
+        let pv = ray.d * self.ac();
         let det = self.ab().dot(pv);
         if det.abs() < F::EPSILON { return None; }
 
         let dinv = det.inv();
-        let tv = r.o - self.a();
+        let tv = ray.o - self.a();
         let u = tv.dot(pv) * dinv;
         if u < 0. || u > 1. { return None; }
 
         let q = tv * self.ab();
-        let v = r.d.dot(q) * dinv;
+        let v = ray.d.dot(q) * dinv;
         if v < 0. || u + v > 1. { return None; }
 
         let t = self.ac().dot(q) * dinv;
-        if r.tb.bounds(t) {
+        if ray.tb.bounds(t) {
             Some(t)
         } else {
             None
@@ -111,14 +111,14 @@ impl Intersectable for Triangle {
     }
 
     #[inline(always)]
-    fn intersects(&self, r: R) -> bool {
-        self.intersection_point(r).is_some()
+    fn intersects(&self, ray: R) -> bool {
+        self.intersection_point(ray).is_some()
     }
 
     #[inline(always)]
-    fn intersect(&self, r: R) -> Option<Its> {
-        self.intersection_point(r).map(|t| {
-            Its::ideal(r.at(t), t, self.n())
+    fn intersect(&self, ray: R) -> Option<Its> {
+        self.intersection_point(ray).map(|t| {
+            Its::ideal(ray.at(t), t, self.n())
         })
     }
 }

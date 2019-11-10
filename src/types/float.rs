@@ -25,6 +25,9 @@ pub trait Float: Copy
     fn sin(self) -> Self;
     fn cos(self) -> Self;
     fn tand(self) -> Self;
+
+    fn min(a: Self, b: Self) -> Self;
+    fn max(a: Self, b: Self) -> Self;
 }
 
 impl Float for f32 {
@@ -70,6 +73,16 @@ impl Float for f32 {
     fn tand(self) -> f32 {
         self.to_radians().tan()
     }
+
+    #[inline(always)]
+    fn min(a: f32, b: f32) -> f32 {
+        if a < b { a } else { b }
+    }
+
+    #[inline(always)]
+    fn max(a: f32, b: f32) -> f32 {
+        if a > b { a } else { b }
+    }
 }
 
 impl Float for f64 {
@@ -114,5 +127,15 @@ impl Float for f64 {
     #[inline(always)]
     fn tand(self) -> f64 {
         self.to_radians().tan()
+    }
+
+    #[inline(always)]
+    fn min(a: f64, b: f64) -> f64 {
+        if a < b { a } else { b }
+    }
+
+    #[inline(always)]
+    fn max(a: f64, b: f64) -> f64 {
+        if a > b { a } else { b }
     }
 }

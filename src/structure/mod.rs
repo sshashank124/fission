@@ -49,13 +49,13 @@ impl Intersectable for Structure {
 
     #[inline(always)]
     fn intersects(&self, ray: R) -> bool {
-        self.bbox.intersects(ray) &&
+        self.bbox.intersects(&ray) &&
             self.structure.intersects(self.to_world / ray)
     }
 
     #[inline(always)]
     fn intersect(&self, ray: R) -> Option<Its> {
-        if self.bbox.intersects(ray) {
+        if self.bbox.intersects(&ray) {
             self.structure.intersect(self.to_world / ray)
                           .map(|its| self.to_world * its)
         } else {

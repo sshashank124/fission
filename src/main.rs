@@ -50,7 +50,7 @@ fn main() -> Res<()> {
     print!("Initializing renderer ... ");
     let integrator = AverageVisibility::new(10.);
     let sampler = Uniform::new();
-    let renderer = Renderer::new(integrator, sampler, scene, 1024);
+    let renderer = Renderer::new(integrator, sampler, scene, 64);
     println!("DONE");
 
     let image = renderer.render();

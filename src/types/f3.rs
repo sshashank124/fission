@@ -8,6 +8,11 @@ impl<FT> A3<FT> where FT: Float {
     pub const X:    A3<FT> = A3(FT::ONE,  FT::ZERO, FT::ZERO);
     pub const Y:    A3<FT> = A3(FT::ZERO, FT::ONE,  FT::ZERO);
     pub const Z:    A3<FT> = A3(FT::ZERO, FT::ZERO, FT::ONE );
+
+    #[inline(always)]
+    pub fn cw_inv(self) -> A3<FT> {
+        self.map(FT::inv)
+    }
 }
 
 #[inline(always)]

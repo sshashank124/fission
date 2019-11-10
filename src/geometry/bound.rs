@@ -14,7 +14,7 @@ impl B {
 
     #[inline(always)]
     pub fn ordered(a: F, b: F) -> B {
-        B(a.min(b), a.max(b))
+        if a < b { B(a, b) } else { B(b, a) }
     }
 
     #[inline(always)]
@@ -38,6 +38,11 @@ impl B {
     }
 
     #[inline(always)]
+    pub fn overlaps(self, b: B) -> bool {
+        self.0 < b.1 && b.0 < self.1
+    }
+
+    #[inline(always)]
     pub fn center(self) -> F {
         0.5 * self.0 + 0.5 * self.1
     }
@@ -45,24 +50,6 @@ impl B {
     #[inline(always)]
     pub fn extent(self) -> F {
         self.1 - self.0
-    }
-
-    #[inline(always)]
-    pub fn intersect(self, o: F, d: F, tb: B) -> Option<B> {
-        if d.abs() < F::EPSILON {
-            if self.bounds(o) {
-                Some(self)
-            } else {
-                None
-            }
-        } else {
-            let nb = tb & ((self - o) / d);
-            if nb.degen() {
-                None
-            } else {
-                Some(nb)
-            }
-        }
     }
 
     pub const EMPTY:    B = B(F::POS_INF, F::NEG_INF);
@@ -123,7 +110,7 @@ impl BitOr for B {
     type Output = B;
     #[inline(always)]
     fn bitor(self, B(l, u): B) -> B {
-        B(self.0.min(l), self.1.max(u))
+        B(F::min(self.0, l), F::max(self.1, u))
     }
 }
 
@@ -140,6 +127,6 @@ impl BitAnd for B {
     type Output = B;
     #[inline(always)]
     fn bitand(self, B(l, u): B) -> B {
-        B(self.0.max(l), self.1.min(u))
+        B(F::max(self.0, l), F::min(self.1, u))
     }
 }

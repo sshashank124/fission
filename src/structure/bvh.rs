@@ -185,7 +185,7 @@ impl<S> Intersectable for BVH<S> where S: Intersectable {
         let mut sp = 0;
         loop {
             let node = &self.nodes[idx];
-            if node.bbox.intersects(ray) {
+            if node.bbox.intersects(&ray) {
                 match node.node {
                     BVHNodeType::Leaf(i) => {
                         if self.elements[i].intersects(ray) { return true; }
@@ -215,7 +215,7 @@ impl<S> Intersectable for BVH<S> where S: Intersectable {
         let mut sp = 0;
         loop {
             let node = &self.nodes[idx];
-            if node.bbox.intersects(ray) {
+            if node.bbox.intersects(&ray) {
                 match &node.node {
                     BVHNodeType::Leaf(i) => {
                         let it = self.elements[*i].intersect(ray);

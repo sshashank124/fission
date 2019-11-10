@@ -23,7 +23,7 @@ impl Sim3 {
 
     #[inline(always)]
     pub fn scale(v: F3) -> Sim3 {
-        Sim3::new(Affine3::scale(v), Affine3::scale(v.map(Float::inv)))
+        Sim3::new(Affine3::scale(v), Affine3::scale(v.cw_inv()))
     }
 
     #[inline(always)]

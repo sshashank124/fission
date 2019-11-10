@@ -13,11 +13,15 @@ impl BBox {
     }
 
     #[inline(always)]
-    pub fn intersects(&self, R{o, d, tb}: R) -> bool {
-        (self.0).0.intersect(o.x(), d.x(), tb)
-            .and_then(|b| { (self.0).1.intersect(o.y(), d.y(), b) })
-            .and_then(|b| { (self.0).2.intersect(o.z(), d.z(), b) })
-            .is_some()
+    pub fn intersects(&self, ray: &R) -> bool {
+        let bx = (self[Axis::X] - ray.o.x()) * ray.d_inv.x();
+        let by = (self[Axis::Y] - ray.o.y()) * ray.d_inv.y();
+        let b = bx & by;
+        if b.degen() { return false; }
+        let bz = (self[Axis::Z] - ray.o.z()) * ray.d_inv.z();
+        let b = b & bz;
+        if b.degen() { false }
+        else { ray.tb.overlaps(b) }
     }
     
     #[inline(always)]

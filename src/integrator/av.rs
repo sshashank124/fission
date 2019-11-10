@@ -23,7 +23,8 @@ impl Integrator for AverageVisibility {
             Some(its) => {
                 let ray =
                     R::new(its.p,
-                           warp::sample_uniform_hemisphere(sampler, its.n.unit()),
+                           warp::sample_uniform_hemisphere(sampler,
+                                                           its.n.unit()),
                            B::with_ceil(self.ray_len));
                 if scene.intersects(ray) { Color::BLACK }
                 else { Color::WHITE }
