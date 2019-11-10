@@ -1,0 +1,25 @@
+renderer:
+  samples_per_pixel: 64
+
+  integrator:
+    type: av
+    ray_length: 5.
+
+  sampler:
+    type: uniform
+
+scene:
+  camera:
+    type: perspective
+    fov: 30.
+    resolution: [800, 600]
+
+    transforms:
+      - look_at:
+          origin: [15., 1., 0.]
+          target: [-11., 5., 0.]
+          up: [0., 1., 0.]
+
+  structures:
+    - type: mesh
+      obj: obj/sponza.obj

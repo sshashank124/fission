@@ -14,14 +14,12 @@ impl BBox {
 
     #[inline(always)]
     pub fn intersects(&self, ray: &R) -> bool {
-        let bx = (self[Axis::X] - ray.o.x()) * ray.d_inv.x();
-        let by = (self[Axis::Y] - ray.o.y()) * ray.d_inv.y();
-        let b = bx & by;
+        let mut b = ray.tb & ((self[Axis::X] - ray.o.x()) * ray.d_inv.x());
         if b.degen() { return false; }
-        let bz = (self[Axis::Z] - ray.o.z()) * ray.d_inv.z();
-        let b = b & bz;
-        if b.degen() { false }
-        else { ray.tb.overlaps(b) }
+        b = b & ((self[Axis::Y] - ray.o.y()) * ray.d_inv.y());
+        if b.degen() { return false; }
+        b = b & ((self[Axis::Z] - ray.o.z()) * ray.d_inv.z());
+        !b.degen()
     }
     
     #[inline(always)]

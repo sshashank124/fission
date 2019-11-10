@@ -1,7 +1,3 @@
-inverse ray for fast intersections
-
-YAML config parsing
-
 transforms
 '-constructors: rotate_on_axis
 
@@ -9,4 +5,12 @@ lights
 
 Lerp (in mesh for example)
 
+more efficient BVH
+
+build all meshes into a single BVH
+
 DirectLighting
+
+MCIntegrators
+
+PhotonMapping

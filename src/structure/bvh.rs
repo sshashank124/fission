@@ -61,8 +61,7 @@ impl<S> BVH<S> where S: Intersectable {
         }).collect::<Vec<_>>();
 
         let root = build(&mut build_infos[..]);
-        let num_nodes = root.sizel + root.sizer + 1;
-        let mut nodes = Vec::with_capacity(num_nodes);
+        let mut nodes = Vec::with_capacity(root.size());
 
         flatten_tree(&root, &mut nodes, 0);
 
@@ -104,19 +103,25 @@ impl<S> BVH<S> where S: Intersectable {
     }
 }
 
+impl BuildNode {
+    #[inline(always)]
+    fn size(&self) -> usize { self.sizel + self.sizer + 1 }
+}
+
 fn flatten_tree(tree: &BuildNode, nodes: &mut Vec<BVHNode>, offset: usize) {
+    let offset = offset + 1;
     let node = match &tree.node {
         BuildNodeType::Leaf(idx) => Leaf(*idx),
         BuildNodeType::Tree(axis, treel, _) => {
-            Tree(*axis, offset + treel.sizel + treel.sizer + 2)
+            Tree(*axis, offset + treel.size())
         }
     };
 
     nodes.push(BVHNode { bbox: tree.bbox, node });
 
     if let BuildNodeType::Tree(_, treel, treer) = &tree.node {
-        flatten_tree(treel, nodes, offset + 1);
-        flatten_tree(treer, nodes, offset + treel.sizel + treel.sizer + 2);
+        flatten_tree(treel, nodes, offset);
+        flatten_tree(treer, nodes, offset + treel.size());
     }
 }
 
@@ -135,8 +140,7 @@ fn build(build_infos: &mut [BuildInfo]) -> BuildNode {
         return BuildNode {
             bbox: build_infos[0].bbox,
             node: BuildNodeType::Leaf(build_infos[0].idx),
-            sizel: 0,
-            sizer: 0,
+            sizel: 0, sizer: 0,
         };
     }
 
@@ -194,8 +198,7 @@ fn build(build_infos: &mut [BuildInfo]) -> BuildNode {
 
     BuildNode {
         bbox,
-        sizel: treel.sizel + treel.sizer + 1,
-        sizer: treer.sizel + treer.sizer + 1,
+        sizel: treel.size(), sizer: treer.size(),
         node: BuildNodeType::Tree(axis, Box::new(treel), Box::new(treer)),
     }
 }

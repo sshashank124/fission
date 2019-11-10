@@ -9,7 +9,8 @@ openexr = "*"
 rand_core = "*"
 rand_pcg = "*"
 rayon = "*"
+yaml-rust = "*"
 
 [profile.release]
 lto = true
-debug = true
+# debug = true

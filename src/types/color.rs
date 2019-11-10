@@ -36,7 +36,7 @@ impl Div<F> for Color {
     type Output = Color;
     #[inline(always)]
     fn div(self, f: F) -> Color {
-        Color(self.0 / f)
+        Color(self.0 / f as f32)
     }
 }
 
@@ -51,14 +51,14 @@ impl Div<I> for Color {
 impl DivAssign<F> for Color {
     #[inline(always)]
     fn div_assign(&mut self, f: F) {
-        self.0 /= f;
+        self.0 /= f as f32;
     }
 }
 
 impl DivAssign<I> for Color {
     #[inline(always)]
     fn div_assign(&mut self, i: I) {
-        self.0 /= i as F;
+        self.0 /= i as f32;
     }
 }
 

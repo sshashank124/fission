@@ -12,11 +12,6 @@ impl Perspective {
             fov_scale: (fov / 2.).tand(),
         }
     }
-
-    #[inline(always)]
-    pub fn default() -> Perspective {
-        Perspective::new(40.)
-    }
 }
 
 impl CameraModel for Perspective {

@@ -1,4 +1,4 @@
-use std::ops::{Add, AddAssign, Sub, Mul, Div, Neg};
+use std::ops::{Add, AddAssign, Sub, Mul, Div, DivAssign, Neg};
 
 
 pub trait Float: Copy
@@ -6,6 +6,7 @@ pub trait Float: Copy
                + Sub<Self, Output=Self>
                + Mul<Self, Output=Self>
                + Div<Self, Output=Self>
+               + DivAssign<Self>
                + AddAssign<Self>
                + Neg<Output=Self> {
 
@@ -35,7 +36,7 @@ impl Float for f32 {
     const POS_INF: f32 = std::f32::INFINITY;
     const ZERO: f32 = 0.;
     const ONE: f32 = 1.;
-    const EPSILON: f32 = 1e-4;
+    const EPSILON: f32 = 2e-4;
 
     const PI: f32 = std::f32::consts::PI;
 

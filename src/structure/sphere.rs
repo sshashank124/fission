@@ -16,7 +16,7 @@ impl Sphere {
     }
 
     #[inline(always)]
-    fn intersection_point(&self, R{o, d, d_inv, tb}: R) -> Option<F> {
+    fn intersection_point(&self, R{o, d, d_inv: _, tb}: R) -> Option<F> {
         solver::quad(d.norm2(),
                      2. * d.dot(V::p(o)),
                      V::p(o).norm2() - self.r * self.r)

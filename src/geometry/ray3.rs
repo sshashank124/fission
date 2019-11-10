@@ -49,7 +49,7 @@ impl R {
 impl Mul<R> for T {
     type Output = R;
     #[inline(always)]
-    fn mul(self, R{o, d, d_inv, tb}: R) -> R {
+    fn mul(self, R{o, d, d_inv: _, tb}: R) -> R {
         R::new(self * o, self * d, tb)
     }
 }
@@ -57,7 +57,7 @@ impl Mul<R> for T {
 impl Div<R> for T {
     type Output = R;
     #[inline(always)]
-    fn div(self, R{o, d, d_inv, tb}: R) -> R {
+    fn div(self, R{o, d, d_inv: _, tb}: R) -> R {
         R::new(self / o, self / d, tb)
     }
 }

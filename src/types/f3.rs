@@ -87,9 +87,9 @@ impl<FT> Div<FT> for A3<FT> where FT: Float {
     }
 }
 
-impl DivAssign<F> for F3 {
+impl<FT> DivAssign<FT> for A3<FT> where FT: Float {
     #[inline(always)]
-    fn div_assign(&mut self, f: F) {
+    fn div_assign(&mut self, f: FT) {
         self.0 /= f;
         self.1 /= f;
         self.2 /= f;

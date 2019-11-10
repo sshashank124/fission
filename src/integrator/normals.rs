@@ -10,15 +10,16 @@ impl Normals {
     }
 }
 
-impl Integrator for Normals {
+impl Integrate for Normals {
     #[inline(always)]
-    fn sample<S>(&self, scene: &Scene, _sampler: &mut S, ray: R) -> Color
-            where S: Sampler {
+    fn sample(&self, scene: &Scene, _sampler: &mut Sampler, ray: R) -> Color {
         match scene.intersect(ray) {
             None => Color::BLACK,
             Some(its) => {
                 let n = its.n.unit();
-                Color::rgb(n.x().abs(), n.y().abs(), n.z().abs())
+                Color::rgb(n.x().abs() as f32,
+                           n.y().abs() as f32,
+                           n.z().abs() as f32)
             }
         }
     }

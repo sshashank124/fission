@@ -4,34 +4,24 @@ use std::time::Instant;
 use rayon::iter::{ParallelBridge, ParallelIterator};
 
 use crate::image::{Block, Image, Pixel};
-use crate::integrator::{Integrator, Normals};
-use crate::sampler::{Sampler, Uniform};
+use crate::integrator::*;
+use crate::sampler::*;
 use crate::scene::Scene;
 use crate::types::*;
 
 
-const SAMPLES_PER_PIXEL: I = 32;
 const BLOCK_SIZE: I2 = P2(32, 32);
 
-pub struct Renderer<Ig = Normals,
-                     S = Uniform> where Ig: Integrator,
-                                         S: Sampler {
-    integrator: Ig,
-    sampler: S,
+pub struct Renderer {
+    integrator: Integrator,
+    sampler: Sampler,
     scene: Scene,
     spp: I,
 }
 
 impl Renderer {
-    pub fn default(scene: Scene) -> Renderer {
-        Renderer::new(Normals::new(), Uniform::new(), scene, SAMPLES_PER_PIXEL)
-    }
-}
-
-impl<Ig, S> Renderer<Ig, S> where Ig: Integrator + Sync,
-                                   S: Sampler + Sync {
-    pub fn new(integrator: Ig, sampler: S, scene: Scene, spp: I)
-            -> Renderer<Ig, S> {
+    pub fn new(integrator: Integrator, sampler: Sampler, scene: Scene, spp: I)
+            -> Renderer {
         Renderer { integrator, sampler, scene, spp }
     }
 
@@ -45,7 +35,7 @@ impl<Ig, S> Renderer<Ig, S> where Ig: Integrator + Sync,
             stdout().flush().unwrap();
             let render_block = |mut block: Block| {
                 let mut sampler = self.sampler.clone_seeded(block.flat_pos()
-                                                            * i);
+                                                            + i);
 
                 let render_pixel = |mut pixel: Pixel| {
                     let sample_point = pixel.pos + sampler.gen_2d();
@@ -53,7 +43,7 @@ impl<Ig, S> Renderer<Ig, S> where Ig: Integrator + Sync,
                                     .sample(&self.scene,
                                             &mut sampler,
                                             camera.ray_at(sample_point));
-                    *pixel += color / self.spp;
+                    *pixel += color;
                 };
 
                 block.pixels().for_each(render_pixel);
@@ -66,7 +56,8 @@ impl<Ig, S> Renderer<Ig, S> where Ig: Integrator + Sync,
 
         let t = Instant::now();
         (0..self.spp).for_each(render_view);
-        println!("\rRENDERING ... DONE ({:?})", t.elapsed());
+        img.as_block().pixels().for_each(|mut pixel| *pixel /= self.spp);
+        println!("\rRendering ... DONE ({:?})", t.elapsed());
 
         img
     }

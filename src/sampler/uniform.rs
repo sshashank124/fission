@@ -11,7 +11,7 @@ impl Uniform {
     }
 }
 
-impl Sampler for Uniform {
+impl Sample for Uniform {
     #[inline(always)]
     fn clone_seeded<U>(&self, seed: U) -> Uniform
             where U: Into<u64> {
