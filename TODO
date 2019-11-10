@@ -1,8 +1,6 @@
+inverse ray for fast intersections
+
 YAML config parsing
-
-sample warping
-
-AV
 
 transforms
 '-constructors: rotate_on_axis

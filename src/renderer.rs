@@ -1,3 +1,4 @@
+use std::io::{stdout, Write};
 use std::time::Instant;
 
 use rayon::iter::{ParallelBridge, ParallelIterator};
@@ -39,12 +40,14 @@ impl<Ig, S> Renderer<Ig, S> where Ig: Integrator + Sync,
 
         let mut img = Image::new(camera.resolution());
 
-        let render_view = #[inline(always)] |i| {
-            let render_block = #[inline(always)] |mut block: Block| {
+        let render_view = |i| {
+            print!("\rRENDERING ... [{:4}/{:4}]", i + 1, self.spp);
+            stdout().flush().unwrap();
+            let render_block = |mut block: Block| {
                 let mut sampler = self.sampler.clone_seeded(block.flat_pos()
                                                             * i);
 
-                let render_pixel = #[inline(always)] |mut pixel: Pixel| {
+                let render_pixel = |mut pixel: Pixel| {
                     let sample_point = pixel.pos + sampler.gen_2d();
                     let color = self.integrator
                                     .sample(&self.scene,
@@ -63,7 +66,7 @@ impl<Ig, S> Renderer<Ig, S> where Ig: Integrator + Sync,
 
         let t = Instant::now();
         (0..self.spp).for_each(render_view);
-        println!("{:?}", t.elapsed());
+        println!("\rRENDERING ... DONE ({:?})", t.elapsed());
 
         img
     }
