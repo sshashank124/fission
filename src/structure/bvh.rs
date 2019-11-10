@@ -1,6 +1,7 @@
 use std::mem;
 
 use super::*;
+use crate::util::*;
 
 
 #[derive(Debug)]
@@ -42,6 +43,15 @@ struct BuildInfo {
     idx: usize,
 }
 
+macro_rules! pop_break {
+    ($stack:ident) => {
+        match $stack.pop() {
+            None => break,
+            Some(v) => v,
+        }
+    }
+}
+
 impl<S> BVH<S> where S: Intersectable {
     pub fn new(elements: Vec<S>) -> BVH<S> {
         assert!(!elements.is_empty());
@@ -57,6 +67,40 @@ impl<S> BVH<S> where S: Intersectable {
         flatten_tree(&root, &mut nodes, 0);
 
         BVH { elements, nodes }
+    }
+
+    #[inline(always)]
+    fn fold<A, P, F>(&self, trav_order: A3<bool>,
+                  acc: A, pred: P, f: F) -> A
+            where P: Fn(&A, &BVHNode) -> bool,
+                  F: Fn(&A, &S) -> Either<A, A> {
+        let mut acc = acc;
+        let mut idx = 0;
+        let mut stack = Vec::with_capacity(64);
+        loop {
+            let node = &self.nodes[idx];
+            if pred(&acc, node) {
+                match &node.node {
+                    BVHNodeType::Leaf(i) => {
+                        match f(&acc, &self.elements[*i]) {
+                            Either::A(a) => { acc = a; },
+                            Either::B(b) => { return b; },
+                        }
+                        idx = pop_break!(stack);
+                    },
+                    BVHNodeType::Tree(axis, ri) => {
+                        idx = if trav_order[*axis] {
+                            stack.push(*ri); idx + 1
+                        } else {
+                            stack.push(idx + 1); *ri
+                        };
+                    },
+                }
+            } else {
+                idx = pop_break!(stack);
+            }
+        }
+        acc
     }
 }
 
@@ -180,61 +224,22 @@ impl<S> Intersectable for BVH<S> where S: Intersectable {
 
     #[inline(always)]
     fn intersects(&self, ray: R) -> bool {
-        let mut idx = 0;
-        let mut stack = [0; 64];
-        let mut sp = 0;
-        loop {
-            let node = &self.nodes[idx];
-            if node.bbox.intersects(&ray) {
-                match node.node {
-                    BVHNodeType::Leaf(i) => {
-                        if self.elements[i].intersects(ray) { return true; }
-                        if sp == 0 { break; }
-                        sp -= 1; idx = stack[sp];
-                    },
-                    BVHNodeType::Tree(axis, ridx) => {
-                        if ray.d[axis] > 0. { stack[sp] = ridx; idx += 1; }
-                        else { stack[sp] = idx + 1; idx = ridx; }
-                        sp += 1;
-                    },
-                }
-            } else {
-                if sp == 0 { break; }
-                sp -= 1; idx = stack[sp];
-            }
-        }
-        false
+        self.fold(ray.d.0.map(|i| i > 0.), false,
+                  |_, node| node.bbox.intersects(&ray),
+                  |_, structure| {
+                      if structure.intersects(ray) { Either::B(true) }
+                      else { Either::A(false) }
+                  })
     }
 
     #[inline(always)]
     fn intersect(&self, ray: R) -> Option<Its> {
-        let mut ray = ray;
-        let mut its = None;
-        let mut idx = 0;
-        let mut stack = [0; 64];
-        let mut sp = 0;
-        loop {
-            let node = &self.nodes[idx];
-            if node.bbox.intersects(&ray) {
-                match &node.node {
-                    BVHNodeType::Leaf(i) => {
-                        let it = self.elements[*i].intersect(ray);
-                        ray = ray.clip_from_its(&it);
-                        its = it.or(its);
-                        if sp == 0 { break; }
-                        sp -= 1; idx = stack[sp];
-                    },
-                    BVHNodeType::Tree(axis, ridx) => {
-                        if ray.d[*axis] > 0. { stack[sp] = *ridx; idx += 1; }
-                        else { stack[sp] = idx + 1; idx = *ridx; }
-                        sp += 1;
-                    },
-                }
-            } else {
-                if sp == 0 { break; }
-                sp -= 1; idx = stack[sp];
-            }
-        }
-        its
+        self.fold(ray.d.0.map(|i| i > 0.), (ray, None),
+                  |(ray, _), node| node.bbox.intersects(ray),
+                  |(ray, its), structure| {
+                      let it = structure.intersect(*ray);
+                      let ray = ray.clip_from_its(&it);
+                      Either::A((ray, it.or(*its)))
+                  }).1
     }
 }

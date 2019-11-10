@@ -3,6 +3,7 @@ use std::ops::{Mul, Div};
 use super::*;
 
 
+#[derive(Clone, Copy)]
 pub struct Its {
     pub p:  P,
     pub t:  F,

@@ -1,6 +1,11 @@
 use std::fmt::Display;
 
 
+pub enum Either<A, B> {
+    A(A),
+    B(B),
+}
+
 pub type Res<T> = Result<T, String>;
 
 pub trait ErrorContext<C> {
