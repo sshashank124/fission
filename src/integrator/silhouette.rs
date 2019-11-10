@@ -12,11 +12,9 @@ impl Silhouette {
 
 impl Integrator for Silhouette {
     #[inline(always)]
-    fn sample(&self, scene: &Scene, ray: R) -> Color {
-        if scene.intersects(ray) {
-            Color::BLACK
-        } else {
-            Color::WHITE
-        }
+    fn sample<S>(&self, scene: &Scene, _sampler: &mut S, ray: R) -> Color
+            where S: Sampler {
+        if scene.intersects(ray) { Color::BLACK }
+        else { Color::WHITE }
     }
 }

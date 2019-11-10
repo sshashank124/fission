@@ -3,12 +3,14 @@ mod normals;
 mod silhouette;
 
 use crate::geometry::*;
+use crate::sampler::Sampler;
 use crate::scene::Scene;
 use crate::structure::*;
 
 
 pub trait Integrator {
-    fn sample(&self, scene: &Scene, ray: R) -> Color;
+    fn sample<S>(&self, scene: &Scene, sampler: &mut S, ray: R) -> Color
+        where S: Sampler;
 }
 
 pub use av::AverageVisibility;

@@ -1,10 +1,10 @@
 mod perspective;
 
 use crate::geometry::*;
-use perspective::Perspective;
+pub use perspective::Perspective;
 
 
-enum CameraType {
+pub enum CameraType {
     Perspective(Perspective),
 }
 
@@ -21,11 +21,12 @@ pub struct Camera {
 
 impl Camera {
     #[inline(always)]
-    fn new(model: CameraType, resolution: I2, to_world: T) -> Camera {
+    pub fn new<C>(model: C, resolution: I2, to_world: T) -> Camera
+            where C: Into<CameraType> {
         Camera {
             from_pixel: T2::scale(P2(2., -2.) / resolution.1 as F) *
                         T2::translate(resolution / -2.),
-            model,
+            model: model.into(),
             resolution,
             to_world,
         }
@@ -33,7 +34,7 @@ impl Camera {
 
     #[inline(always)]
     pub fn default() -> Camera {
-        Camera::new(Perspective::default().into(), P2(1280, 720), T::I)
+        Camera::new(Perspective::default(), P2(1280, 720), T::I)
     }
 
     #[inline(always)]

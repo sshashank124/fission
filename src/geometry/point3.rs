@@ -8,6 +8,11 @@ pub struct P(pub F3);
 
 impl P {
     #[inline(always)]
+    pub fn p(x: F, y: F, z: F) -> P {
+        P(A3(x, y, z))
+    }
+
+    #[inline(always)]
     pub const fn x(&self) -> F {
         (self.0).0
     }

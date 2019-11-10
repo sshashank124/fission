@@ -12,7 +12,8 @@ impl Normals {
 
 impl Integrator for Normals {
     #[inline(always)]
-    fn sample(&self, scene: &Scene, ray: R) -> Color {
+    fn sample<S>(&self, scene: &Scene, _sampler: &mut S, ray: R) -> Color
+            where S: Sampler {
         match scene.intersect(ray) {
             None => Color::BLACK,
             Some(its) => {

@@ -4,7 +4,7 @@ mod sphere;
 mod seq;
 
 use crate::geometry::*;
-use bvh::BVH;
+pub use bvh::BVH;
 pub use mesh::Mesh;
 pub use sphere::Sphere;
 

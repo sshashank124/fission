@@ -39,17 +39,18 @@ impl<Ig, S> Renderer<Ig, S> where Ig: Integrator + Sync,
 
         let mut img = Image::new(camera.resolution());
 
-        let render_view = |i| {
-            let render_block = |mut block: Block| {
+        let render_view = #[inline(always)] |i| {
+            let render_block = #[inline(always)] |mut block: Block| {
                 let mut sampler = self.sampler.clone_seeded(block.flat_pos()
                                                             * i);
 
-                let render_pixel = |mut pixel: Pixel| {
+                let render_pixel = #[inline(always)] |mut pixel: Pixel| {
+                    let sample_point = pixel.pos + sampler.gen_2d();
                     let color = self.integrator
                                     .sample(&self.scene,
-                                            camera.ray_at(pixel.pos +
-                                                          sampler.gen_2d()));
-                    *pixel += color;
+                                            &mut sampler,
+                                            camera.ray_at(sample_point));
+                    *pixel += color / self.spp;
                 };
 
                 block.pixels().for_each(render_pixel);
@@ -62,7 +63,6 @@ impl<Ig, S> Renderer<Ig, S> where Ig: Integrator + Sync,
 
         let t = Instant::now();
         (0..self.spp).for_each(render_view);
-        img.as_block().pixels().for_each(|mut pixel| *pixel /= self.spp);
         println!("{:?}", t.elapsed());
 
         img

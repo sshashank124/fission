@@ -6,7 +6,7 @@ use super::*;
 #[derive(Debug)]
 pub struct BVH<S> {
     elements: Vec<S>,
-    node: Box<BVHNode>,
+    node: BVHNode,
 }
 
 #[derive(Debug)]
@@ -30,6 +30,7 @@ struct BuildInfo {
 
 impl<S> BVH<S> where S: Intersectable {
     pub fn new(elements: Vec<S>) -> BVH<S> {
+        assert!(!elements.is_empty());
         let mut build_infos = elements.iter().enumerate().map(|(idx, e)| {
             let bbox = e.bbox(T::I);
             BuildInfo { bbox, center: bbox.center(), idx }
@@ -71,7 +72,7 @@ impl<S> BVH<S> where S: Intersectable {
     }
 }
 
-const NUM_BUCKETS: usize = 12;
+const NUM_BUCKETS: usize = 16;
 
 #[derive(Clone, Copy)]
 struct Bucket {
@@ -79,14 +80,14 @@ struct Bucket {
     bbox: BBox,
 }
 
-fn build(build_infos: &mut [BuildInfo]) -> Box<BVHNode> {
+fn build(build_infos: &mut [BuildInfo]) -> BVHNode {
     let n = build_infos.len();
 
     if n == 1 {
-        return Box::new(BVHNode {
+        return BVHNode {
             bbox: build_infos[0].bbox,
             node: Leaf(build_infos[0].idx),
-        });
+        };
     }
 
     let (bbox, centers_bbox) =
@@ -122,9 +123,9 @@ fn build(build_infos: &mut [BuildInfo]) -> Box<BVHNode> {
                                   |(c, bb), Bucket { n, bbox }|
                                       (c + n, bb | *bbox));
 
-            0.125 + (n1 as F * bbox1.surface_area() +
-                     n2 as F * bbox2.surface_area()) /
-                    bbox.surface_area()
+            1. + (n1 as F * bbox1.surface_area() +
+                  n2 as F * bbox2.surface_area()) /
+                 bbox.surface_area()
         };
 
         let min_cost_idx = (1..NUM_BUCKETS-1)
@@ -135,15 +136,15 @@ fn build(build_infos: &mut [BuildInfo]) -> Box<BVHNode> {
                                }).0;
 
         partition(build_infos,
-                  |ref build_info| bucket_index(build_info) <= min_cost_idx)
+                  |ref build_info| bucket_index(build_info) < min_cost_idx)
     };
 
-    Box::new(BVHNode {
+    BVHNode {
         bbox,
         node: Tree(axis,
-                   build(&mut build_infos[..pivot]),
-                   build(&mut build_infos[pivot..])),
-    })
+                   Box::new(build(&mut build_infos[..pivot])),
+                   Box::new(build(&mut build_infos[pivot..]))),
+    }
 }
 
 fn partition<E, FN>(items: &mut [E], pred: FN) -> usize
@@ -170,8 +171,7 @@ fn partition<E, FN>(items: &mut [E], pred: FN) -> usize
 impl<S> Intersectable for BVH<S> where S: Intersectable {
     #[inline(always)]
     fn bbox(&self, t: T) -> BBox {
-        if self.elements.is_empty() { BBox::EMPTY }
-        else { t * self.node.bbox }
+        t * self.node.bbox
     }
 
     #[inline(always)]

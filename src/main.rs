@@ -1,3 +1,4 @@
+#![feature(stmt_expr_attributes)]
 #![feature(test)]
 
 mod camera;
@@ -12,23 +13,37 @@ mod solver;
 mod structure;
 mod types;
 mod util;
+mod warp;
 
-use camera::Camera;
+use camera::{Camera, Perspective};
 use geometry::*;
+use integrator::AverageVisibility;
 use loader::obj;
 use renderer::Renderer;
+use sampler::Uniform;
 use scene::Scene;
 use structure::Structure;
 use util::*;
 
 
 fn main() -> Res<()> {
-    let mesh = obj::load_from_file("obj/teapot.obj")
+    let ajax = obj::load_from_file("obj/ajax.obj")
                    .with_msg("Failed to load OBJ")?;
+    let ajax_st = Structure::new(ajax, T::I);
 
-    let root = Structure::new(mesh, T::translate(A3(0., -2., 8.)));
-    let scene = Scene::new(Camera::default(), root);
-    let renderer = Renderer::default(scene);
+    let plane = obj::load_from_file("obj/plane.obj")
+                    .with_msg("Failed to load OBJ")?;
+    let plane_st = Structure::new(plane, T::scale(A3(100., 1., 100.)));
+
+    let root = Structure::new(vec![ajax_st, plane_st], T::I);
+    let camera = Camera::new(Perspective::new(30.), P2(768, 768),
+                             T::look_at(P::p(-65.6055, 47.5762, 24.3583),
+                                        P::p(-64.8161, 47.2211, 23.8576),
+                                        V::v(0.299858, 0.934836, -0.190177)));
+    let scene = Scene::new(camera, root);
+    let integrator = AverageVisibility::new(10.);
+    let sampler = Uniform::new();
+    let renderer = Renderer::new(integrator, sampler, scene, 64);
     let image = renderer.render();
 
     image.save_exr("test.exr").with_msg("Saving image failed")?;

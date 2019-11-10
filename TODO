@@ -1,20 +1,14 @@
-BVH
+YAML config parsing
+
+sample warping
 
 AV
 
 transforms
-'-constructors: look_at, rotate_on_axis
-
-Lerp
+'-constructors: rotate_on_axis
 
 lights
 
-DL
+Lerp (in mesh for example)
 
-warping
-
-parallel
-
-YAML config parsing
-
-avoid unwraps and assumptions
+DirectLighting

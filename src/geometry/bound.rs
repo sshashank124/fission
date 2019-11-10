@@ -18,6 +18,11 @@ impl B {
     }
 
     #[inline(always)]
+    pub fn with_ceil(u: F) -> B {
+        B(F::EPSILON, u)
+    }
+
+    #[inline(always)]
     pub fn with_upper(self, u: F) -> B {
         B(self.0, u)
     }

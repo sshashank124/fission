@@ -4,7 +4,7 @@ use super::*;
 use affine3::Affine3;
 
 
-#[derive(Clone, Copy)]
+#[derive(Clone, Copy, Debug)]
 pub struct Sim3 {
     f: Affine3,
     i: Affine3,
@@ -19,6 +19,20 @@ impl Sim3 {
     #[inline(always)]
     pub fn translate(v: F3) -> Sim3 {
         Sim3::new(Affine3::I + v, Affine3::I - v)
+    }
+
+    #[inline(always)]
+    pub fn scale(v: F3) -> Sim3 {
+        Sim3::new(Affine3::scale(v), Affine3::scale(v.map(Float::inv)))
+    }
+
+    #[inline(always)]
+    pub fn look_at(pos: P, target: P, up: V) -> Sim3 {
+        let dir = (target - pos).unit();
+        let right = (up.unit() * dir).unit();
+        let up = (dir * right).unit();
+        Sim3::new(Affine3::from_cols(right.0, up.0, dir.0, pos.0),
+                  Affine3::I)  // not needed
     }
 
     #[inline(always)]

@@ -4,7 +4,7 @@ use super::*;
 use rotscale3::RotScale3;
 
 
-#[derive(Clone, Copy)]
+#[derive(Clone, Copy, Debug)]
 pub struct Affine3 {
     r: RotScale3,
     t: F3,
@@ -14,6 +14,16 @@ impl Affine3 {
     #[inline(always)]
     pub const fn new(r: RotScale3, t: F3) -> Affine3 {
         Affine3 { r, t }
+    }
+
+    #[inline(always)]
+    pub fn from_cols(c1: F3, c2: F3, c3: F3, c4: F3) -> Affine3 {
+        Affine3::new(RotScale3::from_cols(c1, c2, c3), c4)
+    }
+
+    #[inline(always)]
+    pub fn scale(v: F3) -> Affine3 {
+        Affine3::new(RotScale3::scale(v), F3::ZERO)
     }
 
     #[inline(always)]
