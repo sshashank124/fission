@@ -1,5 +1,6 @@
 #![feature(test)]
 
+mod aggregate;
 mod camera;
 mod geometry;
 mod image;
@@ -8,8 +9,6 @@ mod loader;
 mod renderer;
 mod sampler;
 mod scene;
-mod solver;
-mod structure;
 mod types;
 mod util;
 mod warp;

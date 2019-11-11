@@ -1,19 +1,19 @@
+use crate::aggregate::*;
 use crate::camera::Camera;
 use crate::geometry::*;
-use crate::structure::*;
 
 
 pub struct Scene {
     pub camera: Camera,
-    structure: Structure,
+    objs: Mesh,
 }
 
 impl Scene {
     #[inline(always)]
-    pub fn new(camera: Camera, structure: Structure) -> Scene {
+    pub fn new(camera: Camera, objs: Mesh) -> Scene {
         Scene {
             camera,
-            structure,
+            objs,
         }
     }
 }
@@ -21,16 +21,16 @@ impl Scene {
 impl Intersectable for Scene {
     #[inline(always)]
     fn bbox(&self, t: T) -> BBox {
-        self.structure.bbox(t)
+        self.objs.bbox(t)
     }
 
     #[inline(always)]
     fn intersects(&self, ray: R) -> bool {
-        self.structure.intersects(ray)
+        self.objs.intersects(ray)
     }
 
     #[inline(always)]
     fn intersect(&self, ray: R) -> Option<Its> {
-        self.structure.intersect(ray)
+        self.objs.intersect(ray)
     }
 }

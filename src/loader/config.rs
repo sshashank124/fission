@@ -3,6 +3,7 @@ use std::io::Read;
 
 use yaml_rust::{Yaml, YamlLoader};
 
+use crate::aggregate::*;
 use crate::camera::*;
 use crate::geometry::*;
 use crate::integrator::*;
@@ -10,7 +11,6 @@ use crate::loader::obj;
 use crate::renderer::*;
 use crate::sampler::*;
 use crate::scene::*;
-use crate::structure::*;
 use crate::util::*;
 
 
@@ -66,39 +66,26 @@ fn load_scene(config: &Yaml) -> Res<Scene> {
     let camera = load_camera(&config["camera"])
                      .with_msg("failed to parse camera config")?;
 
-    let structures = load_structures(&config["structures"])
-                         .with_msg("failed to parse structures config")?;
+    let shapes = load_shapes(&config["shapes"])
+                         .with_msg("failed to parse shapes config")?;
 
-    Ok(Scene::new(camera, structures))
+    Ok(Scene::new(camera, shapes))
 }
 
-fn load_structures(config: &Yaml) -> Res<Structure> {
-    let structures: Result<Vec<_>, _> =
-        config.as_vec().ok_or("missing list of structures")?
-                       .iter()
-                       .map(|c| load_structure(c))
-                       .collect();
-    let structures = structures.with_msg("failed to parse structures")?;
+fn load_shapes(config: &Yaml) -> Res<Mesh> {
+    let shapes = config.as_vec().ok_or("missing list of shapes")?
+                                .iter()
+                                .flat_map(|c| load_mesh(c))
+                                .flatten().collect::<Vec<_>>();
 
-    Ok(Structure::new(BVH::new(structures), T::I))
+    Ok(Mesh::new(shapes))
 }
 
-fn load_structure(config: &Yaml) -> Res<Structure> {
+fn load_mesh(config: &Yaml) -> Res<Vec<Triangle>> {
     let to_world = load_transforms(&config["transforms"])?;
 
-    let s = match config["type"].as_str().ok_or("missing structure type")? {
-        "mesh" => {
-            let filename = config["obj"].as_str().ok_or("malformed filename")?;
-            StructureType::from(obj::load_from_file(filename)?)
-        },
-        "sphere" => {
-            let r = config["radius"].as_f64().ok_or("missing radius")? as F;
-            StructureType::from(Sphere::new(r))
-        },
-        _ => return Err("unknown structure type".into()),
-    };
-
-    Ok(Structure::new(s, to_world))
+    let filename = config["obj"].as_str().ok_or("malformed filename")?;
+    obj::load_from_file(filename, to_world)
 }
 
 fn load_camera(config: &Yaml) -> Res<Camera> {

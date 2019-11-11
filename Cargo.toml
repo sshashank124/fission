@@ -13,4 +13,3 @@ yaml-rust = "*"
 
 [profile.release]
 lto = true
-# debug = true

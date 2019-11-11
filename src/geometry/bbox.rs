@@ -8,21 +8,6 @@ pub struct BBox(pub A3<B>);
 
 impl BBox {
     #[inline(always)]
-    pub fn cube(b: B) -> BBox {
-        BBox(rep(b))
-    }
-
-    #[inline(always)]
-    pub fn intersects(&self, ray: &R) -> bool {
-        let mut b = ray.tb & ((self[Axis::X] - ray.o.x()) * ray.d_inv.x());
-        if b.degen() { return false; }
-        b = b & ((self[Axis::Y] - ray.o.y()) * ray.d_inv.y());
-        if b.degen() { return false; }
-        b = b & ((self[Axis::Z] - ray.o.z()) * ray.d_inv.z());
-        !b.degen()
-    }
-    
-    #[inline(always)]
     pub fn center(&self) -> P {
         P(self.0.map(B::center))
     }
@@ -92,4 +77,22 @@ impl Index<Axis> for BBox {
     fn index(&self, axis: Axis) -> &B {
         &self.0[axis]
     }
+}
+
+impl Intersectable for BBox {
+    #[inline(always)]
+    fn bbox(&self, _t: T) -> BBox { *self }
+
+    #[inline(always)]
+    fn intersects(&self, ray: R) -> bool {
+        let mut b = ray.tb & ((self[Axis::X] - ray.o.x()) * ray.d_inv.x());
+        if b.degen() { return false; }
+        b = b & ((self[Axis::Y] - ray.o.y()) * ray.d_inv.y());
+        if b.degen() { return false; }
+        b = b & ((self[Axis::Z] - ray.o.z()) * ray.d_inv.z());
+        !b.degen()
+    }
+
+    #[inline(always)]
+    fn intersect(&self, _ray: R) -> Option<Its> { None }
 }

@@ -228,9 +228,9 @@ impl<S> Intersectable for BVH<S> where S: Intersectable {
     #[inline(always)]
     fn intersects(&self, ray: R) -> bool {
         self.fold(ray.d.0.map(|i| i > 0.), false,
-                  |_, node| node.bbox.intersects(&ray),
-                  |_, structure| {
-                      if structure.intersects(ray) { Either::B(true) }
+                  |_, node| node.bbox.intersects(ray),
+                  |_, isectable| {
+                      if isectable.intersects(ray) { Either::B(true) }
                       else { Either::A(false) }
                   })
     }
@@ -238,9 +238,9 @@ impl<S> Intersectable for BVH<S> where S: Intersectable {
     #[inline(always)]
     fn intersect(&self, ray: R) -> Option<Its> {
         self.fold(ray.d.0.map(|i| i > 0.), (ray, None),
-                  |(ray, _), node| node.bbox.intersects(ray),
-                  |(ray, its), structure| {
-                      let it = structure.intersect(*ray);
+                  |(ray, _), node| node.bbox.intersects(*ray),
+                  |(ray, its), isectable| {
+                      let it = isectable.intersect(*ray);
                       let ray = ray.clip_from_its(&it);
                       Either::A((ray, it.or(*its)))
                   }).1

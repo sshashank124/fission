@@ -4,8 +4,6 @@ use std::sync::Arc;
 use super::*;
 
 
-pub type Mesh = BVH<Triangle>;
-
 #[derive(Debug)]
 pub struct Triangle {
     pub f: Face,

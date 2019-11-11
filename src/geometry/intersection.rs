@@ -3,6 +3,12 @@ use std::ops::{Mul, Div};
 use super::*;
 
 
+pub trait Intersectable {
+    fn bbox(&self, t: T) -> BBox;
+    fn intersects(&self, ray: R) -> bool;
+    fn intersect(&self, ray: R) -> Option<Its>;
+}
+
 #[derive(Clone, Copy)]
 pub struct Its {
     pub p:  P,
