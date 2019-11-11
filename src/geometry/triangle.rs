@@ -43,24 +43,22 @@ impl MeshData {
 }
 
 impl Triangle {
-    #[inline(always)]
-    fn a(&self) -> P {
-        self.mesh_data.p[self.f.a as usize]
-    }
+    #[inline(always)] fn a(&self) -> P { self.mesh_data.p[self.f.a as usize] }
+    #[inline(always)] fn b(&self) -> P { self.mesh_data.p[self.f.b as usize] }
+    #[inline(always)] fn c(&self) -> P { self.mesh_data.p[self.f.c as usize] }
 
-    #[inline(always)]
-    fn b(&self) -> P {
-        self.mesh_data.p[self.f.b as usize]
-    }
-
-    #[inline(always)]
-    fn c(&self) -> P {
-        self.mesh_data.p[self.f.c as usize]
-    }
+    #[inline(always)] fn an(&self) -> N { self.mesh_data.n[self.f.a as usize] }
+    #[inline(always)] fn bn(&self) -> N { self.mesh_data.n[self.f.b as usize] }
+    #[inline(always)] fn cn(&self) -> N { self.mesh_data.n[self.f.c as usize] }
 
     #[inline(always)]
     fn abc(&self) -> A3<P> {
         A3(self.a(), self.b(), self.c())
+    }
+
+    #[inline(always)]
+    fn abcn(&self) -> A3<N> {
+        A3(self.an(), self.bn(), self.cn())
     }
 
     #[inline(always)]
@@ -79,7 +77,7 @@ impl Triangle {
     }
 
     #[inline(always)]
-    fn intersection_point(&self, ray: R) -> Option<F> {
+    fn intersection_point(&self, ray: R) -> Option<(F, F2)> {
         let pv = ray.d * self.ac();
         let det = self.ab().dot(pv);
         if det.abs() < F::EPSILON { return None; }
@@ -95,7 +93,7 @@ impl Triangle {
 
         let t = self.ac().dot(q) * dinv;
         if ray.tb.bounds(t) {
-            Some(t)
+            Some((t, P2(u, v)))
         } else {
             None
         }
@@ -115,8 +113,14 @@ impl Intersectable for Triangle {
 
     #[inline(always)]
     fn intersect(&self, ray: R) -> Option<Its> {
-        self.intersection_point(ray).map(|t| {
-            Its::ideal(ray.at(t), t, self.n())
+        self.intersection_point(ray).map(|(t, P2(u, v))| {
+            let bary = A3(1. - u - v, u, v);
+            let p = dot(bary, self.abc());
+            // TODO uv coordinates
+            let ng = self.n();
+            let n = if self.mesh_data.n.is_empty() { ng }
+                    else { dot(bary, self.abcn()).unit() };
+            Its::new(p, t, n, ng)
         })
     }
 }

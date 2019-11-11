@@ -22,11 +22,6 @@ impl Its {
     pub fn new(p: P, t: F, n: N, ng: N) -> Its {
         Its { p, t, n, ng }
     }
-
-    #[inline(always)]
-    pub fn ideal(p: P, t: F, n: N) -> Its {
-        Its::new(p, t, n, n)
-    }
 }
 
 impl Mul<Its> for T {

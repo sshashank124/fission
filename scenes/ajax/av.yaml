@@ -1,5 +1,5 @@
 renderer:
-  samples_per_pixel: 64
+  samples_per_pixel: 1024
 
   integrator:
     type: av
@@ -20,7 +20,7 @@ scene:
           target: [-64.8161, 47.2211, 23.8576]
           up: [0.299858, 0.934836, -0.190177]
 
-  structures:
+  shapes:
     - type: mesh
       obj: obj/ajax.obj
 

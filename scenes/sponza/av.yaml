@@ -20,6 +20,6 @@ scene:
           target: [-11., 5., 0.]
           up: [0., 1., 0.]
 
-  structures:
+  shapes:
     - type: mesh
       obj: obj/sponza.obj

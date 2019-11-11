@@ -6,7 +6,9 @@ pub enum Either<A, B> {
     B(B),
 }
 
+
 pub type Res<T> = Result<T, String>;
+
 
 pub trait ErrorContext<C> {
     fn with_msg(self, msg: &str) -> C;

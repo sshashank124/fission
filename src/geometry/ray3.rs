@@ -39,11 +39,6 @@ impl R {
             Some(its) => self.clip_max(its.t),
         }
     }
-
-    #[inline(always)]
-    pub fn at(self, t: F) -> P {
-        self.o + t * self.d
-    }
 }
 
 impl Mul<R> for T {

@@ -1,0 +1,26 @@
+renderer:
+  samples_per_pixel: 64
+
+  integrator:
+    type: normals
+
+  sampler:
+    type: uniform
+
+scene:
+  camera:
+    type: perspective
+    fov: 40.
+    resolution: [1280, 720]
+
+    transforms:
+      - look_at:
+          origin: [0., 0., 0.]
+          target: [0., 0., 1.]
+          up:     [0., 1., 0.]
+
+  shapes:
+    - type: mesh
+      obj: obj/teapot.obj
+      transforms:
+        - translate: [0., -1.6, 8.]

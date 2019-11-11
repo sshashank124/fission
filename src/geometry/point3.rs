@@ -62,6 +62,14 @@ impl Sub for P {
     }
 }
 
+impl Mul<P> for F {
+    type Output = P;
+    #[inline(always)]
+    fn mul(self, P(p): P) -> P {
+        P(self * p)
+    }
+}
+
 impl Mul<P> for T {
     type Output = P;
     #[inline(always)]

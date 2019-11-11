@@ -1,8 +1,4 @@
-Lerp (in mesh for example)
-
 more efficient BVH
-
-build all meshes into a single BVH
 
 transforms
 '-constructors: rotate_on_axis
@@ -14,3 +10,7 @@ DirectLighting
 MCIntegrators
 
 PhotonMapping
+
+BSSRDF
+
+uv-textures
