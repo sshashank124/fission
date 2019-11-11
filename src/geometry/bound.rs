@@ -6,6 +6,10 @@ use super::*;
 #[derive(Clone, Copy, Debug)]
 pub struct B(pub F, pub F);
 
+impl Zero for B {
+    const ZERO: Self = B(F::POS_INF, F::NEG_INF);
+}
+
 impl B {
     #[inline(always)]
     pub fn point(f: F) -> B {
@@ -52,7 +56,6 @@ impl B {
         self.1 - self.0
     }
 
-    pub const EMPTY:    B = B(F::POS_INF, F::NEG_INF);
     pub const INF:      B = B(F::NEG_INF, F::POS_INF);
     pub const POSITIVE: B = B(F::EPSILON, F::POS_INF);
 }

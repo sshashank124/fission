@@ -1,4 +1,4 @@
-use std::ops::BitOr;
+use std::ops::{BitOr, Deref};
 use std::sync::Arc;
 
 use super::*;
@@ -43,13 +43,13 @@ impl MeshData {
 }
 
 impl Triangle {
-    #[inline(always)] fn a(&self) -> P { self.mesh_data.p[self.f.a as usize] }
-    #[inline(always)] fn b(&self) -> P { self.mesh_data.p[self.f.b as usize] }
-    #[inline(always)] fn c(&self) -> P { self.mesh_data.p[self.f.c as usize] }
+    #[inline(always)] fn a(&self) -> P { self.p[self.f.a as usize] }
+    #[inline(always)] fn b(&self) -> P { self.p[self.f.b as usize] }
+    #[inline(always)] fn c(&self) -> P { self.p[self.f.c as usize] }
 
-    #[inline(always)] fn an(&self) -> N { self.mesh_data.n[self.f.a as usize] }
-    #[inline(always)] fn bn(&self) -> N { self.mesh_data.n[self.f.b as usize] }
-    #[inline(always)] fn cn(&self) -> N { self.mesh_data.n[self.f.c as usize] }
+    #[inline(always)] fn an(&self) -> N { self.n[self.f.a as usize] }
+    #[inline(always)] fn bn(&self) -> N { self.n[self.f.b as usize] }
+    #[inline(always)] fn cn(&self) -> N { self.n[self.f.c as usize] }
 
     #[inline(always)]
     fn abc(&self) -> A3<P> {
@@ -73,12 +73,12 @@ impl Triangle {
 
     #[inline(always)]
     fn n(&self) -> N {
-        N(self.ab() * self.ac())
+        N(self.ab().cross(self.ac()))
     }
 
     #[inline(always)]
     fn intersection_point(&self, ray: R) -> Option<(F, F2)> {
-        let pv = ray.d * self.ac();
+        let pv = ray.d.cross(self.ac());
         let det = self.ab().dot(pv);
         if det.abs() < F::EPSILON { return None; }
 
@@ -87,7 +87,7 @@ impl Triangle {
         let u = tv.dot(pv) * dinv;
         if u < 0. || u > 1. { return None; }
 
-        let q = tv * self.ab();
+        let q = tv.cross(self.ab());
         let v = ray.d.dot(q) * dinv;
         if v < 0. || u + v > 1. { return None; }
 
@@ -103,7 +103,7 @@ impl Triangle {
 impl Intersectable for Triangle {
     #[inline(always)]
     fn bbox(&self, t: T) -> BBox {
-        self.abc().map(|vert| t * vert).fold(BBox::EMPTY, BitOr::bitor)
+        self.abc().map(|vert| t * vert).fold(BBox::ZERO, BitOr::bitor)
     }
 
     #[inline(always)]
@@ -115,12 +115,17 @@ impl Intersectable for Triangle {
     fn intersect(&self, ray: R) -> Option<Its> {
         self.intersection_point(ray).map(|(t, P2(u, v))| {
             let bary = A3(1. - u - v, u, v);
-            let p = dot(bary, self.abc());
+            let p = dot(self.abc(), bary);
             // TODO uv coordinates
             let ng = self.n();
-            let n = if self.mesh_data.n.is_empty() { ng }
-                    else { dot(bary, self.abcn()).unit() };
+            let n = if self.n.is_empty() { ng }
+                    else { dot(self.abcn(), bary) };
             Its::new(p, t, n, ng)
         })
     }
+}
+
+impl Deref for Triangle {
+    type Target = Arc<MeshData>;
+    #[inline(always)] fn deref(&self) -> &Self::Target { &self.mesh_data }
 }

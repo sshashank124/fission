@@ -10,11 +10,13 @@ pub struct Affine3 {
     t: F3,
 }
 
+impl One for Affine3 {
+    const ONE: Affine3 = Affine3::new(RotScale3::ONE, F3::ZERO);
+}
+
 impl Affine3 {
     #[inline(always)]
-    pub const fn new(r: RotScale3, t: F3) -> Affine3 {
-        Affine3 { r, t }
-    }
+    pub const fn new(r: RotScale3, t: F3) -> Affine3 { Affine3 { r, t } }
 
     #[inline(always)]
     pub fn from_cols(c1: F3, c2: F3, c3: F3, c4: F3) -> Affine3 {
@@ -27,16 +29,10 @@ impl Affine3 {
     }
 
     #[inline(always)]
-    pub fn t(self) -> Affine3 {
-        Affine3::new(self.r.t(), F3::ZERO)
-    }
+    pub fn tr(self) -> Affine3 { Affine3::new(self.r.tr(), F3::ZERO) }
 
     #[inline(always)]
-    pub fn rot(self) -> Affine3 {
-        Affine3::new(self.r, F3::ZERO)
-    }
-
-    pub const I: Affine3 = Affine3::new(RotScale3::I, F3::ZERO);
+    pub fn rot(self) -> Affine3 { Affine3::new(self.r, F3::ZERO) }
 }
 
 impl Mul for Affine3 {
@@ -47,28 +43,22 @@ impl Mul for Affine3 {
     }
 }
 
-impl<B, Z> Mul<A3<B>> for Affine3 where B: Copy + Mul<F, Output=Z>,
-                                        Z: Add<Z, Output=Z>,
-                                        Z: Add<F, Output=Z> {
-    type Output = A3<Z>;
+impl<B, C> Mul<A3<B>> for Affine3 where B: Copy + Mul<F, Output=C>,
+                                        C: Add<C, Output=C>,
+                                        C: Add<F, Output=C> {
+    type Output = A3<C>;
     #[inline(always)]
-    fn mul(self, o: A3<B>) -> A3<Z> {
-        zip(self.r * o, self.t, Add::add)
-    }
+    fn mul(self, o: A3<B>) -> A3<C> { zip(self.r * o, self.t, Add::add) }
 }
 
 impl Add<F3> for Affine3 {
     type Output = Affine3;
     #[inline(always)]
-    fn add(self, v: F3) -> Affine3 {
-        Affine3::new(self.r, self.t + v)
-    }
+    fn add(self, v: F3) -> Affine3 { Affine3::new(self.r, self.t + v) }
 }
 
 impl Sub<F3> for Affine3 {
     type Output = Affine3;
     #[inline(always)]
-    fn sub(self, v: F3) -> Affine3 {
-        Affine3::new(self.r, self.t - v)
-    }
+    fn sub(self, v: F3) -> Affine3 { Affine3::new(self.r, self.t - v) }
 }

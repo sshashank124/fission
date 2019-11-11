@@ -1,5 +1,5 @@
 renderer:
-  samples_per_pixel: 1024
+  samples_per_pixel: 64
 
   integrator:
     type: av

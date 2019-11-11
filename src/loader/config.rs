@@ -112,11 +112,11 @@ fn load_perspective_camera(config: &Yaml) -> Res<Perspective> {
 
 fn load_transforms(config: &Yaml) -> Res<T> {
     match config.as_vec() {
-        None => Ok(T::I),
+        None => Ok(T::ONE),
         Some(transforms) =>
-            transforms.iter().try_fold(T::I, |acc, t| {
+            transforms.iter().try_fold(T::ONE, |acc, t| {
                 let t = match t.as_hash() {
-                    None => Ok(T::I),
+                    None => Ok(T::ONE),
                     Some(t) => t.iter().map(load_transform).next().unwrap(),
                 };
                 t.map(|t| t * acc)

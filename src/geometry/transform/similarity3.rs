@@ -10,73 +10,60 @@ pub struct Sim3 {
     i: Affine3,
 }
 
+impl One for Sim3 {
+    const ONE: Self = Sim3::new(Affine3::ONE, Affine3::ONE);
+}
+
 impl Sim3 {
     #[inline(always)]
-    pub const fn new(f: Affine3, i: Affine3) -> Sim3 {
-        Sim3 { f, i }
-    }
+    pub const fn new(f: Affine3, i: Affine3) -> Sim3 { Sim3 { f, i } }
 
     #[inline(always)]
     pub fn translate(v: F3) -> Sim3 {
-        Sim3::new(Affine3::I + v, Affine3::I - v)
+        Sim3::new(Affine3::ONE + v, Affine3::ONE - v)
     }
 
     #[inline(always)]
     pub fn scale(v: F3) -> Sim3 {
-        Sim3::new(Affine3::scale(v), Affine3::scale(v.cw_inv()))
+        Sim3::new(Affine3::scale(v), Affine3::scale(v.inv()))
     }
 
     #[inline(always)]
     pub fn look_at(pos: P, target: P, up: V) -> Sim3 {
         let dir = (target - pos).unit();
-        let right = (up.unit() * dir).unit();
-        let up = (dir * right).unit();
-        Sim3::new(Affine3::from_cols(right.0, up.0, dir.0, pos.0),
-                  Affine3::I)  // not needed
+        let right = (up.unit().cross(dir)).unit();
+        let up = (dir.cross(right)).unit();
+        Sim3::new(Affine3::from_cols(*right, *up, *dir, *pos),
+                  Affine3::ONE)  // should not need to be used
     }
+
+    #[inline(always)] pub fn inv(self) -> Sim3 { Sim3::new(self.i, self.f) }
 
     #[inline(always)]
-    pub fn inv(self) -> Sim3 {
-        Sim3::new(self.i, self.f)
-    }
+    pub fn tr(self) -> Sim3 { Sim3::new(self.f.tr(), self.i.tr()) }
 
     #[inline(always)]
-    pub fn t(self) -> Sim3 {
-        Sim3::new(self.f.t(), self.i.t())
-    }
-
-    #[inline(always)]
-    pub fn rot(self) -> Sim3 {
-        Sim3::new(self.f.rot(), self.i.rot())
-    }
-
-    pub const I: Sim3 = Sim3::new(Affine3::I, Affine3::I);
+    pub fn rot(self) -> Sim3 { Sim3::new(self.f.rot(), self.i.rot()) }
 }
 
 impl Mul for Sim3 {
     type Output = Sim3;
     #[inline(always)]
-    fn mul(self, s: Sim3) -> Sim3 {
-        Sim3::new(self.f * s.f, s.i * self.i)
-    }
+    fn mul(self, s: Sim3) -> Sim3 { Sim3::new(self.f * s.f, s.i * self.i) }
 }
 
-impl<B, Z> Mul<A3<B>> for Sim3 where B: Copy + Mul<F, Output=Z>,
-                                     Z: Add<Z, Output=Z>,
-                                     Z: Add<F, Output=Z> {
-    type Output = A3<Z>;
+impl<B, C> Mul<A3<B>> for Sim3 where B: Copy + Mul<F, Output=C>,
+                                     C: Add<C, Output=C>,
+                                     C: Add<F, Output=C> {
+    type Output = A3<C>;
     #[inline(always)]
-    fn mul(self, t: A3<B>) -> A3<Z> {
-        self.f * t
-    }
+    fn mul(self, t: A3<B>) -> A3<C> { self.f * t }
 }
 
-impl<B, Z> Div<A3<B>> for Sim3 where B: Copy + Mul<F, Output=Z>,
-                                     Z: Add<Z, Output=Z>,
-                                     Z: Add<F, Output=Z> {
-    type Output = A3<Z>;
+impl<B, C> Div<A3<B>> for Sim3 where B: Copy + Mul<F, Output=C>,
+                                     C: Add<C, Output=C>,
+                                     C: Add<F, Output=C> {
+    type Output = A3<C>;
     #[inline(always)]
-    fn div(self, v: A3<B>) -> A3<Z> {
-        self.i * v
-    }
+    fn div(self, v: A3<B>) -> A3<C> { self.i * v }
 }

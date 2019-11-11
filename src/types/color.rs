@@ -1,7 +1,8 @@
 use std::iter::Sum;
-use std::ops::{Add, AddAssign, Div, DivAssign};
+use std::ops::{Add, AddAssign, Div, DivAssign, Deref};
 
 use super::*;
+use crate::op;
 
 
 #[derive(Clone, Copy, Debug, PartialEq)]
@@ -13,17 +14,11 @@ impl Color {
         Color(A3(r, g, b))
     }
 
-    pub const BLACK: Color = Color::rgb(0., 0., 0.);
-    pub const WHITE: Color = Color::rgb(1., 1., 1.);
+    pub const BLACK: Color = Color(F3::ZERO);
+    pub const WHITE: Color = Color(F3::ONE);
 }
 
-impl Add for Color {
-    type Output = Color;
-    #[inline(always)]
-    fn add(self, color: Color) -> Color {
-        Color(self.0 + color.0)
-    }
-}
+op!(Add::add, *Color -> *Color -> Color);
 
 impl AddAssign for Color {
     #[inline(always)]
@@ -36,7 +31,7 @@ impl Div<F> for Color {
     type Output = Color;
     #[inline(always)]
     fn div(self, f: F) -> Color {
-        Color(self.0 / f as f32)
+        Color(*self / f as f32)
     }
 }
 
@@ -67,4 +62,9 @@ impl Sum<Color> for Color {
     fn sum<I: Iterator<Item=Color>>(iter: I) -> Color {
         iter.fold(Color::BLACK, Add::add)
     }
+}
+
+impl Deref for Color {
+    type Target = A3<f32>;
+    #[inline(always)] fn deref(&self) -> &A3<f32> { &self.0 }
 }

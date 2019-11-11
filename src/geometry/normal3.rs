@@ -1,61 +1,35 @@
-use std::ops::{Add, Mul, Div};
+use std::ops::{Add, Mul, Div, Deref};
 
 use super::*;
+use crate::op;
 
 
 #[derive(Clone, Copy, Debug)]
 pub struct N(pub V);
 
+impl Zero for N { const ZERO: Self = N(V::ZERO); }
+
 impl N {
     #[inline(always)]
-    pub fn unit(self) -> N {
-        N(self.0.unit())
-    }
-
-    #[inline(always)]
-    pub fn x(&self) -> F {
-        self.0.x()
-    }
-
-    #[inline(always)]
-    pub fn y(&self) -> F {
-        self.0.y()
-    }
-
-    #[inline(always)]
-    pub fn z(&self) -> F {
-        self.0.z()
+    pub fn unitn(self) -> N {
+        N(self.unit())
     }
 }
 
-impl Add for N {
-    type Output = N;
-    #[inline(always)]
-    fn add(self, N(v): N) -> N {
-        N(self.0 + v)
-    }
-}
-
-impl Mul<N> for F {
-    type Output = N;
-    #[inline(always)]
-    fn mul(self, N(v): N) -> N {
-        N(self * v)
-    }
-}
+op!(Add::add, *N -> *N -> N);
+op!(Mul::mul, *N ->  F -> N);
 
 impl Mul<N> for T {
     type Output = N;
-    #[inline(always)]
-    fn mul(self, N(v): N) -> N {
-        N(self.inv().t() * v)
-    }
+    #[inline(always)] fn mul(self, N(v): N) -> N { N(self.inv().tr() * v) }
 }
 
 impl Div<N> for T {
     type Output = N;
-    #[inline(always)]
-    fn div(self, N(v): N) -> N {
-        N(self.inv().t() / v)
-    }
+    #[inline(always)] fn div(self, N(v): N) -> N { N(self.inv().tr() / v) }
+}
+
+impl Deref for N {
+    type Target = V;
+    #[inline(always)] fn deref(&self) -> &Self::Target { &self.0 }
 }

@@ -1,7 +1,8 @@
 use std::mem;
 
+use either::Either;
+
 use super::*;
-use crate::util::*;
 
 
 #[derive(Debug)]
@@ -56,7 +57,7 @@ impl<S> BVH<S> where S: Intersectable {
     pub fn new(elements: Vec<S>) -> BVH<S> {
         assert!(!elements.is_empty());
         let mut build_infos = elements.iter().enumerate().map(|(idx, e)| {
-            let bbox = e.bbox(T::I);
+            let bbox = e.bbox(T::ONE);
             BuildInfo { bbox, center: bbox.center(), idx }
         }).collect::<Vec<_>>();
 
@@ -82,8 +83,8 @@ impl<S> BVH<S> where S: Intersectable {
                 match &node.node {
                     BVHNodeType::Leaf(i) => {
                         match f(&acc, &self.elements[*i]) {
-                            Either::A(a) => { acc = a; },
-                            Either::B(b) => { return b; },
+                            Either::Left(b) => { return b; },
+                            Either::Right(a) => { acc = a; },
                         }
                         idx = pop_break!(stack);
                     },
@@ -145,7 +146,7 @@ fn build(build_infos: &mut [BuildInfo]) -> BuildNode {
     }
 
     let (bbox, centers_bbox) =
-        build_infos.iter().fold((BBox::EMPTY, BBox::EMPTY), |(bb, bc), b| {
+        build_infos.iter().fold((BBox::ZERO, BBox::ZERO), |(bb, bc), b| {
             (bb | b.bbox, bc | b.center)
         });
 
@@ -154,7 +155,7 @@ fn build(build_infos: &mut [BuildInfo]) -> BuildNode {
     let pivot = if extent < F::EPSILON { n / 2 }
     else {
         let B(lb, _) = centers_bbox[axis];
-        let mut buckets = [Bucket { n: 0, bbox: BBox::EMPTY }; NUM_BUCKETS];
+        let mut buckets = [Bucket { n: 0, bbox: BBox::ZERO }; NUM_BUCKETS];
 
         let bucket_index = |build_info: &BuildInfo| {
             let idx = (NUM_BUCKETS as F *
@@ -169,11 +170,11 @@ fn build(build_infos: &mut [BuildInfo]) -> BuildNode {
         });
 
         let cost_of_split = |(a, b): (&[Bucket], &[Bucket])| {
-            let (n1, bbox1) = a.iter().fold((0, BBox::EMPTY),
+            let (n1, bbox1) = a.iter().fold((0, BBox::ZERO),
                                   |(c, bb), Bucket { n, bbox }|
                                       (c + n, bb | *bbox));
 
-            let (n2, bbox2) = b.iter().fold((0, BBox::EMPTY),
+            let (n2, bbox2) = b.iter().fold((0, BBox::ZERO),
                                   |(c, bb), Bucket { n, bbox }|
                                       (c + n, bb | *bbox));
 
@@ -230,8 +231,8 @@ impl<S> Intersectable for BVH<S> where S: Intersectable {
         self.fold(ray.d.0.map(|i| i > 0.), false,
                   |_, node| node.bbox.intersects(ray),
                   |_, isectable| {
-                      if isectable.intersects(ray) { Either::B(true) }
-                      else { Either::A(false) }
+                      if isectable.intersects(ray) { Either::Left(true) }
+                      else { Either::Right(false) }
                   })
     }
 
@@ -242,7 +243,7 @@ impl<S> Intersectable for BVH<S> where S: Intersectable {
                   |(ray, its), isectable| {
                       let it = isectable.intersect(*ray);
                       let ray = ray.clip_from_its(&it);
-                      Either::A((ray, it.or(*its)))
+                      Either::Right((ray, it.or(*its)))
                   }).1
     }
 }

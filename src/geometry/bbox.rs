@@ -1,32 +1,37 @@
-use std::ops::{BitOr, Index, Mul, Div};
+use std::ops::{BitOr, Mul, Div, Deref};
 
 use super::*;
+use crate::op;
 
 
 #[derive(Clone, Copy, Debug)]
 pub struct BBox(pub A3<B>);
 
+impl Zero for BBox {
+    const ZERO: Self = BBox(A3(B::ZERO, B::ZERO, B::ZERO));
+}
+
 impl BBox {
     #[inline(always)]
     pub fn center(&self) -> P {
-        P(self.0.map(B::center))
+        P(self.map(B::center))
     }
 
     #[inline(always)]
     pub fn extents(&self) -> F3 {
-        self.0.map(B::extent)
+        self.map(B::extent)
     }
 
     #[inline(always)]
     pub fn max_extent(&self) -> (Axis, F) {
         let A3(xe, ye, ze) = self.extents();
         if ye > xe {
-            if ze > ye { (Axis::Z, ze) }
-            else { (Axis::Y, ye) }
+            if ze > ye { (Z, ze) }
+            else { (Y, ye) }
         } else if ze > xe {
-            (Axis::Z, ze)
+            (Z, ze)
         } else {
-            (Axis::X, xe)
+            (X, xe)
         }
     }
 
@@ -34,48 +39,6 @@ impl BBox {
     pub fn surface_area(&self) -> F {
         let A3(xe, ye, ze) = self.extents();
         2. * xe * ye + 2. * xe * ze + 2. * ye * ze
-    }
-
-    pub const EMPTY: BBox = BBox(A3(B::EMPTY, B::EMPTY, B::EMPTY));
-}
-
-impl BitOr for BBox {
-    type Output = BBox;
-    #[inline(always)]
-    fn bitor(self, BBox(bbox): BBox) -> BBox {
-        BBox(zip(self.0, bbox, BitOr::bitor))
-    }
-}
-
-impl BitOr<P> for BBox {
-    type Output = BBox;
-    #[inline(always)]
-    fn bitor(self, P(p): P) -> BBox {
-        BBox(zip(self.0, p, BitOr::bitor))
-    }
-}
-
-impl Mul<BBox> for T {
-    type Output = BBox;
-    #[inline(always)]
-    fn mul(self, bbox: BBox) -> BBox {
-        BBox(self * bbox.0)
-    }
-}
-
-impl Div<BBox> for T {
-    type Output = BBox;
-    #[inline(always)]
-    fn div(self, bbox: BBox) -> BBox {
-        BBox(self / bbox.0)
-    }
-}
-
-impl Index<Axis> for BBox {
-    type Output = B;
-    #[inline(always)]
-    fn index(&self, axis: Axis) -> &B {
-        &self.0[axis]
     }
 }
 
@@ -85,14 +48,38 @@ impl Intersectable for BBox {
 
     #[inline(always)]
     fn intersects(&self, ray: R) -> bool {
-        let mut b = ray.tb & ((self[Axis::X] - ray.o.x()) * ray.d_inv.x());
+        let mut b = ray.tb & ((self[X] - ray.o[X]) * ray.d_inv[X]);
         if b.degen() { return false; }
-        b = b & ((self[Axis::Y] - ray.o.y()) * ray.d_inv.y());
+        b = b & ((self[Y] - ray.o[Y]) * ray.d_inv[Y]);
         if b.degen() { return false; }
-        b = b & ((self[Axis::Z] - ray.o.z()) * ray.d_inv.z());
+        b = b & ((self[Z] - ray.o[Z]) * ray.d_inv[Z]);
         !b.degen()
     }
 
     #[inline(always)]
     fn intersect(&self, _ray: R) -> Option<Its> { None }
+}
+
+impl BitOr for BBox {
+    type Output = BBox;
+    #[inline(always)]
+    fn bitor(self, bbox: BBox) -> BBox {
+        BBox(zip(*self, *bbox, BitOr::bitor))
+    }
+}
+
+impl BitOr<P> for BBox {
+    type Output = BBox;
+    #[inline(always)]
+    fn bitor(self, p: P) -> BBox {
+        BBox(zip(*self, *p, BitOr::bitor))
+    }
+}
+
+op!(Mul::mul, T -> *BBox -> BBox);
+op!(Div::div, T -> *BBox -> BBox);
+
+impl Deref for BBox {
+    type Target = A3<B>;
+    #[inline(always)] fn deref(&self) -> &Self::Target { &self.0 }
 }

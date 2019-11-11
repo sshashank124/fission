@@ -19,7 +19,7 @@ impl R {
 
     #[inline(always)]
     pub fn new(o: P, d: V, tb: B) -> R {
-        R::r(o, d, V(d.0.cw_inv()), tb)
+        R::r(o, d, V(d.inv()), tb)
     }
 
     #[inline(always)]

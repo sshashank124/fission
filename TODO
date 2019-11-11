@@ -1,16 +1,26 @@
-more efficient BVH
+reconstruction filter
+
+stratified/halton/sobel sampler
+
+DOF
 
 transforms
 '-constructors: rotate_on_axis
 
-lights
+BSSRDF
+
+point lights
 
 DirectLighting
+
+emissive surfaces
+
+area lights
 
 MCIntegrators
 
 PhotonMapping
 
-BSSRDF
-
 uv-textures
+
+packet-tracing BVH
