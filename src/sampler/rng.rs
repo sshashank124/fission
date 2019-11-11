@@ -1,3 +1,5 @@
+use std::ops::{Deref, DerefMut};
+
 use rand_core::{RngCore, SeedableRng};
 use rand_pcg::Pcg64;
 
@@ -31,7 +33,7 @@ union UF32 {
 impl RngFloat<f32> for Rng {
     #[inline(always)]
     fn gen(&mut self) -> f32 {
-        let n = UF32 { u: (self.0.next_u32() >> 9) | 0x3f80_0000 };
+        let n = UF32 { u: (self.next_u32() >> 9) | 0x3f80_0000 };
         unsafe { n.f - 1. }
     }
 }
@@ -45,7 +47,18 @@ union UF64 {
 impl RngFloat<f64> for Rng {
     #[inline(always)]
     fn gen(&mut self) -> f64 {
-        let n = UF64 { u: (self.0.next_u64() >> 12) | 0x3ff0_0000_0000_0000 };
+        let n = UF64 { u: (self.next_u64() >> 12) | 0x3ff0_0000_0000_0000 };
         unsafe { n.f - 1. }
     }
+}
+
+impl Deref for Rng {
+    type Target = Pcg64;
+    #[inline(always)]
+    fn deref(&self) -> &Pcg64 { &self.0 }
+}
+
+impl DerefMut for Rng {
+    #[inline(always)]
+    fn deref_mut(&mut self) -> &mut Pcg64 { &mut self.0 }
 }

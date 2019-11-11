@@ -17,7 +17,7 @@ pub struct Image {
 impl Image {
     pub fn new(dims: I2) -> Self {
         Self {
-            data: vec![Color::BLACK; (dims.0 * dims.1) as usize],
+            data: vec![Color::BLACK; (dims[X] * dims[Y]) as usize],
             dims,
         }
     }
@@ -33,7 +33,7 @@ impl Image {
     pub fn save_exr(&self, filename: &str) -> Result<(), String> {
         let mut f = File::create(filename).map_err(|e| e.to_string())?;
         let mut of = self.prepare_file_for_writing(&mut f)?;
-        let mut fb = FrameBuffer::new(self.dims.0, self.dims.1);
+        let mut fb = FrameBuffer::new(self.dims[X], self.dims[Y]);
 
         fb.insert_channels(&["R", "G", "B"], &self.data);
         of.write_pixels(&fb).map_err(|e| e.to_string())
@@ -41,8 +41,8 @@ impl Image {
 
     fn prepare_file_for_writing<'b>(&self, f: &'b mut File)
             -> Result<ScanlineOutputFile<'b>, String> {
-        ScanlineOutputFile::new(f, Header::new().set_resolution(self.dims.0,
-                                                                self.dims.1)
+        ScanlineOutputFile::new(f, Header::new().set_resolution(self.dims[X],
+                                                                self.dims[Y])
                                                 .add_channel("R", FLOAT)
                                                 .add_channel("G", FLOAT)
                                                 .add_channel("B", FLOAT))
@@ -79,7 +79,7 @@ impl Block {
 
     #[inline(always)]
     pub fn flat_pos(&self) -> I {
-        self.pos.1 * unsafe {&*self.img}.dims.0 + self.pos.0
+        self.pos[Y] * unsafe {&*self.img}.dims[X] + self.pos[X]
     }
 }
 
@@ -94,17 +94,17 @@ impl<'a> Iterator for BlockIter<'a> {
     type Item = Block;
     #[inline(always)]
     fn next(&mut self) -> Option<Block> {
-        let a = if self.pos.0 < self.grid.0 {
-            let a = self.pos.0;
-            self.pos.0 += 1;
+        let a = if self.pos[X] < self.grid[X] {
+            let a = self.pos[X];
+            self.pos[X] += 1;
             a
         } else {
-            self.pos.0 = 1;
-            self.pos.1 += 1;
+            self.pos[X] = 1;
+            self.pos[Y] += 1;
             0
         };
-        if self.pos.1 < self.grid.1 {
-            let pos = P2(a, self.pos.1) * self.dims;
+        if self.pos[Y] < self.grid[Y] {
+            let pos = P2(a, self.pos[Y]) * self.dims;
             Some(Block {
                 img: self.block.img as *mut Image,
                 pos: self.block.pos + pos,
@@ -117,8 +117,8 @@ impl<'a> Iterator for BlockIter<'a> {
 
     #[inline(always)]
     fn size_hint(&self) -> (usize, Option<usize>) {
-        let size = (self.grid.1 - self.pos.1 - 1) * self.grid.0
-                 + (self.grid.0 - self.pos.0);
+        let size = (self.grid[Y] - self.pos[Y] - 1) * self.grid[X]
+                 + (self.grid[X] - self.pos[X]);
         (size as usize, Some(size as usize))
     }
 }
@@ -134,7 +134,7 @@ pub struct Pixel {
 impl Pixel {
     #[inline(always)]
     pub fn flat_pos(&self) -> I {
-        self.pos.1 * unsafe {&*self.img}.dims.0 + self.pos.0
+        self.pos[Y] * unsafe {&*self.img}.dims[X] + self.pos[X]
     }
 }
 
@@ -163,17 +163,17 @@ impl<'a> Iterator for PixelIter<'a> {
     type Item = Pixel;
     #[inline(always)]
     fn next(&mut self) -> Option<Pixel> {
-        let a = if self.pos.0 < self.block.dims.0 {
-            let a = self.pos.0;
-            self.pos.0 += 1;
+        let a = if self.pos[X] < self.block.dims[X] {
+            let a = self.pos[X];
+            self.pos[X] += 1;
             a
         } else {
-            self.pos.0 = 1;
-            self.pos.1 += 1;
+            self.pos[X] = 1;
+            self.pos[Y] += 1;
             0
         };
-        if self.pos.1 < self.block.dims.1 {
-            let pos = P2(a, self.pos.1);
+        if self.pos[Y] < self.block.dims[Y] {
+            let pos = P2(a, self.pos[Y]);
             Some(Pixel {
                 img: self.block.img,
                 pos: self.block.pos + pos,
@@ -185,8 +185,8 @@ impl<'a> Iterator for PixelIter<'a> {
 
     #[inline(always)]
     fn size_hint(&self) -> (usize, Option<usize>) {
-        let size = (self.block.dims.1 - self.pos.1 - 1) * self.block.dims.0
-                 + (self.block.dims.0 - self.pos.0);
+        let size = (self.block.dims[Y] - self.pos[Y] - 1) * self.block.dims[X]
+                 + (self.block.dims[X] - self.pos[X]);
         (size as usize, Some(size as usize))
     }
 }

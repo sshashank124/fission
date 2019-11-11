@@ -2,8 +2,6 @@ reconstruction filter
 
 stratified/halton/sobel sampler
 
-DOF
-
 transforms
 '-constructors: rotate_on_axis
 

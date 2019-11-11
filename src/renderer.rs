@@ -3,6 +3,7 @@ use std::time::Instant;
 
 use rayon::iter::{ParallelBridge, ParallelIterator};
 
+use crate::camera::*;
 use crate::image::{Block, Image, Pixel};
 use crate::integrator::*;
 use crate::sampler::*;
@@ -28,7 +29,7 @@ impl Renderer {
     pub fn render(&self) -> Image {
         let camera = &self.scene.camera;
 
-        let mut img = Image::new(camera.resolution());
+        let mut img = Image::new(camera.resolution);
 
         let render_view = |i| {
             print!("\rRENDERING ... [{:4}/{:4}]", i + 1, self.spp);
@@ -39,10 +40,10 @@ impl Renderer {
 
                 let render_pixel = |mut pixel: Pixel| {
                     let sample_point = pixel.pos + sampler.gen_2d();
-                    let color = self.integrator
-                                    .sample(&self.scene,
-                                            &mut sampler,
-                                            camera.ray_at(sample_point));
+                    let ray = camera.ray_at(sample_point, &mut sampler);
+                    let color = self.integrator.sample(&self.scene,
+                                                       &mut sampler,
+                                                       ray);
                     *pixel += color;
                 };
 

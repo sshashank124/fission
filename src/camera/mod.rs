@@ -1,6 +1,7 @@
 mod perspective;
 
 use crate::geometry::*;
+use crate::sampler::*;
 pub use perspective::Perspective;
 
 
@@ -8,12 +9,12 @@ pub enum CameraType {
     Perspective(Perspective),
 }
 
-trait CameraModel {
-    fn ray_at(&self, point: F2) -> R;
+pub trait CameraModel {
+    fn ray_at(&self, point: F2, sampler: &mut Sampler) -> R;
 }
 
 pub struct Camera {
-    resolution: I2,
+    pub resolution: I2,
     model: CameraType,
     to_world: T,
     from_pixel: T2,
@@ -24,30 +25,28 @@ impl Camera {
     pub fn new<C>(model: C, resolution: I2, to_world: T) -> Camera
             where C: Into<CameraType> {
         Camera {
-            from_pixel: T2::scale(P2(2., -2.) / resolution.1 as F) *
+            from_pixel: T2::scale(P2(2., -2.) / resolution[Y] as F) *
                         T2::translate(resolution / -2.),
             model: model.into(),
             resolution,
             to_world,
         }
     }
+}
 
+impl CameraModel for Camera {
     #[inline(always)]
-    pub fn ray_at(&self, point: F2) -> R {
-        self.to_world * self.model.ray_at(self.from_pixel * point)
-    }
-
-    #[inline(always)]
-    pub fn resolution(&self) -> I2 {
-        self.resolution
+    fn ray_at(&self, point: F2, sampler: &mut Sampler) -> R {
+        self.to_world * self.model.ray_at(self.from_pixel * point,
+                                          sampler)
     }
 }
 
 impl CameraModel for CameraType {
     #[inline(always)]
-    fn ray_at(&self, point: F2) -> R {
+    fn ray_at(&self, point: F2, sampler: &mut Sampler) -> R {
         match self {
-            CameraType::Perspective(model) => model.ray_at(point),
+            CameraType::Perspective(model) => model.ray_at(point, sampler),
         }
     }
 }

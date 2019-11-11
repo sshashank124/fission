@@ -23,18 +23,13 @@ impl RotScale3 {
 
     #[inline(always)]
     pub fn from_diag(d: F3) -> RotScale3 {
-        RotScale3(A3(F3::X * d.0, F3::Y * d.1, F3::Z * d.2))
+        RotScale3(zip(*Self::ONE, d, Mul::mul))
     }
 
     #[inline(always)]
-    pub fn scale(v: F3) -> RotScale3 {
-        RotScale3::from_diag(v)
-    }
+    pub fn scale(v: F3) -> RotScale3 { RotScale3::from_diag(v) }
 
-    #[inline(always)]
-    pub fn tr(self) -> RotScale3 {
-        RotScale3(self.t())
-    }
+    #[inline(always)] pub fn tr(self) -> RotScale3 { RotScale3(self.t()) }
 }
 
 impl Mul for RotScale3 {

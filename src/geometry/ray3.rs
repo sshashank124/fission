@@ -13,29 +13,26 @@ pub struct R {
 
 impl R {
     #[inline(always)]
-    pub fn r(o: P, d: V, d_inv: V, tb: B) -> R {
-        R { o, d, d_inv, tb }
-    }
+    pub fn r(o: P, d: V, d_inv: V, tb: B) -> R { R { o, d, d_inv, tb } }
 
     #[inline(always)]
-    pub fn new(o: P, d: V, tb: B) -> R {
-        R::r(o, d, V(d.inv()), tb)
-    }
+    pub fn new(o: P, d: V, tb: B) -> R { R::r(o, d, V(d.inv()), tb) }
 
     #[inline(always)]
-    pub fn unbounded(o: P, d: V) -> R {
-        R::new(o, d, B::POSITIVE)
-    }
+    pub fn unbounded(o: P, d: V) -> R { R::new(o, d, B::POSITIVE) }
 
     #[inline(always)]
-    pub fn clip_max(self, t: F) -> R {
+    pub fn at(&self, t: F) -> P { self.o + self.d * t }
+
+    #[inline(always)]
+    pub fn clip_max(&self, t: F) -> R {
         R::r(self.o, self.d, self.d_inv, self.tb.with_upper(t))
     }
 
     #[inline(always)]
-    pub fn clip_from_its(self, its: &Option<Its>) -> R {
+    pub fn clip_from_its(&self, its: &Option<Its>) -> R {
         match its {
-            None => self,
+            None => *self,
             Some(its) => self.clip_max(its.t),
         }
     }

@@ -6,7 +6,7 @@ renderer:
     ray_length: 5.
 
   sampler:
-    type: uniform
+    type: independent
 
 scene:
   camera:

@@ -228,7 +228,7 @@ impl<S> Intersectable for BVH<S> where S: Intersectable {
 
     #[inline(always)]
     fn intersects(&self, ray: R) -> bool {
-        self.fold(ray.d.0.map(|i| i > 0.), false,
+        self.fold(ray.d.map(|i| i > 0.), false,
                   |_, node| node.bbox.intersects(ray),
                   |_, isectable| {
                       if isectable.intersects(ray) { Either::Left(true) }
@@ -238,7 +238,7 @@ impl<S> Intersectable for BVH<S> where S: Intersectable {
 
     #[inline(always)]
     fn intersect(&self, ray: R) -> Option<Its> {
-        self.fold(ray.d.0.map(|i| i > 0.), (ray, None),
+        self.fold(ray.d.map(|i| i > 0.), (ray, None),
                   |(ray, _), node| node.bbox.intersects(*ray),
                   |(ray, its), isectable| {
                       let it = isectable.intersect(*ray);

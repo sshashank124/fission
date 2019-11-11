@@ -1,5 +1,5 @@
 use std::cmp::min;
-use std::ops::{Add, Sub, Mul, Div};
+use std::ops::{Add, Sub, Mul, Div, Index, IndexMut};
 
 use super::*;
 
@@ -12,7 +12,7 @@ impl I2 {
 
     #[inline(always)]
     pub fn cw_min(self, P2(x, y): I2) -> I2 {
-        P2(min(self.0, x), min(self.1, y))
+        P2(min(self[X], x), min(self[Y], y))
     }
 }
 
@@ -20,7 +20,7 @@ impl Add for I2 {
     type Output = I2;
     #[inline(always)]
     fn add(self, P2(x, y): I2) -> I2 {
-        P2(self.0 + x, self.1 + y)
+        P2(self[X] + x, self[Y] + y)
     }
 }
 
@@ -28,7 +28,7 @@ impl Add<F2> for I2 {
     type Output = F2;
     #[inline(always)]
     fn add(self, P2(x, y): F2) -> F2 {
-        P2(self.0 as F + x, self.1 as F + y)
+        P2(self[X] as F + x, self[Y] as F + y)
     }
 }
 
@@ -36,7 +36,7 @@ impl Sub for I2 {
     type Output = I2;
     #[inline(always)]
     fn sub(self, P2(x, y): I2) -> I2 {
-        P2(self.0 - x, self.1 - y)
+        P2(self[X] - x, self[Y] - y)
     }
 }
 
@@ -44,7 +44,7 @@ impl Sub<I> for I2 {
     type Output = I2;
     #[inline(always)]
     fn sub(self, i: I) -> I2 {
-        P2(self.0 - i, self.1 - i)
+        P2(self[X] - i, self[Y] - i)
     }
 }
 
@@ -52,7 +52,7 @@ impl Mul for I2 {
     type Output = I2;
     #[inline(always)]
     fn mul(self, P2(x, y): I2) -> I2 {
-        P2(self.0 * x, self.1 * y)
+        P2(self[X] * x, self[Y] * y)
     }
 }
 
@@ -84,7 +84,7 @@ impl Div for I2 {
     type Output = I2;
     #[inline(always)]
     fn div(self, P2(x, y): I2) -> I2 {
-        P2(self.0 / x, self.1 / y)
+        P2(self[X] / x, self[Y] / y)
     }
 }
 
@@ -109,5 +109,28 @@ impl Div<I> for F2 {
     #[inline(always)]
     fn div(self, i: I) -> F2 {
         self / i as F
+    }
+}
+
+impl<S> Index<Axis> for P2<S> {
+    type Output = S;
+    #[inline(always)]
+    fn index(&self, axis: Axis) -> &S {
+        match axis {
+            X => &self.0,
+            Y => &self.1,
+            _ => unreachable!(),
+        }
+    }
+}
+
+impl<S> IndexMut<Axis> for P2<S> {
+    #[inline(always)]
+    fn index_mut(&mut self, axis: Axis) -> &mut S {
+        match axis {
+            X => &mut self.0,
+            Y => &mut self.1,
+            _ => unreachable!(),
+        }
     }
 }

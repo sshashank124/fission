@@ -1,4 +1,4 @@
-use std::ops::Index;
+use std::ops::{Index, IndexMut};
 
 use super::*;
 
@@ -57,6 +57,17 @@ impl<A> Index<Axis> for A3<A> {
             X => &self.0,
             Y => &self.1,
             Z => &self.2,
+        }
+    }
+}
+
+impl<A> IndexMut<Axis> for A3<A> {
+    #[inline(always)]
+    fn index_mut(&mut self, axis: Axis) -> &mut A {
+        match axis {
+            X => &mut self.0,
+            Y => &mut self.1,
+            Z => &mut self.2,
         }
     }
 }

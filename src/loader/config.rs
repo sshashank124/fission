@@ -57,7 +57,7 @@ fn load_integrator(config: &Yaml) -> Res<Integrator> {
 
 fn load_sampler(config: &Yaml) -> Res<Sampler> {
     Ok(match config["type"].as_str().ok_or("missing sampler type")? {
-        "uniform" => Uniform::new().into(),
+        "independent" => Independent::new().into(),
         _ => return Err("unknown sampler type".into()),
     })
 }
@@ -107,7 +107,9 @@ fn load_camera(config: &Yaml) -> Res<Camera> {
 
 fn load_perspective_camera(config: &Yaml) -> Res<Perspective> {
     let fov = config["fov"].as_f64().ok_or("missing fov")? as F;
-    Ok(Perspective::new(fov))
+    let lens_radius = config["lens_radius"].as_f64().map(|f| f as F);
+    let focal_distance = config["focal_distance"].as_f64().map(|f| f as F);
+    Ok(Perspective::new(fov, lens_radius, focal_distance))
 }
 
 fn load_transforms(config: &Yaml) -> Res<T> {

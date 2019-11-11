@@ -78,9 +78,9 @@ macro_rules! cw_binary_assign_op {
         impl<N> $trait for A3<N> where N: Num {
             #[inline(always)]
             fn $op(&mut self, b: A3<N>) {
-                $trait::$op(&mut self.0, b.0);
-                $trait::$op(&mut self.1, b.1);
-                $trait::$op(&mut self.2, b.2);
+                $trait::$op(&mut self[X], b[X]);
+                $trait::$op(&mut self[Y], b[Y]);
+                $trait::$op(&mut self[Z], b[Z]);
             }
         }
     }

@@ -5,7 +5,7 @@ renderer:
     type: normals
 
   sampler:
-    type: uniform
+    type: independent
 
 scene:
   camera:
