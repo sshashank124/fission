@@ -119,5 +119,6 @@ pub fn ceil_pow2_u32(i: u32) -> u32 {
 
 #[inline(always)]
 pub fn log2_ceil_u32(i: u32) -> u32 {
-    32 - i.saturating_sub(1).leading_zeros()
+    // 32 - i.saturating_sub(1).leading_zeros()
+    31 - i.leading_zeros()
 }

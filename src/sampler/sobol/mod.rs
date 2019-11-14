@@ -9,44 +9,38 @@ use vdc_inv::*;
 
 
 pub struct Sobol {
-    idx: u64,
     dim: u32,
-    res: u32,
-    log_res: u32,
+    m: u32,
+    cache: SampleIndexMemo,
     block_pos: I2,
     pixel_pos: I2,
     rng: Independent,
 }
 
+struct SampleIndexMemo {
+    d: u64,
+    i: u64,
+    vdc_inv: &'static [u64],
+}
+
 impl Sobol {
     #[inline(always)] pub fn new() -> Self {
         Self {
-            idx: 0,
-            dim: 0,
-            res: 0,
-            log_res: 0,
-            block_pos: I2::ZERO,
-            pixel_pos: I2::ZERO,
+            dim: 0, m: 0, cache: SampleIndexMemo::default(),
+            block_pos: I2::ZERO, pixel_pos: I2::ZERO,
             rng: Independent::new(),
         }
     }
 
     #[inline(always)]
     fn sample_index(&self) -> u64 {
-        let m = self.log_res;
-        if m == 0 { return 0; }
-
-        let m2 = m << 1;
-        let mut f = self.idx;
-        let mut i = f << m2; let mut c = 0; let mut d = 0;
-        while f != 0 {
-            if (f & 1) == 1 { d ^= VDC_SOBOL_MATRIX[(m - 1) as usize][c]; }
-            f >>= 1; c += 1;
-        }
+        if self.m == 0 { return 0; }
         let P2(x, y) = self.pixel_pos - self.block_pos;
-        c = 0; d ^= (y as u64) | ((x as u64) << m);
+        let mut d = self.cache.d ^ (y as u64) | ((x as u64) << self.m);
+        let mut i = self.cache.i;
+        let mut c = 0;
         while d != 0 {
-            if (d & 1) == 1 { i ^= VDC_INV_SOBOL_MATRIX[(m - 1) as usize][c]; }
+            if (d & 1) == 1 { i ^= self.cache.vdc_inv[c]; }
             d >>= 1; c += 1;
         }
         i
@@ -58,14 +52,11 @@ impl Sample for Sobol {
     fn clone_for_block(&self, block_seed: BlockSeed) -> Self {
         let (i, Block { pos, dims, .. }) = block_seed;
         let res = ceil_pow2_u32(Num::max(dims[X], dims[Y]) as u32);
-        let log_res = log2_ceil_u32(res);
+        let m = log2_ceil_u32(res);
+        let cache = SampleIndexMemo::new(i as u64, m);
         Self {
-            idx: i as u64,
-            dim: 0,
-            res,
-            log_res,
-            block_pos: *pos,
-            pixel_pos: I2::ZERO,
+            dim: 0, m, cache,
+            block_pos: *pos, pixel_pos: I2::ZERO,
             rng: self.rng.clone_for_block(block_seed),
         }
     }
@@ -87,7 +78,7 @@ impl Sample for Sobol {
         let mut f = sample_float(self.sample_index(), self.dim);
 
         if self.dim < 2 {
-            f = (f * self.res as F) + self.block_pos[self.dim as I] as F;
+            f = (f * (1 << self.m) as F) + self.block_pos[self.dim as I] as F;
             f = Num::clamp_unit(f - self.pixel_pos[self.dim as I] as F);
         }
 
@@ -96,9 +87,7 @@ impl Sample for Sobol {
     }
 
     #[inline(always)]
-    fn next_2d(&mut self) -> F2 {
-        P2(self.next_1d(), self.next_1d())
-    }
+    fn next_2d(&mut self) -> F2 { P2(self.next_1d(), self.next_1d()) }
 
     #[inline(always)] fn rng(&mut self) -> F { self.rng.rng() }
 }
@@ -110,12 +99,32 @@ fn sample_float(idx: u64, dim: u32) -> F {
 
 #[inline(always)]
 fn sample_sobol(mut idx: u64, dim: u32) -> u32 {
-    let mut loc = dim * SOBOL_SIZE;
-    let mut res = 0;
+    let mut res = 0; let mut loc = dim * SOBOL_SIZE;
     while idx != 0 {
         if (idx & 1) == 1 { res ^= SOBOL_MATRIX[loc as usize]; }
-        idx >>= 1;
-        loc += 1;
+        idx >>= 1; loc += 1;
     }
     res
+}
+
+impl SampleIndexMemo {
+    #[inline(always)]
+    fn default() -> Self { Self { d: 0, i: 0, vdc_inv: &[] } }
+
+    #[inline(always)]
+    fn new(mut idx: u64, m: u32) -> Self {
+        let m2 = m << 1;
+        let mut cache = Self {
+            d: 0, i: idx << m2,
+            vdc_inv: VDC_INV_SOBOL_MATRIX[(m - 1) as usize],
+        };
+        let mut c = 0;
+        while idx != 0 {
+            if (idx & 1) == 1 {
+                cache.d ^= VDC_SOBOL_MATRIX[(m - 1) as usize][c];
+            }
+            idx >>= 1; c += 1;
+        }
+        cache
+    }
 }
