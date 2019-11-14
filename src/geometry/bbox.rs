@@ -4,7 +4,7 @@ use super::*;
 use crate::op;
 
 
-#[derive(Clone, Copy, Debug)]
+#[derive(Clone, Copy)]
 pub struct BBox(pub A3<B>);
 
 impl Zero for BBox {

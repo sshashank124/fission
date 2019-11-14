@@ -10,10 +10,9 @@ pub trait Intersectable {
     fn hit_info(&self, its: &mut Its);
 }
 
-#[derive(Clone, Copy)]
 pub struct Its {
-    pub p:  P,
-    pub n:  N,
+    pub p: P,
+    pub n: N,
     pub uv: F2,
 }
 

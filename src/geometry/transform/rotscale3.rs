@@ -3,7 +3,7 @@ use std::ops::{Add, Mul, Deref};
 use super::*;
 
 
-#[derive(Clone, Copy, Debug)]
+#[derive(Clone, Copy)]
 pub struct RotScale3(A3<F3>);
 
 impl One for RotScale3 {

@@ -3,7 +3,7 @@ use std::ops::{Add, BitAnd, BitOr, Sub, Mul, Div};
 use super::*;
 
 
-#[derive(Clone, Copy, Debug)]
+#[derive(Clone, Copy)]
 pub struct B(pub F, pub F);
 
 impl Zero for B {

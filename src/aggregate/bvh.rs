@@ -5,19 +5,16 @@ use either::Either;
 use super::*;
 
 
-#[derive(Debug)]
 pub struct BVH<S> {
     nodes: Vec<BVHNode>,
     elements: Vec<S>,
 }
 
-#[derive(Debug)]
 struct BVHNode {
     bbox: BBox,
     node: BVHNodeType,
 }
 
-#[derive(Debug)]
 enum BVHNodeType {
     Leaf(I),
     Tree(Axis, I),
@@ -79,7 +76,6 @@ impl<S> BVH<S> where S: Intersectable {
     }
 }
 
-#[derive(Debug)]
 struct BuildNode {
     bbox: BBox,
     node: BuildNodeType,
@@ -87,7 +83,6 @@ struct BuildNode {
     sizer: I,
 }
 
-#[derive(Debug)]
 enum BuildNodeType {
     Leaf(I),
     Tree(Axis, Box<BuildNode>, Box<BuildNode>),

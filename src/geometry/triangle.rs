@@ -4,20 +4,17 @@ use std::sync::Arc;
 use super::*;
 
 
-#[derive(Debug)]
 pub struct Triangle {
     pub f: Face,
     pub mesh_data: Arc<MeshData>,
 }
 
-#[derive(Debug)]
 pub struct Face {
     a: I,
     b: I,
     c: I,
 }
 
-#[derive(Debug)]
 pub struct MeshData {
     pub p:  Vec<P>,
     pub n:  Vec<N>,

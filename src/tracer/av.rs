@@ -21,11 +21,9 @@ impl Trace for AverageVisibility {
         match scene.intersect(&mut ray) {
             None => Color::WHITE,
             Some(its) => {
-                let ray =
-                    R::new(its.p,
-                           warp::sample_uniform_hemisphere(sampler,
-                                                           its.n.unitn()),
-                           B::with_ceil(self.ray_len));
+                let dir = T::from_dir(*its.n.unitn())
+                        * V(warp::uniform_hemisphere(sampler.next_2d()));
+                let ray = R::new(its.p, dir, B::with_ceil(self.ray_len));
                 if scene.intersects(&ray) { Color::BLACK }
                 else { Color::WHITE }
             }

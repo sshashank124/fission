@@ -3,7 +3,7 @@ use std::ops::Mul;
 use crate::types::*;
 
 
-#[derive(Clone, Copy, Debug)]
+#[derive(Clone, Copy)]
 pub struct Norm2 {
     _11: F, _13: F,
     _22: F, _23: F,

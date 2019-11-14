@@ -4,7 +4,7 @@ use super::*;
 use crate::op;
 
 
-#[derive(Clone, Copy, Debug)]
+#[derive(Clone, Copy)]
 pub struct V(pub F3);
 
 impl Zero for V { const ZERO: Self = V(F3::ZERO); }

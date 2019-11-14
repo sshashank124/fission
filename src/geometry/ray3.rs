@@ -3,10 +3,9 @@ use std::ops::{Mul, Div};
 use super::*;
 
 
-#[derive(Clone, Copy, Debug)]
 pub struct R {
-    pub o:  P,
-    pub d:  V,
+    pub o: P,
+    pub d: V,
     pub d_inv: V,
     pub tb: B,
 }
