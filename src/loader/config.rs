@@ -8,13 +8,13 @@ use crate::camera::*;
 use crate::geometry::*;
 use crate::integrator::*;
 use crate::loader::obj;
-use crate::renderer::*;
 use crate::sampler::*;
 use crate::scene::*;
+use crate::tracer::*;
 use crate::util::*;
 
 
-pub fn load_from_file(filename: &str) -> Res<Renderer> {
+pub fn load_from_file(filename: &str) -> Res<Integrator> {
     let mut f = File::open(filename).with_msg("Error opening config file")?;
     let mut config_str = String::new();
     f.read_to_string(&mut config_str).with_msg("Error reading config file")?;
@@ -24,26 +24,23 @@ pub fn load_from_file(filename: &str) -> Res<Renderer> {
     load_from_doc(doc)
 }
 
-fn load_from_doc(config: &Yaml) -> Res<Renderer> {
+fn load_from_doc(config: &Yaml) -> Res<Integrator> {
     let scene = load_scene(&config["scene"])
                     .with_msg("Failed to parse scene config")?;
 
-    let config = &config["renderer"];
+    let config = &config["integrator"];
 
-    let spp = config["samples_per_pixel"].as_i64()
-                  .ok_or("missing samples_per_pixel")? as I;
-
-    let integrator = load_integrator(&config["integrator"])
-                         .with_msg("failed to parse integrator config")?;
+    let tracer = load_tracer(&config["tracer"])
+                         .with_msg("failed to parse tracer config")?;
 
     let sampler = load_sampler(&config["sampler"])
                       .with_msg("failed to parse sampler config")?;
 
-    Ok(Renderer::new(integrator, sampler, scene, spp))
+    Ok(Integrator::new(tracer, sampler, scene))
 }
 
-fn load_integrator(config: &Yaml) -> Res<Integrator> {
-    Ok(match config["type"].as_str().ok_or("missing integrator type")? {
+fn load_tracer(config: &Yaml) -> Res<Tracer> {
+    Ok(match config["type"].as_str().ok_or("missing tracer type")? {
         "silhouette" => Silhouette::new().into(),
         "normals" => Normals::new().into(),
         "av" => {
@@ -51,15 +48,22 @@ fn load_integrator(config: &Yaml) -> Res<Integrator> {
                               .ok_or("missing ray_length")? as F;
             AverageVisibility::new(ray_len).into()
         },
-        _ => return Err("unknown integrator type".into()),
+        _ => return Err("unknown tracer type".into()),
     })
 }
 
 fn load_sampler(config: &Yaml) -> Res<Sampler> {
-    Ok(match config["type"].as_str().ok_or("missing sampler type")? {
-        "independent" => Independent::new().into(),
-        _ => return Err("unknown sampler type".into()),
-    })
+    let st: SamplerType =
+        match config["type"].as_str().ok_or("missing sampler type")? {
+            "independent" => Independent::new().into(),
+            "sobol" => Sobol::new().into(),
+            _ => return Err("unknown sampler type".into()),
+    };
+
+    let spp = config["samples_per_pixel"].as_i64()
+                  .ok_or("missing samples_per_pixel")? as I;
+
+    Ok(Sampler::new(st, spp))
 }
 
 fn load_scene(config: &Yaml) -> Res<Scene> {
@@ -97,9 +101,10 @@ fn load_camera(config: &Yaml) -> Res<Camera> {
 
     let to_world = load_transforms(&config["transforms"])?;
 
-    let model = match config["type"].as_str().ok_or("missing camera type")? {
-        "perspective" => CameraType::from(load_perspective_camera(config)?),
-        _ => return Err("unknown camera type".into()),
+    let model: CameraType =
+        match config["type"].as_str().ok_or("missing camera type")? {
+            "perspective" => load_perspective_camera(config)?.into(),
+            _ => return Err("unknown camera type".into()),
     };
 
     Ok(Camera::new(model, res, to_world))

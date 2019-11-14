@@ -5,9 +5,9 @@ use crate::sampler::*;
 #[inline(always)]
 pub fn sample_uniform_hemisphere(sampler: &mut Sampler, n: N) -> V {
     let v = loop {
-        let v = V::v(1. - 2. * sampler.gen_1d(),
-                     1. - 2. * sampler.gen_1d(),
-                     1. - 2. * sampler.gen_1d());
+        let v = V::v(1. - 2. * sampler.rng(),
+                     1. - 2. * sampler.rng(),
+                     1. - 2. * sampler.rng());
         if v.norm2() <= 1. { break v; }
     };
 

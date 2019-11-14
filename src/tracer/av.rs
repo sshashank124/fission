@@ -14,9 +14,9 @@ impl AverageVisibility {
     }
 }
 
-impl Integrate for AverageVisibility {
+impl Trace for AverageVisibility {
     #[inline(always)]
-    fn sample(&self, scene: &Scene, sampler: &mut Sampler, ray: R) -> Color {
+    fn trace(&self, scene: &Scene, sampler: &mut Sampler, ray: R) -> Color {
         match scene.intersect(ray) {
             None => Color::WHITE,
             Some(its) => {

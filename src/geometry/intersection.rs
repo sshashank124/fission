@@ -14,28 +14,27 @@ pub struct Its {
     pub p:  P,
     pub t:  F,
     pub n:  N,
-    pub ng: N,
 }
 
 impl Its {
     #[inline(always)]
-    pub fn new(p: P, t: F, n: N, ng: N) -> Its {
-        Its { p, t, n, ng }
+    pub fn new(p: P, t: F, n: N) -> Its {
+        Its { p, t, n }
     }
 }
 
 impl Mul<Its> for T {
     type Output = Its;
     #[inline(always)]
-    fn mul(self, Its{p, t, n, ng}: Its) -> Its {
-        Its::new(self * p, t, self * n, self * ng)
+    fn mul(self, Its{p, t, n}: Its) -> Its {
+        Its::new(self * p, t, self * n)
     }
 }
 
 impl Div<Its> for T {
     type Output = Its;
     #[inline(always)]
-    fn div(self, Its{p, t, n, ng}: Its) -> Its {
-        Its::new(self / p, t, self / n, self / ng)
+    fn div(self, Its{p, t, n}: Its) -> Its {
+        Its::new(self / p, t, self / n)
     }
 }

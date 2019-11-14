@@ -173,7 +173,7 @@ mod benches {
             #[bench]
             fn $name(b: &mut Bencher) {
                 b.iter(|| {
-                    load_from_file($file);
+                    load_from_file($file, T::ONE);
                 });
             }
         }

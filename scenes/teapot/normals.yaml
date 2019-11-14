@@ -1,11 +1,10 @@
-renderer:
-  samples_per_pixel: 64
-
-  integrator:
+integrator:
+  tracer:
     type: normals
 
   sampler:
-    type: independent
+    type: sobol
+    samples_per_pixel: 64
 
 scene:
   camera:

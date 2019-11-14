@@ -6,9 +6,9 @@ mod geometry;
 mod image;
 mod integrator;
 mod loader;
-mod renderer;
 mod sampler;
 mod scene;
+mod tracer;
 mod types;
 mod util;
 mod warp;
@@ -28,10 +28,10 @@ fn main() -> Res<()> {
     }
 
     let config_file = &args[1];
-    let renderer = config::load_from_file(config_file)
-                          .with_msg("Failed to load config")?;
+    let integrator = config::load_from_file(config_file)
+                            .with_msg("Failed to load config")?;
 
-    let image = renderer.render();
+    let image = integrator.render();
 
     print!("Saving rendered image ... ");
     let save_path = Path::new(config_file).with_extension("exr");

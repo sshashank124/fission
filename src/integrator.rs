@@ -4,26 +4,25 @@ use std::time::Instant;
 use rayon::iter::{ParallelBridge, ParallelIterator};
 
 use crate::camera::*;
-use crate::image::{Block, Image, Pixel};
-use crate::integrator::*;
+use crate::image::*;
 use crate::sampler::*;
-use crate::scene::Scene;
+use crate::scene::*;
+use crate::tracer::*;
 use crate::types::*;
 
 
-const BLOCK_SIZE: I2 = P2(32, 32);
+const BLOCK_SIZE: I2 = P2(16, 16);
 
-pub struct Renderer {
-    integrator: Integrator,
+pub struct Integrator {
+    tracer: Tracer,
     sampler: Sampler,
     scene: Scene,
-    spp: I,
 }
 
-impl Renderer {
-    pub fn new(integrator: Integrator, sampler: Sampler, scene: Scene, spp: I)
-            -> Renderer {
-        Renderer { integrator, sampler, scene, spp }
+impl Integrator {
+    pub fn new(tracer: Tracer, sampler: Sampler, scene: Scene)
+            -> Self {
+        Self { tracer, sampler, scene }
     }
 
     pub fn render(&self) -> Image {
@@ -32,18 +31,20 @@ impl Renderer {
         let mut img = Image::new(camera.resolution);
 
         let render_view = |i| {
-            print!("\rRENDERING ... [{:4}/{:4}]", i + 1, self.spp);
+            print!("\rRENDERING ... [{:4}/{:4}]", i + 1, self.sampler.spp);
             stdout().flush().unwrap();
+
             let render_block = |mut block: Block| {
-                let mut sampler = self.sampler.clone_seeded(block.flat_pos()
-                                                            + i);
+                let mut sampler = self.sampler.clone_seeded((i, &block));
 
                 let render_pixel = |mut pixel: Pixel| {
-                    let sample_point = pixel.pos + sampler.gen_2d();
+                    sampler.prepare_pixel(&pixel);
+
+                    let sample_point = pixel.pos + sampler.next_2d();
                     let ray = camera.ray_at(sample_point, &mut sampler);
-                    let color = self.integrator.sample(&self.scene,
-                                                       &mut sampler,
-                                                       ray);
+                    let color = self.tracer.trace(&self.scene,
+                                                  &mut sampler,
+                                                  ray);
                     *pixel += color;
                 };
 
@@ -56,8 +57,9 @@ impl Renderer {
         };
 
         let t = Instant::now();
-        (0..self.spp).for_each(render_view);
-        img.as_block().pixels().for_each(|mut pixel| *pixel /= self.spp);
+        (0..self.sampler.spp).into_iter().for_each(render_view);
+        img.as_block().pixels().for_each(|mut pixel|  // TODO refactor
+                                         *pixel /= self.sampler.spp);
         println!("\rRendering ... DONE ({:?})", t.elapsed());
 
         img

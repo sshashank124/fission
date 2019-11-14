@@ -1,64 +1,28 @@
-use std::ops::{Deref, DerefMut};
-
-use rand_core::{RngCore, SeedableRng};
+pub use rand_core::SeedableRng;
+use rand_core::RngCore;
 use rand_pcg::Pcg64;
 
-
-pub trait RngFloat<FT> {
-    fn gen(&mut self) -> FT;
-}
+use super::*;
 
 
-pub struct Rng(Pcg64);
+pub type Prng = Pcg64;
 
-impl Rng {
+impl RngFloat<f32> for Prng {
     #[inline(always)]
-    pub fn new() -> Rng {
-        Rng(Pcg64::new(0xcafe_f00d_d15e_a5e5,
-                       0xa02_bdbf_7bb3_c0a7_ac28_fa16_a64a_bf96))
-    }
+    fn next_ft(&mut self) -> f32 { u32_to_f32(self.next_u32()) }
+}
 
+impl RngFloat<f64> for Prng {
     #[inline(always)]
-    pub fn from_seed(seed: u64) -> Rng {
-        Rng(Pcg64::seed_from_u64(seed))
-    }
+    fn next_ft(&mut self) -> f64 { u64_to_f64(self.next_u64()) }
 }
 
-#[repr(C)]
-union UF32 {
-    u: u32,
-    f: f32,
+#[repr(C)] union UF32 { u: u32, f: f32 }
+pub fn u32_to_f32(i: u32) -> f32 {
+    let n = UF32 { u: (i >> 9) | 0x3f80_0000 }; unsafe { n.f - 1. }
 }
 
-impl RngFloat<f32> for Rng {
-    #[inline(always)]
-    fn gen(&mut self) -> f32 {
-        let n = UF32 { u: (self.next_u32() >> 9) | 0x3f80_0000 };
-        unsafe { n.f - 1. }
-    }
-}
-
-#[repr(C)]
-union UF64 {
-    u: u64,
-    f: f64,
-}
-
-impl RngFloat<f64> for Rng {
-    #[inline(always)]
-    fn gen(&mut self) -> f64 {
-        let n = UF64 { u: (self.next_u64() >> 12) | 0x3ff0_0000_0000_0000 };
-        unsafe { n.f - 1. }
-    }
-}
-
-impl Deref for Rng {
-    type Target = Pcg64;
-    #[inline(always)]
-    fn deref(&self) -> &Pcg64 { &self.0 }
-}
-
-impl DerefMut for Rng {
-    #[inline(always)]
-    fn deref_mut(&mut self) -> &mut Pcg64 { &mut self.0 }
+#[repr(C)] union UF64 { u: u64, f: f64 }
+pub fn u64_to_f64(i: u64) -> f64 {
+    let n = UF64 { u: (i >> 12) | 0x3ff0_0000_0000_0000 }; unsafe { n.f - 1. }
 }

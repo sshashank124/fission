@@ -10,9 +10,9 @@ impl Normals {
     }
 }
 
-impl Integrate for Normals {
+impl Trace for Normals {
     #[inline(always)]
-    fn sample(&self, scene: &Scene, _sampler: &mut Sampler, ray: R) -> Color {
+    fn trace(&self, scene: &Scene, _sampler: &mut Sampler, ray: R) -> Color {
         match scene.intersect(ray) {
             None => Color::BLACK,
             Some(its) => {

@@ -7,6 +7,10 @@ use super::*;
 #[derive(Clone, Copy, Debug)]
 pub struct P2<S>(pub S, pub S);
 
+impl<S> Zero for P2<S> where S: Zero {
+    const ZERO: Self = P2(S::ZERO, S::ZERO);
+}
+
 impl I2 {
     pub const ZERO: I2 = P2(0, 0);
 
@@ -119,6 +123,18 @@ impl<S> Index<Axis> for P2<S> {
         match axis {
             X => &self.0,
             Y => &self.1,
+            _ => unreachable!(),
+        }
+    }
+}
+
+impl<S> Index<I> for P2<S> {
+    type Output = S;
+    #[inline(always)]
+    fn index(&self, i: I) -> &S {
+        match i {
+            0 => &self.0,
+            1 => &self.1,
             _ => unreachable!(),
         }
     }

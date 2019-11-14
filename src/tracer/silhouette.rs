@@ -10,9 +10,9 @@ impl Silhouette {
     }
 }
 
-impl Integrate for Silhouette {
+impl Trace for Silhouette {
     #[inline(always)]
-    fn sample(&self, scene: &Scene, _sampler: &mut Sampler, ray: R) -> Color {
+    fn trace(&self, scene: &Scene, _sampler: &mut Sampler, ray: R) -> Color {
         if scene.intersects(ray) { Color::BLACK }
         else { Color::WHITE }
     }

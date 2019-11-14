@@ -1,5 +1,7 @@
-use std::ops::{Add, Sub, Mul, Div, Neg};
+use std::ops::{Add, Sub, Mul, Div};
 use std::ops::{AddAssign, SubAssign, MulAssign, DivAssign};
+
+use super::*;
 
 
 pub trait Zero { const ZERO: Self; }
@@ -7,17 +9,20 @@ pub trait One { const ONE: Self; }
 
 pub trait Num: Copy
              + Zero + One
-             + Neg<Output=Self>
+             + PartialOrd
              + Add<Self, Output=Self> + AddAssign<Self>
              + Sub<Self, Output=Self> + SubAssign<Self>
              + Mul<Self, Output=Self> + MulAssign<Self>
              + Div<Self, Output=Self> + DivAssign<Self>
 {
     fn abs(self) -> Self;
-    fn sq(self) -> Self;
+    fn sq(self) -> Self { self * self }
 
-    fn min(a: Self, b: Self) -> Self;
-    fn max(a: Self, b: Self) -> Self;
+    fn min(a: Self, b: Self) -> Self { if a < b { a } else { b } }
+    fn max(a: Self, b: Self) -> Self { if a > b { a } else { b } }
+
+    fn clamp(v: Self, a: Self, b: Self) -> Self { Num::min(Num::max(v, a), b) }
+    fn clamp_unit(v: Self) -> Self { Num::clamp(v, Self::ZERO, Self::ONE) }
 }
 
 pub trait Inv {
@@ -32,6 +37,8 @@ pub trait Float: Num + Inv {
 
     const PI: Self;
 
+    const FRAC_1_2POW32: Self;
+
     fn sqrt(self) -> Self;
 
     fn sin(self) -> Self;
@@ -45,12 +52,6 @@ impl One for f32 { const ONE: Self = 1.; }
 
 impl Num for f32 {
     #[inline(always)] fn abs(self) -> Self { self.abs() }
-    #[inline(always)] fn sq(self) -> Self { self * self }
-
-    #[inline(always)]
-    fn min(a: Self, b: Self) -> Self { if a < b { a } else { b } }
-    #[inline(always)]
-    fn max(a: Self, b: Self) -> Self { if a > b { a } else { b } }
 }
 
 impl Inv for f32 {
@@ -65,6 +66,8 @@ impl Float for f32 {
 
     const PI: Self = std::f32::consts::PI;
 
+    const FRAC_1_2POW32: Self = 2.3283064365386963e-10;
+
     #[inline(always)] fn sqrt(self) -> Self { self.sqrt() }
 
     #[inline(always)] fn sin(self) -> Self { self.sin() }
@@ -78,12 +81,6 @@ impl One for f64 { const ONE: Self = 1.; }
 
 impl Num for f64 {
     #[inline(always)] fn abs(self) -> Self { self.abs() }
-    #[inline(always)] fn sq(self) -> Self { self * self }
-
-    #[inline(always)]
-    fn min(a: Self, b: Self) -> Self { if a < b { a } else { b } }
-    #[inline(always)]
-    fn max(a: Self, b: Self) -> Self { if a > b { a } else { b } }
 }
 
 impl Inv for f64 {
@@ -98,9 +95,29 @@ impl Float for f64 {
 
     const PI: Self = std::f64::consts::PI;
 
+    const FRAC_1_2POW32: Self = 2.3283064365386963e-10;
+
     #[inline(always)] fn sqrt(self) -> Self { self.sqrt() }
 
     #[inline(always)] fn sin(self) -> Self { self.sin() }
     #[inline(always)] fn cos(self) -> Self { self.cos() }
     #[inline(always)] fn tand(self) -> Self { self.to_radians().tan() }
+}
+
+
+impl Zero for I { const ZERO: Self = 0; }
+impl One for I { const ONE: Self = 1; }
+
+impl Num for I {
+    #[inline(always)] fn abs(self) -> Self { self }
+}
+
+#[inline(always)]
+pub fn ceil_pow2_u32(i: u32) -> u32 {
+    1 << (32 - i.saturating_sub(1).leading_zeros())
+}
+
+#[inline(always)]
+pub fn log2_ceil_u32(i: u32) -> u32 {
+    32 - i.saturating_sub(1).leading_zeros()
 }

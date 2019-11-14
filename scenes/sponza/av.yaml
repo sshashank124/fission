@@ -1,12 +1,11 @@
-renderer:
-  samples_per_pixel: 64
-
-  integrator:
+integrator:
+  tracer:
     type: av
     ray_length: 5.
 
   sampler:
     type: independent
+    samples_per_pixel: 64
 
 scene:
   camera:

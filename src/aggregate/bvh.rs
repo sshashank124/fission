@@ -7,8 +7,8 @@ use super::*;
 
 #[derive(Debug)]
 pub struct BVH<S> {
-    elements: Vec<S>,
     nodes: Vec<BVHNode>,
+    elements: Vec<S>,
 }
 
 #[derive(Debug)]
@@ -19,51 +19,22 @@ struct BVHNode {
 
 #[derive(Debug)]
 enum BVHNodeType {
-    Leaf(usize),
-    Tree(Axis, usize),
-}
-use BVHNodeType::*;
-
-#[derive(Debug)]
-struct BuildNode {
-    bbox: BBox,
-    node: BuildNodeType,
-    sizel: usize,
-    sizer: usize,
-}
-
-#[derive(Debug)]
-enum BuildNodeType {
-    Leaf(usize),
-    Tree(Axis, Box<BuildNode>, Box<BuildNode>),
-}
-
-struct BuildInfo {
-    bbox: BBox,
-    center: P,
-    idx: usize,
-}
-
-macro_rules! pop_break {
-    ($stack:ident) => {
-        match $stack.pop() {
-            None => break,
-            Some(v) => v,
-        }
-    }
+    Leaf(I),
+    Tree(Axis, I),
 }
 
 impl<S> BVH<S> where S: Intersectable {
     pub fn new(elements: Vec<S>) -> BVH<S> {
         assert!(!elements.is_empty());
+
         let mut build_infos = elements.iter().enumerate().map(|(idx, e)| {
             let bbox = e.bbox(T::ONE);
-            BuildInfo { bbox, center: bbox.center(), idx }
+            BuildInfo { bbox, center: bbox.center(), idx: idx as I }
         }).collect::<Vec<_>>();
 
         let root = build(&mut build_infos[..]);
-        let mut nodes = Vec::with_capacity(root.size());
 
+        let mut nodes = Vec::with_capacity(root.size() as usize);
         flatten_tree(&root, &mut nodes, 0);
 
         BVH { elements, nodes }
@@ -76,45 +47,69 @@ impl<S> BVH<S> where S: Intersectable {
                   F: Fn(&A, &S) -> Either<A, A> {
         let mut acc = acc;
         let mut idx = 0;
-        let mut stack = Vec::with_capacity(64);
+        let mut stack = [0; 32];
+        let mut sp = 0;
         loop {
-            let node = &self.nodes[idx];
+            let node = &self.nodes[idx as usize];
             if pred(&acc, node) {
                 match &node.node {
                     BVHNodeType::Leaf(i) => {
-                        match f(&acc, &self.elements[*i]) {
+                        match f(&acc, &self.elements[*i as usize]) {
                             Either::Left(b) => { return b; },
                             Either::Right(a) => { acc = a; },
                         }
-                        idx = pop_break!(stack);
+                        idx = if sp == 0 { break }
+                              else { sp -= 1; stack[sp] };
                     },
                     BVHNodeType::Tree(axis, ri) => {
                         idx = if trav_order[*axis] {
-                            stack.push(*ri); idx + 1
+                            stack[sp] = *ri; idx + 1
                         } else {
-                            stack.push(idx + 1); *ri
+                            stack[sp] = idx + 1; *ri
                         };
+                        sp += 1;
                     },
                 }
             } else {
-                idx = pop_break!(stack);
+                idx = if sp == 0 { break }
+                      else { sp -= 1; stack[sp] };
             }
         }
         acc
     }
 }
 
-impl BuildNode {
-    #[inline(always)]
-    fn size(&self) -> usize { self.sizel + self.sizer + 1 }
+#[derive(Debug)]
+struct BuildNode {
+    bbox: BBox,
+    node: BuildNodeType,
+    sizel: I,
+    sizer: I,
 }
 
-fn flatten_tree(tree: &BuildNode, nodes: &mut Vec<BVHNode>, offset: usize) {
+#[derive(Debug)]
+enum BuildNodeType {
+    Leaf(I),
+    Tree(Axis, Box<BuildNode>, Box<BuildNode>),
+}
+
+struct BuildInfo {
+    bbox: BBox,
+    center: P,
+    idx: I,
+}
+
+impl BuildNode {
+    #[inline(always)]
+    fn size(&self) -> I { self.sizel + self.sizer + 1 }
+}
+
+fn flatten_tree(tree: &BuildNode, nodes: &mut Vec<BVHNode>, offset: I) {
     let offset = offset + 1;
     let node = match &tree.node {
-        BuildNodeType::Leaf(idx) => Leaf(*idx),
+        BuildNodeType::Leaf(idx) => BVHNodeType::Leaf(*idx),
         BuildNodeType::Tree(axis, treel, _) => {
-            Tree(*axis, offset + treel.size())
+            BVHNodeType::Tree(*axis, offset + treel.size())
         }
     };
 
@@ -126,7 +121,7 @@ fn flatten_tree(tree: &BuildNode, nodes: &mut Vec<BVHNode>, offset: usize) {
     }
 }
 
-const NUM_BUCKETS: usize = 16;
+const NUM_BUCKETS: I = 16;
 
 #[derive(Clone, Copy)]
 struct Bucket {
@@ -135,7 +130,7 @@ struct Bucket {
 }
 
 fn build(build_infos: &mut [BuildInfo]) -> BuildNode {
-    let n = build_infos.len();
+    let n = build_infos.len() as I;
 
     if n == 1 {
         return BuildNode {
@@ -155,18 +150,20 @@ fn build(build_infos: &mut [BuildInfo]) -> BuildNode {
     let pivot = if extent < F::EPSILON { n / 2 }
     else {
         let B(lb, _) = centers_bbox[axis];
-        let mut buckets = [Bucket { n: 0, bbox: BBox::ZERO }; NUM_BUCKETS];
+        let mut buckets = [Bucket { n: 0, bbox: BBox::ZERO };
+                           NUM_BUCKETS as usize];
 
         let bucket_index = |build_info: &BuildInfo| {
             let idx = (NUM_BUCKETS as F *
-                       ((build_info.center[axis] - lb) / extent)) as usize;
+                       ((build_info.center[axis] - lb) / extent)) as I;
             idx.min(NUM_BUCKETS - 1)
         };
 
         build_infos.iter().for_each(|build_info| {
             let idx = bucket_index(build_info);
-            buckets[idx].n += 1;
-            buckets[idx].bbox = buckets[idx].bbox | build_info.bbox;
+            buckets[idx as usize].n += 1;
+            buckets[idx as usize].bbox = buckets[idx as usize].bbox
+                                       | build_info.bbox;
         });
 
         let cost_of_split = |(a, b): (&[Bucket], &[Bucket])| {
@@ -184,7 +181,7 @@ fn build(build_infos: &mut [BuildInfo]) -> BuildNode {
         };
 
         let min_cost_idx = (1..NUM_BUCKETS-1)
-                               .map(|idx| (idx, buckets.split_at(idx)))
+                               .map(|i| (i, buckets.split_at(i as usize)))
                                .map(|(idx, bb)| (idx, cost_of_split(bb)))
                                .fold((0, F::POS_INF), |(ii, cc), (i, c)| {
                                    if c < cc { (i, c) } else { (ii, cc) }
@@ -194,8 +191,8 @@ fn build(build_infos: &mut [BuildInfo]) -> BuildNode {
                   |ref build_info| bucket_index(build_info) < min_cost_idx)
     };
 
-    let treel = build(&mut build_infos[..pivot]);
-    let treer = build(&mut build_infos[pivot..]);
+    let treel = build(&mut build_infos[..pivot as usize]);
+    let treer = build(&mut build_infos[pivot as usize..]);
 
     BuildNode {
         bbox,
@@ -204,7 +201,7 @@ fn build(build_infos: &mut [BuildInfo]) -> BuildNode {
     }
 }
 
-fn partition<E, FN>(items: &mut [E], pred: FN) -> usize
+fn partition<E, FN>(items: &mut [E], pred: FN) -> I
         where FN: Fn(&E) -> bool {
     let mut pivot = 0;
     let mut it = items.iter_mut();

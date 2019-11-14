@@ -52,29 +52,14 @@ impl Triangle {
     #[inline(always)] fn cn(&self) -> N { self.n[self.f.c as usize] }
 
     #[inline(always)]
-    fn abc(&self) -> A3<P> {
-        A3(self.a(), self.b(), self.c())
-    }
-
+    fn abc(&self) -> A3<P> { A3(self.a(), self.b(), self.c()) }
     #[inline(always)]
-    fn abcn(&self) -> A3<N> {
-        A3(self.an(), self.bn(), self.cn())
-    }
+    fn abcn(&self) -> A3<N> { A3(self.an(), self.bn(), self.cn()) }
 
-    #[inline(always)]
-    fn ab(&self) -> V {
-        self.b() - self.a()
-    }
+    #[inline(always)] fn ab(&self) -> V { self.b() - self.a() }
+    #[inline(always)] fn ac(&self) -> V { self.c() - self.a() }
 
-    #[inline(always)]
-    fn ac(&self) -> V {
-        self.c() - self.a()
-    }
-
-    #[inline(always)]
-    fn n(&self) -> N {
-        N(self.ab().cross(self.ac()))
-    }
+    #[inline(always)] fn n(&self) -> N { N(self.ab().cross(self.ac())) }
 
     #[inline(always)]
     fn intersection_point(&self, ray: R) -> Option<(F, F2)> {
@@ -116,11 +101,9 @@ impl Intersectable for Triangle {
         self.intersection_point(ray).map(|(t, P2(u, v))| {
             let bary = A3(1. - u - v, u, v);
             let p = dot(self.abc(), bary);
-            // TODO uv coordinates
-            let ng = self.n();
-            let n = if self.n.is_empty() { ng }
+            let n = if self.n.is_empty() { self.n() }
                     else { dot(self.abcn(), bary) };
-            Its::new(p, t, n, ng)
+            Its::new(p, t, n)
         })
     }
 }
