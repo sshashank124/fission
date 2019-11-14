@@ -11,50 +11,28 @@ impl Zero for B {
 }
 
 impl B {
-    #[inline(always)]
-    pub fn point(f: F) -> B {
-        B(f, f)
-    }
+    #[inline(always)] pub fn point(f: F) -> B { B(f, f) }
 
     #[inline(always)]
-    pub fn ordered(a: F, b: F) -> B {
-        if a < b { B(a, b) } else { B(b, a) }
-    }
+    pub fn ordered(a: F, b: F) -> B { if a < b { B(a, b) } else { B(b, a) } }
+
+    #[inline(always)] pub fn with_ceil(u: F) -> B { B(F::EPSILON, u) }
+
+    #[inline(always)] pub fn with_upper(self, u: F) -> B { B(self.0, u) }
+
+    #[inline(always)] pub fn set_upper(&mut self, u: F) { self.1 = u; }
 
     #[inline(always)]
-    pub fn with_ceil(u: F) -> B {
-        B(F::EPSILON, u)
-    }
+    pub fn bounds(self, f: F) -> bool { self.0 <= f && f <= self.1 }
+
+    #[inline(always)] pub fn degen(self) -> bool { self.0 > self.1 }
 
     #[inline(always)]
-    pub fn with_upper(self, u: F) -> B {
-        B(self.0, u)
-    }
+    pub fn overlaps(self, b: B) -> bool { self.0 < b.1 && b.0 < self.1 }
 
-    #[inline(always)]
-    pub fn bounds(self, f: F) -> bool {
-        self.0 <= f && f <= self.1
-    }
+    #[inline(always)] pub fn center(self) -> F { 0.5 * self.0 + 0.5 * self.1 }
 
-    #[inline(always)]
-    pub fn degen(self) -> bool {
-        self.0 > self.1
-    }
-
-    #[inline(always)]
-    pub fn overlaps(self, b: B) -> bool {
-        self.0 < b.1 && b.0 < self.1
-    }
-
-    #[inline(always)]
-    pub fn center(self) -> F {
-        0.5 * self.0 + 0.5 * self.1
-    }
-
-    #[inline(always)]
-    pub fn extent(self) -> F {
-        self.1 - self.0
-    }
+    #[inline(always)] pub fn extent(self) -> F { self.1 - self.0 }
 
     pub const INF:      B = B(F::NEG_INF, F::POS_INF);
     pub const POSITIVE: B = B(F::EPSILON, F::POS_INF);

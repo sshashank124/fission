@@ -43,11 +43,10 @@ impl BBox {
 }
 
 impl Intersectable for BBox {
-    #[inline(always)]
-    fn bbox(&self, _t: T) -> BBox { *self }
+    #[inline(always)] fn bbox(&self, _: T) -> BBox { *self }
 
     #[inline(always)]
-    fn intersects(&self, ray: R) -> bool {
+    fn intersects(&self, ray: &R) -> bool {
         let mut b = ray.tb & ((self[X] - ray.o[X]) * ray.d_inv[X]);
         if b.degen() { return false; }
         b = b & ((self[Y] - ray.o[Y]) * ray.d_inv[Y]);
@@ -56,8 +55,9 @@ impl Intersectable for BBox {
         !b.degen()
     }
 
-    #[inline(always)]
-    fn intersect(&self, _ray: R) -> Option<Its> { None }
+    #[inline(always)] fn intersect(&self, _: &mut R) -> Option<Its> { None }
+
+    #[inline(always)] fn hit_info(&self, _: &mut Its) { }
 }
 
 impl BitOr for BBox {

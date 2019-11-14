@@ -41,10 +41,10 @@ impl<S> BVH<S> where S: Intersectable {
     }
 
     #[inline(always)]
-    fn fold<A, P, F>(&self, trav_order: A3<bool>,
+    fn fold<'a, A, P, F>(&'a self, trav_order: A3<bool>,
                   acc: A, pred: P, f: F) -> A
             where P: Fn(&A, &BVHNode) -> bool,
-                  F: Fn(&A, &S) -> Either<A, A> {
+                  F: Fn(A, &'a S) -> Either<A, A> {
         let mut acc = acc;
         let mut idx = 0;
         let mut stack = [0; 32];
@@ -54,10 +54,10 @@ impl<S> BVH<S> where S: Intersectable {
             if pred(&acc, node) {
                 match &node.node {
                     BVHNodeType::Leaf(i) => {
-                        match f(&acc, &self.elements[*i as usize]) {
+                        match f(acc, &self.elements[*i as usize]) {
                             Either::Left(b) => { return b; },
                             Either::Right(a) => { acc = a; },
-                        }
+                        };
                         idx = if sp == 0 { break }
                               else { sp -= 1; stack[sp] };
                     },
@@ -224,7 +224,7 @@ impl<S> Intersectable for BVH<S> where S: Intersectable {
     }
 
     #[inline(always)]
-    fn intersects(&self, ray: R) -> bool {
+    fn intersects(&self, ray: &R) -> bool {
         self.fold(ray.d.map(|i| i > 0.), false,
                   |_, node| node.bbox.intersects(ray),
                   |_, isectable| {
@@ -234,13 +234,18 @@ impl<S> Intersectable for BVH<S> where S: Intersectable {
     }
 
     #[inline(always)]
-    fn intersect(&self, ray: R) -> Option<Its> {
+    fn intersect(&self, ray: &mut R) -> Option<Its> {
         self.fold(ray.d.map(|i| i > 0.), (ray, None),
-                  |(ray, _), node| node.bbox.intersects(*ray),
-                  |(ray, its), isectable| {
-                      let it = isectable.intersect(*ray);
-                      let ray = ray.clip_from_its(&it);
-                      Either::Right((ray, it.or(*its)))
-                  }).1
+                  |(ray, _), node| node.bbox.intersects(ray),
+                  |(ray, acc), isectable| {
+                      let acc = isectable.intersect(ray).map(|it| {
+                          (isectable, it)
+                      }).or(acc);
+                      Either::Right((ray, acc))
+                  }).1.map(|(closest, mut its)| {
+                               closest.hit_info(&mut its); its
+                           })
     }
+    
+    #[inline(always)] fn hit_info(&self, _: &mut Its) { }
 }

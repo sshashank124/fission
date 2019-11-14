@@ -62,7 +62,7 @@ impl Triangle {
     #[inline(always)] fn n(&self) -> N { N(self.ab().cross(self.ac())) }
 
     #[inline(always)]
-    fn intersection_point(&self, ray: R) -> Option<(F, F2)> {
+    fn intersection_point(&self, ray: &R) -> Option<(F, F2)> {
         let pv = ray.d.cross(self.ac());
         let det = self.ab().dot(pv);
         if det.abs() < F::EPSILON { return None; }
@@ -77,11 +77,8 @@ impl Triangle {
         if v < 0. || u + v > 1. { return None; }
 
         let t = self.ac().dot(q) * dinv;
-        if ray.tb.bounds(t) {
-            Some((t, P2(u, v)))
-        } else {
-            None
-        }
+        if ray.tb.bounds(t) { Some((t, P2(u, v))) }
+        else { None }
     }
 }
 
@@ -92,19 +89,24 @@ impl Intersectable for Triangle {
     }
 
     #[inline(always)]
-    fn intersects(&self, ray: R) -> bool {
+    fn intersects(&self, ray: &R) -> bool {
         self.intersection_point(ray).is_some()
     }
 
     #[inline(always)]
-    fn intersect(&self, ray: R) -> Option<Its> {
-        self.intersection_point(ray).map(|(t, P2(u, v))| {
-            let bary = A3(1. - u - v, u, v);
-            let p = dot(self.abc(), bary);
-            let n = if self.n.is_empty() { self.n() }
-                    else { dot(self.abcn(), bary) };
-            Its::new(p, t, n)
+    fn intersect(&self, ray: &mut R) -> Option<Its> {
+        self.intersection_point(ray).map(|(t, uv)| {
+            ray.clip(t);
+            Its::new(P::ZERO, N::ZERO, uv)
         })
+    }
+
+    #[inline(always)]
+    fn hit_info(&self, its: &mut Its) {
+            let bary = A3(1. - its.uv[0] - its.uv[1], its.uv[0], its.uv[1]);
+            its.p = dot(self.abc(), bary);
+            its.n = if self.n.is_empty() { self.n() }
+                    else { dot(self.abcn(), bary) };
     }
 }
 

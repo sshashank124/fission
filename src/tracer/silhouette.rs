@@ -12,8 +12,8 @@ impl Silhouette {
 
 impl Trace for Silhouette {
     #[inline(always)]
-    fn trace(&self, scene: &Scene, _sampler: &mut Sampler, ray: R) -> Color {
-        if scene.intersects(ray) { Color::BLACK }
+    fn trace(&self, scene: &Scene, _: &mut Sampler, mut ray: R) -> Color {
+        if scene.intersects(&mut ray) { Color::BLACK }
         else { Color::WHITE }
     }
 }

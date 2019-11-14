@@ -24,18 +24,7 @@ impl R {
     #[inline(always)]
     pub fn at(&self, t: F) -> P { self.o + self.d * t }
 
-    #[inline(always)]
-    pub fn clip_max(&self, t: F) -> R {
-        R::r(self.o, self.d, self.d_inv, self.tb.with_upper(t))
-    }
-
-    #[inline(always)]
-    pub fn clip_from_its(&self, its: &Option<Its>) -> R {
-        match its {
-            None => *self,
-            Some(its) => self.clip_max(its.t),
-        }
-    }
+    #[inline(always)] pub fn clip(&mut self, t: F) { self.tb.set_upper(t) }
 }
 
 impl Mul<R> for T {

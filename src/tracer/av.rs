@@ -16,8 +16,9 @@ impl AverageVisibility {
 
 impl Trace for AverageVisibility {
     #[inline(always)]
-    fn trace(&self, scene: &Scene, sampler: &mut Sampler, ray: R) -> Color {
-        match scene.intersect(ray) {
+    fn trace(&self, scene: &Scene, sampler: &mut Sampler, mut ray: R)
+            -> Color {
+        match scene.intersect(&mut ray) {
             None => Color::WHITE,
             Some(its) => {
                 let ray =
@@ -25,7 +26,7 @@ impl Trace for AverageVisibility {
                            warp::sample_uniform_hemisphere(sampler,
                                                            its.n.unitn()),
                            B::with_ceil(self.ray_len));
-                if scene.intersects(ray) { Color::BLACK }
+                if scene.intersects(&ray) { Color::BLACK }
                 else { Color::WHITE }
             }
         }

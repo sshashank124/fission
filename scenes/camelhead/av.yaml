@@ -1,0 +1,34 @@
+integrator:
+  tracer:
+    type: av
+    ray_length: 100.
+
+  sampler:
+    type: sobol
+    samples_per_pixel: 64
+
+scene:
+  camera:
+    type: perspective
+    fov: 30.
+    # lens_radius: 0.3
+    # focal_distance: 7.
+    resolution: [768, 768]
+
+    transforms:
+      - look_at:
+          origin: [50., 50., 50.]
+          target: [2., 7., 0.]
+          up:     [0., 1., 0.]
+
+  shapes:
+    - type: mesh
+      obj: obj/camelhead.obj
+      transforms:
+        - scale: [40., 40., 40.]
+        - translate: [0., 10., 0.]
+    
+    - type: mesh
+      obj: obj/plane.obj
+      transforms:
+        - scale: [100., 1., 100.]
