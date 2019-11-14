@@ -29,6 +29,15 @@ impl RotScale3 {
     #[inline(always)]
     pub fn scale(v: F3) -> RotScale3 { RotScale3::from_diag(v) }
 
+    #[inline(always)]
+    pub fn rotate(axis: F3, theta: F) -> RotScale3 {
+        let V(A3(x, y, z)) = V(axis).unit();
+        let c = theta.cosd(); let cc = 1. - c; let s = theta.sind();
+        Self::from_rows(A3(c+x.sq()*cc, x*y*cc-z*s, x*z*cc+y*s),
+                        A3(y*x*cc+z*s, c+y.sq()*cc, y*z*cc-x*s),
+                        A3(z*x*cc-y*s, z*y*cc+x*s, c+z.sq()*cc))
+    }
+
     #[inline(always)] pub fn tr(self) -> RotScale3 { RotScale3(self.t()) }
 }
 

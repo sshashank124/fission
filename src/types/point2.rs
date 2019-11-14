@@ -116,11 +116,11 @@ impl Div<I> for F2 {
     }
 }
 
-impl<S> Index<Axis> for P2<S> {
+impl<S> Index<Dim> for P2<S> {
     type Output = S;
     #[inline(always)]
-    fn index(&self, axis: Axis) -> &S {
-        match axis {
+    fn index(&self, dim: Dim) -> &S {
+        match dim {
             X => &self.0,
             Y => &self.1,
             _ => unreachable!(),
@@ -140,10 +140,10 @@ impl<S> Index<I> for P2<S> {
     }
 }
 
-impl<S> IndexMut<Axis> for P2<S> {
+impl<S> IndexMut<Dim> for P2<S> {
     #[inline(always)]
-    fn index_mut(&mut self, axis: Axis) -> &mut S {
-        match axis {
+    fn index_mut(&mut self, dim: Dim) -> &mut S {
+        match dim {
             X => &mut self.0,
             Y => &mut self.1,
             _ => unreachable!(),

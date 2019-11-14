@@ -49,11 +49,11 @@ impl<A> A3<A3<A>> {
     }
 }
 
-impl<A> Index<Axis> for A3<A> {
+impl<A> Index<Dim> for A3<A> {
     type Output = A;
     #[inline(always)]
-    fn index(&self, axis: Axis) -> &A {
-        match axis {
+    fn index(&self, dim: Dim) -> &A {
+        match dim {
             X => &self.0,
             Y => &self.1,
             Z => &self.2,
@@ -61,10 +61,10 @@ impl<A> Index<Axis> for A3<A> {
     }
 }
 
-impl<A> IndexMut<Axis> for A3<A> {
+impl<A> IndexMut<Dim> for A3<A> {
     #[inline(always)]
-    fn index_mut(&mut self, axis: Axis) -> &mut A {
-        match axis {
+    fn index_mut(&mut self, dim: Dim) -> &mut A {
+        match dim {
             X => &mut self.0,
             Y => &mut self.1,
             Z => &mut self.2,

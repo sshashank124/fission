@@ -17,7 +17,7 @@ struct BVHNode {
 
 enum BVHNodeType {
     Leaf(I),
-    Tree(Axis, I),
+    Tree(Dim, I),
 }
 
 impl<S> BVH<S> where S: Intersectable {
@@ -58,8 +58,8 @@ impl<S> BVH<S> where S: Intersectable {
                         idx = if sp == 0 { break }
                               else { sp -= 1; stack[sp] };
                     },
-                    BVHNodeType::Tree(axis, ri) => {
-                        idx = if trav_order[*axis] {
+                    BVHNodeType::Tree(split_dim, ri) => {
+                        idx = if trav_order[*split_dim] {
                             stack[sp] = *ri; idx + 1
                         } else {
                             stack[sp] = idx + 1; *ri
@@ -85,7 +85,7 @@ struct BuildNode {
 
 enum BuildNodeType {
     Leaf(I),
-    Tree(Axis, Box<BuildNode>, Box<BuildNode>),
+    Tree(Dim, Box<BuildNode>, Box<BuildNode>),
 }
 
 struct BuildInfo {
@@ -103,8 +103,8 @@ fn flatten_tree(tree: &BuildNode, nodes: &mut Vec<BVHNode>, offset: I) {
     let offset = offset + 1;
     let node = match &tree.node {
         BuildNodeType::Leaf(idx) => BVHNodeType::Leaf(*idx),
-        BuildNodeType::Tree(axis, treel, _) => {
-            BVHNodeType::Tree(*axis, offset + treel.size())
+        BuildNodeType::Tree(split_dim, treel, _) => {
+            BVHNodeType::Tree(*split_dim, offset + treel.size())
         }
     };
 
@@ -140,17 +140,17 @@ fn build(build_infos: &mut [BuildInfo]) -> BuildNode {
             (bb | b.bbox, bc | b.center)
         });
 
-    let (axis, extent) = centers_bbox.max_extent();
+    let (split_dim, extent) = centers_bbox.max_extent();
 
     let pivot = if extent < F::EPSILON { n / 2 }
     else {
-        let B(lb, _) = centers_bbox[axis];
+        let B(lb, _) = centers_bbox[split_dim];
         let mut buckets = [Bucket { n: 0, bbox: BBox::ZERO };
                            NUM_BUCKETS as usize];
 
         let bucket_index = |build_info: &BuildInfo| {
             let idx = (NUM_BUCKETS as F *
-                       ((build_info.center[axis] - lb) / extent)) as I;
+                       ((build_info.center[split_dim] - lb) / extent)) as I;
             idx.min(NUM_BUCKETS - 1)
         };
 
@@ -192,7 +192,7 @@ fn build(build_infos: &mut [BuildInfo]) -> BuildNode {
     BuildNode {
         bbox,
         sizel: treel.size(), sizer: treer.size(),
-        node: BuildNodeType::Tree(axis, Box::new(treel), Box::new(treer)),
+        node: BuildNodeType::Tree(split_dim, Box::new(treel), Box::new(treer)),
     }
 }
 

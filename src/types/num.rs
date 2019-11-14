@@ -42,7 +42,9 @@ pub trait Float: Num + Inv {
     fn sqrt(self) -> Self;
 
     fn sin(self) -> Self;
+    fn sind(self) -> Self;
     fn cos(self) -> Self;
+    fn cosd(self) -> Self;
     fn tand(self) -> Self;
 }
 
@@ -71,7 +73,9 @@ impl Float for f32 {
     #[inline(always)] fn sqrt(self) -> Self { self.sqrt() }
 
     #[inline(always)] fn sin(self) -> Self { self.sin() }
+    #[inline(always)] fn sind(self) -> Self { self.to_radians().sin() }
     #[inline(always)] fn cos(self) -> Self { self.cos() }
+    #[inline(always)] fn cosd(self) -> Self { self.to_radians().cos() }
     #[inline(always)] fn tand(self) -> Self { self.to_radians().tan() }
 }
 
@@ -100,7 +104,9 @@ impl Float for f64 {
     #[inline(always)] fn sqrt(self) -> Self { self.sqrt() }
 
     #[inline(always)] fn sin(self) -> Self { self.sin() }
+    #[inline(always)] fn sind(self) -> Self { self.to_radians().sin() }
     #[inline(always)] fn cos(self) -> Self { self.cos() }
+    #[inline(always)] fn cosd(self) -> Self { self.to_radians().cos() }
     #[inline(always)] fn tand(self) -> Self { self.to_radians().tan() }
 }
 

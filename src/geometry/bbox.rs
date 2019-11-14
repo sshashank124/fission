@@ -23,7 +23,7 @@ impl BBox {
     }
 
     #[inline(always)]
-    pub fn max_extent(&self) -> (Axis, F) {
+    pub fn max_extent(&self) -> (Dim, F) {
         let A3(xe, ye, ze) = self.extents();
         if ye > xe {
             if ze > ye { (Z, ze) }

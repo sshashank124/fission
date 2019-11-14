@@ -1,8 +1,5 @@
 reconstruction filters
 
-transforms
-'-constructors: rotate_on_axis
-
 BSSRDF
 
 point lights

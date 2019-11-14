@@ -29,9 +29,14 @@ impl Sim3 {
     }
 
     #[inline(always)]
+    pub fn rotate(axis: F3, theta: F) -> Sim3 {
+        Sim3::new(Affine3::rotate(axis, theta), Affine3::rotate(axis, -theta))
+    }
+
+    #[inline(always)]
     pub fn from_dir(v: V) -> Sim3 {
-        let dx0 = V(F3::X).cross(v);
-        let dx1 = V(F3::Y).cross(v);
+        let dx0 = V::X.cross(v);
+        let dx1 = V::Y.cross(v);
         let dx = if dx0.norm2() > dx1.norm2() { dx0 } else { dx1 }.unit();
         let dy = v.cross(dx).unit();
         Sim3::new(Affine3::from_cols(*dx, *dy, *v, F3::ZERO),

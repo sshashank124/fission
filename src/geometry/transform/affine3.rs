@@ -29,6 +29,11 @@ impl Affine3 {
     }
 
     #[inline(always)]
+    pub fn rotate(axis: F3, theta: F) -> Affine3 {
+        Affine3::new(RotScale3::rotate(axis, theta), F3::ZERO)
+    }
+
+    #[inline(always)]
     pub fn tr(self) -> Affine3 { Affine3::new(self.r.tr(), F3::ZERO) }
 
     #[inline(always)]
