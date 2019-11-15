@@ -11,7 +11,7 @@ use crate::tracer::*;
 use crate::types::*;
 
 
-const BLOCK_SIZE: I2 = P2(16, 16);
+const BLOCK_SIZE: I2 = P2(8, 8);
 
 pub struct Integrator {
     tracer: Tracer,
