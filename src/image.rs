@@ -1,5 +1,4 @@
 use std::fs::File;
-use std::ops::{Deref, DerefMut};
 
 use openexr::{frame_buffer::{FrameBuffer, PixelStruct},
               ScanlineOutputFile,
@@ -7,45 +6,61 @@ use openexr::{frame_buffer::{FrameBuffer, PixelStruct},
               PixelType::{self, FLOAT}};
 
 use crate::types::*;
+use crate::filter::*;
 
 
 pub struct Image {
     data: Vec<Color>,
+    weights: Vec<F>,
+    rfilter: ReconstructionFilter,
     dims: I2,
 }
 
 impl Image {
-    pub fn new(dims: I2) -> Self {
+    #[inline(always)]
+    pub fn new(dims: I2, rfilter: ReconstructionFilter) -> Self {
+        let len = (dims[X] * dims[Y]) as usize;
         Self {
-            data: vec![Color::BLACK; (dims[X] * dims[Y]) as usize],
+            data: vec![Color::BLACK; len],
+            weights: vec![0.; len],
+            rfilter,
             dims,
         }
     }
 
+    #[inline(always)]
     pub fn as_block(&mut self) -> Block {
-        Block {
-            pos: I2::ZERO,
-            dims: self.dims,
-            img: self,
-        }
+        Block { pos: I2::ZERO, dims: self.dims, img: self }
+    }
+
+    #[inline(always)]
+    pub fn flat_pos(&self, pos: I2) -> usize {
+        (pos[Y] * self.dims[X] + pos[X]) as usize
     }
 
     pub fn save_exr(&self, filename: &str) -> Result<(), String> {
+        let data = self.data.iter().zip(self.weights.iter())
+                            .map(|(value, weight)| {
+                                 if *weight > 0. { *value / *weight }
+                                 else { *value }}).collect::<Vec<_>>();
+
         let mut f = File::create(filename).map_err(|e| e.to_string())?;
         let mut of = self.prepare_file_for_writing(&mut f)?;
-        let mut fb = FrameBuffer::new(self.dims[X], self.dims[Y]);
+        let mut fb = FrameBuffer::new(self.dims[X] as u32,
+                                      self.dims[Y] as u32);
 
-        fb.insert_channels(&["R", "G", "B"], &self.data);
+        fb.insert_channels(&["R", "G", "B"], &data);
         of.write_pixels(&fb).map_err(|e| e.to_string())
     }
 
     fn prepare_file_for_writing<'b>(&self, f: &'b mut File)
             -> Result<ScanlineOutputFile<'b>, String> {
-        ScanlineOutputFile::new(f, Header::new().set_resolution(self.dims[X],
-                                                                self.dims[Y])
-                                                .add_channel("R", FLOAT)
-                                                .add_channel("G", FLOAT)
-                                                .add_channel("B", FLOAT))
+        ScanlineOutputFile::new(f, Header::new()
+                                          .set_resolution(self.dims[X] as u32,
+                                                          self.dims[Y] as u32)
+                                          .add_channel("R", FLOAT)
+                                          .add_channel("G", FLOAT)
+                                          .add_channel("B", FLOAT))
                            .map_err(|e| e.to_string())
     }
 }
@@ -60,6 +75,27 @@ unsafe impl Send for Block { }
 
 impl Block {
     #[inline(always)]
+    pub fn put(&mut self, offset: F2, color: Color) {
+        let img = unsafe { &mut *self.img };
+
+        let offset = offset - F2::HALF - self.pos;
+        let r = img.rfilter.radius();
+        let lo = offset - r; let hi = offset + r;
+        let (lx, ly) = (Num::max(lo[X].ceili(), 0),
+                        Num::max(lo[Y].ceili(), 0));
+        let (hx, hy) = (Num::min(hi[X].floori(), self.dims[X] - 1),
+                        Num::min(hi[Y].floori(), self.dims[Y] - 1));
+
+        for y in ly..=hy { for x in lx..=hx {
+            let w = img.rfilter.eval(Num::abs(x as F - offset[X]))
+                  * img.rfilter.eval(Num::abs(y as F - offset[Y]));
+            let loc = img.flat_pos(self.pos + P2(x, y));
+            img.data[loc] += color * w;
+            img.weights[loc] += w;
+        } }
+    }
+
+    #[inline(always)]
     pub fn blocks<'a>(&'a mut self, dims: I2) -> BlockIter<'a> {
         BlockIter {
             pos: I2::ZERO,
@@ -70,16 +106,8 @@ impl Block {
     }
 
     #[inline(always)]
-    pub fn pixels<'a>(&'a mut self) -> PixelIter<'a> {
-        PixelIter {
-            block: self,
-            pos: I2::ZERO,
-        }
-    }
-
-    #[inline(always)]
-    pub fn flat_pos(&self) -> I {
-        self.pos[Y] * unsafe {&*self.img}.dims[X] + self.pos[X]
+    pub fn pixels(&self) -> PixelIter {
+        PixelIter { block_pos: self.pos, block_dims: self.dims, pos: I2::ZERO }
     }
 }
 
@@ -95,14 +123,8 @@ impl<'a> Iterator for BlockIter<'a> {
     #[inline(always)]
     fn next(&mut self) -> Option<Block> {
         let a = if self.pos[X] < self.grid[X] {
-            let a = self.pos[X];
-            self.pos[X] += 1;
-            a
-        } else {
-            self.pos[X] = 1;
-            self.pos[Y] += 1;
-            0
-        };
+            let a = self.pos[X]; self.pos[X] += 1; a
+        } else { self.pos[X] = 1; self.pos[Y] += 1; 0 };
         if self.pos[Y] < self.grid[Y] {
             let pos = P2(a, self.pos[Y]) * self.dims;
             Some(Block {
@@ -110,9 +132,7 @@ impl<'a> Iterator for BlockIter<'a> {
                 pos: self.block.pos + pos,
                 dims: self.dims.cw_min(self.block.dims - pos),
             })
-        } else {
-            None
-        }
+        } else { None }
     }
 
     #[inline(always)]
@@ -126,82 +146,39 @@ impl<'a> Iterator for BlockIter<'a> {
 impl<'a> ExactSizeIterator for BlockIter<'a> { }
 
 
-pub struct Pixel {
-    img: *mut Image,
-    pub pos: I2,
-}
-
-impl Pixel {
-    #[inline(always)]
-    pub fn flat_pos(&self) -> I {
-        self.pos[Y] * unsafe {&*self.img}.dims[X] + self.pos[X]
-    }
-}
-
-impl Deref for Pixel {
-    type Target = Color;
-    #[inline(always)]
-    fn deref(&self) -> &Color {
-        &unsafe {&*self.img}.data[self.flat_pos() as usize]
-    }
-}
-
-impl DerefMut for Pixel {
-    #[inline(always)]
-    fn deref_mut(&mut self) -> &mut Color {
-        let pos = self.flat_pos() as usize;
-        &mut unsafe {&mut *self.img}.data[pos]
-    }
-}
-
-pub struct PixelIter<'a> {
-    block: &'a mut Block,
+pub struct PixelIter {
+    block_pos: I2,
+    block_dims: I2,
     pos: I2,
 }
 
-impl<'a> Iterator for PixelIter<'a> {
-    type Item = Pixel;
+impl Iterator for PixelIter {
+    type Item = I2;
     #[inline(always)]
-    fn next(&mut self) -> Option<Pixel> {
-        let a = if self.pos[X] < self.block.dims[X] {
-            let a = self.pos[X];
-            self.pos[X] += 1;
-            a
-        } else {
-            self.pos[X] = 1;
-            self.pos[Y] += 1;
-            0
-        };
-        if self.pos[Y] < self.block.dims[Y] {
+    fn next(&mut self) -> Option<Self::Item> {
+        let a = if self.pos[X] < self.block_dims[X] {
+            let a = self.pos[X]; self.pos[X] += 1; a
+        } else { self.pos[X] = 1; self.pos[Y] += 1; 0 };
+        if self.pos[Y] < self.block_dims[Y] {
             let pos = P2(a, self.pos[Y]);
-            Some(Pixel {
-                img: self.block.img,
-                pos: self.block.pos + pos,
-            })
-        } else {
-            None
-        }
+            Some(self.block_pos + pos)
+        } else { None }
     }
 
     #[inline(always)]
     fn size_hint(&self) -> (usize, Option<usize>) {
-        let size = (self.block.dims[Y] - self.pos[Y] - 1) * self.block.dims[X]
-                 + (self.block.dims[X] - self.pos[X]);
+        let size = (self.block_dims[Y] - self.pos[Y] - 1) * self.block_dims[X]
+                 + (self.block_dims[X] - self.pos[X]);
         (size as usize, Some(size as usize))
     }
 }
 
-impl<'a> ExactSizeIterator for PixelIter<'a> { }
+impl ExactSizeIterator for PixelIter { }
 
 
 unsafe impl PixelStruct for Color {
-    #[inline(always)]
-    fn channel_count() -> usize {
-        3
-    }
+    #[inline(always)] fn channel_count() -> usize { 3 }
 
     #[inline(always)]
-    fn channel(i: usize) -> (PixelType, usize) {
-        (FLOAT, 4 * i)
-    }
- }
+    fn channel(i: usize) -> (PixelType, usize) { (FLOAT, 4 * i) }
+}

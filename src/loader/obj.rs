@@ -24,9 +24,9 @@ struct ObjLoader {
 
 #[derive(Eq, Hash, PartialEq)]
 struct Vertex {
-    p: i32,
-    t: i32,
-    n: i32,
+    p: I,
+    t: I,
+    n: I,
 }
 
 impl ObjLoader {
@@ -134,9 +134,9 @@ impl ObjLoader {
 }
 
 #[inline(always)]
-fn parse_index<'a, It>(tokens: &mut It, n: usize) -> Res<i32>
+fn parse_index<'a, It>(tokens: &mut It, n: usize) -> Res<I>
         where It: Iterator<Item=&'a str> {
-    parse(tokens).map(|i: i32| if i > 0 { i - 1 } else { i + n as i32 })
+    parse(tokens).map(|i: I| if i > 0 { i - 1 } else { i + n as I })
 }
 
 #[inline(always)]

@@ -4,7 +4,7 @@ mod sobol;
 
 use std::ops::{Deref, DerefMut};
 
-use crate::image::{Block, Pixel};
+use crate::image::Block;
 use crate::types::*;
 
 pub use independent::Independent;
@@ -15,7 +15,7 @@ pub type BlockSeed<'a> = (I, &'a Block);  // (sample iteration, pixel)
 
 pub trait Sample {
     fn clone_for_block(&self, seed: BlockSeed) -> Self;
-    fn prepare_pixel(&mut self, pixel: &Pixel);
+    fn prepare_pixel(&mut self, pos: I2);
 
     fn next_1d(&mut self) -> F;
     fn next_2d(&mut self) -> F2;
@@ -26,6 +26,11 @@ pub trait Sample {
 pub struct Sampler {
     sampler_type: SamplerType,
     pub spp: I,
+}
+
+pub enum SamplerType {
+    Independent(Independent),
+    Sobol(Sobol),
 }
 
 impl Sampler {
@@ -53,11 +58,6 @@ impl DerefMut for Sampler {
 }
 
 
-pub enum SamplerType {
-    Independent(Independent),
-    Sobol(Sobol),
-}
-
 impl Sample for SamplerType {
     #[inline(always)]
     fn clone_for_block(&self, seed: BlockSeed) -> Self {
@@ -68,10 +68,10 @@ impl Sample for SamplerType {
     }
 
     #[inline(always)]
-    fn prepare_pixel(&mut self, pixel: &Pixel) {
+    fn prepare_pixel(&mut self, pos: I2) {
         match self {
-            Self::Independent(s) => s.prepare_pixel(pixel),
-            Self::Sobol(s) => s.prepare_pixel(pixel),
+            Self::Independent(s) => s.prepare_pixel(pos),
+            Self::Sobol(s) => s.prepare_pixel(pos),
         }
     }
 

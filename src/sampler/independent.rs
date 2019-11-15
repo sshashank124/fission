@@ -15,12 +15,14 @@ impl Independent {
 
 impl Sample for Independent {
     #[inline(always)]
-    fn clone_for_block(&self, (i, block): BlockSeed) -> Self {
-        let seed = ((i as u64) << 42) + ((block.flat_pos() as u64) << 21);
-        Self::from_seed(seed)
+    fn clone_for_block(&self, (i, Block { pos: P2(x, y), .. }): BlockSeed)
+            -> Self {
+        Self::from_seed(((i as u64) << 42) +
+                        ((*y as u64) << 21) +
+                        (*x as u64))
     }
 
-    #[inline(always)] fn prepare_pixel(&mut self, _: &Pixel) { }
+    #[inline(always)] fn prepare_pixel(&mut self, _: I2) { }
 
     #[inline(always)] fn next_1d(&mut self) -> F { self.next_ft() }
 

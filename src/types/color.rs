@@ -1,16 +1,16 @@
 use std::iter::Sum;
-use std::ops::{Add, AddAssign, Div, DivAssign, Deref};
+use std::ops::{Add, AddAssign, Mul, Div, DivAssign, Deref};
 
 use super::*;
 use crate::op;
 
 
 #[derive(Clone, Copy, Debug, PartialEq)]
-pub struct Color(A3<f32>);
+pub struct Color(A3<F>);
 
 impl Color {
     #[inline(always)]
-    pub const fn rgb(r: f32, g: f32, b: f32) -> Color {
+    pub const fn rgb(r: F, g: F, b: F) -> Color {
         Color(A3(r, g, b))
     }
 
@@ -19,43 +19,10 @@ impl Color {
 }
 
 op!(Add::add, *Color -> *Color -> Color);
-
-impl AddAssign for Color {
-    #[inline(always)]
-    fn add_assign(&mut self, color: Color) {
-        self.0 += color.0;
-    }
-}
-
-impl Div<F> for Color {
-    type Output = Color;
-    #[inline(always)]
-    fn div(self, f: F) -> Color {
-        Color(*self / f as f32)
-    }
-}
-
-impl Div<I> for Color {
-    type Output = Color;
-    #[inline(always)]
-    fn div(self, i: I) -> Color {
-        self / i as F
-    }
-}
-
-impl DivAssign<F> for Color {
-    #[inline(always)]
-    fn div_assign(&mut self, f: F) {
-        self.0 /= f as f32;
-    }
-}
-
-impl DivAssign<I> for Color {
-    #[inline(always)]
-    fn div_assign(&mut self, i: I) {
-        self.0 /= i as f32;
-    }
-}
+op!(Mul::mul, *Color ->      F -> Color);
+op!(Div::div, *Color ->      F -> Color);
+op!(AddAssign::add_assign, *mut Color -> *Color -> ());
+op!(DivAssign::div_assign, *mut Color ->      F -> ());
 
 impl Sum<Color> for Color {
     #[inline(always)]
@@ -65,6 +32,6 @@ impl Sum<Color> for Color {
 }
 
 impl Deref for Color {
-    type Target = A3<f32>;
-    #[inline(always)] fn deref(&self) -> &A3<f32> { &self.0 }
+    type Target = F3;
+    #[inline(always)] fn deref(&self) -> &Self::Target { &self.0 }
 }

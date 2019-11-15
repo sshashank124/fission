@@ -17,9 +17,7 @@ impl Trace for Normals {
             None => Color::BLACK,
             Some(its) => {
                 let n = its.n.unitn();
-                Color::rgb(n[X].abs() as f32,
-                           n[Y].abs() as f32,
-                           n[Z].abs() as f32)
+                Color::rgb(n[X].abs(), n[Y].abs(), n[Z].abs())
             }
         }
     }

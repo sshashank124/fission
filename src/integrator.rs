@@ -28,27 +28,29 @@ impl Integrator {
     pub fn render(&self) -> Image {
         let camera = &self.scene.camera;
 
-        let mut img = Image::new(camera.resolution);
+        let mut img = camera.new_image();
 
         let render_view = |i| {
             print!("\rRENDERING ... [{:4}/{:4}]", i + 1, self.sampler.spp);
             stdout().flush().unwrap();
 
             let render_block = |mut block: Block| {
+                let pixels = block.pixels();
                 let mut sampler = self.sampler.clone_seeded((i, &block));
 
-                let render_pixel = |mut pixel: Pixel| {
-                    sampler.prepare_pixel(&pixel);
+                let render_pixel = |pos: I2| {
+                    sampler.prepare_pixel(pos);
 
-                    let sample_point = pixel.pos + sampler.next_2d();
-                    let ray = camera.ray_at(sample_point, &mut sampler);
+                    let sample_pos = pos + sampler.next_2d();
+                    let ray = camera.ray_at(sample_pos, &mut sampler);
                     let color = self.tracer.trace(&self.scene,
                                                   &mut sampler,
                                                   ray);
-                    *pixel += color;
+
+                    block.put(sample_pos, color);
                 };
 
-                block.pixels().for_each(render_pixel);
+                pixels.for_each(render_pixel);
             };
 
             img.as_block().blocks(BLOCK_SIZE)
@@ -58,8 +60,6 @@ impl Integrator {
 
         let t = Instant::now();
         (0..self.sampler.spp).into_iter().for_each(render_view);
-        img.as_block().pixels().for_each(|mut pixel|  // TODO refactor
-                                         *pixel /= self.sampler.spp);
         println!("\rRendering ... DONE ({:?})", t.elapsed());
 
         img

@@ -11,9 +11,9 @@ impl<S> Zero for P2<S> where S: Zero {
     const ZERO: Self = P2(S::ZERO, S::ZERO);
 }
 
-impl I2 {
-    pub const ZERO: I2 = P2(0, 0);
+impl F2 { pub const HALF: F2 = P2(0.5, 0.5); }
 
+impl I2 {
     #[inline(always)]
     pub fn cw_min(self, P2(x, y): I2) -> I2 {
         P2(min(self[X], x), min(self[Y], y))
@@ -28,6 +28,15 @@ impl Add for I2 {
     }
 }
 
+impl Add<F> for F2 {
+    type Output = F2;
+    #[inline(always)]
+    fn add(self, f: F) -> F2 {
+        P2(self[X] + f, self[Y] + f)
+    }
+}
+
+
 impl Add<F2> for I2 {
     type Output = F2;
     #[inline(always)]
@@ -41,6 +50,30 @@ impl Sub for I2 {
     #[inline(always)]
     fn sub(self, P2(x, y): I2) -> I2 {
         P2(self[X] - x, self[Y] - y)
+    }
+}
+
+impl Sub for F2 {
+    type Output = F2;
+    #[inline(always)]
+    fn sub(self, P2(x, y): F2) -> F2 {
+        P2(self[X] - x, self[Y] - y)
+    }
+}
+
+impl Sub<I2> for F2 {
+    type Output = F2;
+    #[inline(always)]
+    fn sub(self, P2(x, y): I2) -> F2 {
+        P2(self[X] - x as F, self[Y] - y as F)
+    }
+}
+
+impl Sub<F> for F2 {
+    type Output = F2;
+    #[inline(always)]
+    fn sub(self, f: F) -> F2 {
+        P2(self[X] - f, self[Y] - f)
     }
 }
 

@@ -15,7 +15,7 @@ pub trait Num: Copy
              + Mul<Self, Output=Self> + MulAssign<Self>
              + Div<Self, Output=Self> + DivAssign<Self>
 {
-    fn abs(self) -> Self;
+    fn abs(self) -> Self { Num::max(self, Self::ZERO) }
     fn sq(self) -> Self { self * self }
 
     fn min(a: Self, b: Self) -> Self { if a < b { a } else { b } }
@@ -39,6 +39,10 @@ pub trait Float: Num + Inv {
 
     const FRAC_1_2POW32: Self;
 
+    fn ceili(self) -> I;
+    fn floori(self) -> I;
+
+    fn exp(f: Self) -> Self;
     fn sqrt(self) -> Self;
 
     fn sin(self) -> Self;
@@ -51,10 +55,7 @@ pub trait Float: Num + Inv {
 
 impl Zero for f32 { const ZERO: Self = 0.; }
 impl One for f32 { const ONE: Self = 1.; }
-
-impl Num for f32 {
-    #[inline(always)] fn abs(self) -> Self { self.abs() }
-}
+impl Num for f32 { }
 
 impl Inv for f32 {
     type Output = Self;
@@ -70,6 +71,10 @@ impl Float for f32 {
 
     const FRAC_1_2POW32: Self = 2.3283064365386963e-10;
 
+    #[inline(always)] fn ceili(self) -> I { self.ceil() as I }
+    #[inline(always)] fn floori(self) -> I { self.floor() as I }
+
+    #[inline(always)] fn exp(f: Self) -> Self { f.exp() }
     #[inline(always)] fn sqrt(self) -> Self { self.sqrt() }
 
     #[inline(always)] fn sin(self) -> Self { self.sin() }
@@ -82,10 +87,7 @@ impl Float for f32 {
 
 impl Zero for f64 { const ZERO: Self = 0.; }
 impl One for f64 { const ONE: Self = 1.; }
-
-impl Num for f64 {
-    #[inline(always)] fn abs(self) -> Self { self.abs() }
-}
+impl Num for f64 { }
 
 impl Inv for f64 {
     type Output = Self;
@@ -101,6 +103,10 @@ impl Float for f64 {
 
     const FRAC_1_2POW32: Self = 2.3283064365386963e-10;
 
+    #[inline(always)] fn ceili(self) -> I { self.ceil() as I }
+    #[inline(always)] fn floori(self) -> I { self.floor() as I }
+
+    #[inline(always)] fn exp(f: Self) -> Self { f.exp() }
     #[inline(always)] fn sqrt(self) -> Self { self.sqrt() }
 
     #[inline(always)] fn sin(self) -> Self { self.sin() }
@@ -113,10 +119,8 @@ impl Float for f64 {
 
 impl Zero for I { const ZERO: Self = 0; }
 impl One for I { const ONE: Self = 1; }
+impl Num for I { }
 
-impl Num for I {
-    #[inline(always)] fn abs(self) -> Self { self }
-}
 
 #[inline(always)]
 pub fn ceil_pow2_u32(i: u32) -> u32 {
@@ -124,7 +128,4 @@ pub fn ceil_pow2_u32(i: u32) -> u32 {
 }
 
 #[inline(always)]
-pub fn log2_ceil_u32(i: u32) -> u32 {
-    // 32 - i.saturating_sub(1).leading_zeros()
-    31 - i.leading_zeros()
-}
+pub fn log2_ceil_u32(i: u32) -> u32 { 31 - i.leading_zeros() }

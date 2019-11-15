@@ -62,10 +62,10 @@ impl Sample for Sobol {
     }
 
     #[inline(always)]
-    fn prepare_pixel(&mut self, pixel: &Pixel) {
+    fn prepare_pixel(&mut self, pos: I2) {
         self.dim = 0;
-        self.pixel_pos = pixel.pos;
-        self.rng.prepare_pixel(pixel);
+        self.pixel_pos = pos;
+        self.rng.prepare_pixel(pos);
     }
 
     #[inline(always)]

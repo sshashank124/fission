@@ -13,7 +13,11 @@ scene:
     fov: 40.
     lens_radius: 0.5
     focal_distance: 10.
-    resolution: [1280, 720]
+    resolution: [1920, 1080]
+    reconstruction_filter:
+      type: gaussian
+      radius: 3.
+      stdev: 1.
 
     transforms:
       - look_at:

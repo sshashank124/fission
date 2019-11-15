@@ -11,9 +11,11 @@ scene:
   camera:
     type: perspective
     fov: 30.
-    # lens_radius: 0.3
-    # focal_distance: 7.
     resolution: [768, 768]
+    reconstruction_filter:
+      type: gaussian
+      radius: 2.
+      stdev: 0.5
 
     transforms:
       - look_at:

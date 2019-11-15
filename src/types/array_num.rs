@@ -46,6 +46,16 @@ macro_rules! op {
         impl $trait<$rhs> for $lhs { type Output = $out; #[inline(always)]
             fn $op(self, b: $rhs) -> $out { $out($trait::$op(*self, b)) }
         }
+    };
+    ($trait:ident::$op:ident, *mut $lhs:ident -> *$rhs:ident -> ()) => {
+        impl $trait<$rhs> for $lhs { #[inline(always)]
+            fn $op(&mut self, b: $rhs) { $trait::$op(&mut self.0, b.0); }
+        }
+    };
+    ($trait:ident::$op:ident, *mut $lhs:ident -> $rhs:ident -> ()) => {
+        impl $trait<$rhs> for $lhs { #[inline(always)]
+            fn $op(&mut self, b: $rhs) { $trait::$op(&mut self.0, b); }
+        }
     }
 }
 

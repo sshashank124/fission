@@ -2,6 +2,7 @@
 
 mod aggregate;
 mod camera;
+mod filter;
 mod geometry;
 mod image;
 mod integrator;

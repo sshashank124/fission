@@ -12,7 +12,7 @@ pub use dim::*;
 pub use num::*;
 pub use point2::P2;
 
-pub type I = u32;
+pub type I = i32;
 pub type F = f32;
 
 pub type F3 = A3<F>;
