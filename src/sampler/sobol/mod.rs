@@ -1,5 +1,8 @@
+#[allow(clippy::all)]
 mod sobol;
+#[allow(clippy::all)]
 mod vdc;
+#[allow(clippy::all)]
 mod vdc_inv;
 
 use super::*;

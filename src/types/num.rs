@@ -4,8 +4,8 @@ use std::ops::{AddAssign, SubAssign, MulAssign, DivAssign};
 use super::*;
 
 
-pub trait Zero { const ZERO: Self; }
-pub trait One { const ONE: Self; }
+pub trait Zero: Copy { const ZERO: Self; }
+pub trait One: Copy { const ONE: Self; }
 
 pub trait Num: Copy
              + Zero + One
@@ -69,7 +69,7 @@ impl Float for f32 {
 
     const PI: Self = std::f32::consts::PI;
 
-    const FRAC_1_2POW32: Self = 2.3283064365386963e-10;
+    const FRAC_1_2POW32: Self = 2.328_306_4e-10;
 
     #[inline(always)] fn ceili(self) -> I { self.ceil() as I }
     #[inline(always)] fn floori(self) -> I { self.floor() as I }
@@ -101,7 +101,7 @@ impl Float for f64 {
 
     const PI: Self = std::f64::consts::PI;
 
-    const FRAC_1_2POW32: Self = 2.3283064365386963e-10;
+    const FRAC_1_2POW32: Self = 2.328_306_436_538_696_3e-10;
 
     #[inline(always)] fn ceili(self) -> I { self.ceil() as I }
     #[inline(always)] fn floori(self) -> I { self.floor() as I }

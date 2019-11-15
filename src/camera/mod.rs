@@ -36,7 +36,7 @@ impl Camera {
                       * T2::translate(resolution / -2.),
             resolution,
             model: model.into(),
-            rfilter: filter.unwrap_or_else(|| ReconstructionFilter::default()),
+            rfilter: filter.unwrap_or_else(ReconstructionFilter::default),
             to_world,
         }
     }

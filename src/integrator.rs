@@ -59,7 +59,7 @@ impl Integrator {
         };
 
         let t = Instant::now();
-        (0..self.sampler.spp).into_iter().for_each(render_view);
+        (0..self.sampler.spp).for_each(render_view);
         println!("\rRendering ... DONE ({:?})", t.elapsed());
 
         img

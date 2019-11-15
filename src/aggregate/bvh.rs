@@ -39,10 +39,9 @@ impl<S> BVH<S> where S: Intersectable {
 
     #[inline(always)]
     fn fold<'a, A, P, F>(&'a self, trav_order: A3<bool>,
-                  acc: A, pred: P, f: F) -> A
+                  mut acc: A, pred: P, f: F) -> A
             where P: Fn(&A, &BVHNode) -> bool,
                   F: Fn(A, &'a S) -> Either<A, A> {
-        let mut acc = acc;
         let mut idx = 0;
         let mut stack = [0; 32];
         let mut sp = 0;
@@ -233,9 +232,9 @@ impl<S> Intersectable for BVH<S> where S: Intersectable {
         self.fold(ray.d.map(|i| i > 0.), (ray, None),
                   |(ray, _), node| node.bbox.intersects(ray),
                   |(ray, acc), isectable| {
-                      let acc = isectable.intersect(ray).map(|it| {
-                          (isectable, it)
-                      }).or(acc);
+                      let acc = isectable.intersect(ray)
+                                         .map(|it| (isectable, it))
+                                         .or(acc);
                       Either::Right((ray, acc))
                   }).1.map(|(closest, mut its)| {
                                closest.hit_info(&mut its); its

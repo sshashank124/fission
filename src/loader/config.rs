@@ -188,19 +188,19 @@ fn f3(vec: &Yaml) -> Res<F3> {
 }
 
 #[inline(always)]
-fn f(f: &Yaml, msg: &str) -> Res<F> { fo(f).ok_or(msg.into()) }
+fn f(f: &Yaml, msg: &str) -> Res<F> { fo(f).ok_or_else(|| msg.into()) }
 
 #[inline(always)]
-fn i(i: &Yaml, msg: &str) -> Res<I> { io(i).ok_or(msg.into()) }
+fn i(i: &Yaml, msg: &str) -> Res<I> { io(i).ok_or_else(|| msg.into()) }
 
 #[inline(always)]
 fn s<'a>(s: &'a Yaml, msg: &str) -> Res<&'a str> {
-    s.as_str().ok_or(msg.into())
+    s.as_str().ok_or_else(|| msg.into())
 }
 
 #[inline(always)]
 fn v<'a>(v: &'a Yaml, msg: &str) -> Res<&'a Vec<Yaml>> {
-    vo(v).ok_or(msg.into())
+    vo(v).ok_or_else(|| msg.into())
 }
 
 #[inline(always)]

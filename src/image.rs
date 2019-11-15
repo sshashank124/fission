@@ -10,10 +10,11 @@ use crate::filter::*;
 
 
 pub struct Image {
+    dims: I2,
     data: Vec<Color>,
     weights: Vec<F>,
     rfilter: ReconstructionFilter,
-    dims: I2,
+    rfilter_vals: [F; FILTER_RESOLUTION],
 }
 
 impl Image {
@@ -21,10 +22,11 @@ impl Image {
     pub fn new(dims: I2, rfilter: ReconstructionFilter) -> Self {
         let len = (dims[X] * dims[Y]) as usize;
         Self {
+            dims,
             data: vec![Color::BLACK; len],
             weights: vec![0.; len],
             rfilter,
-            dims,
+            rfilter_vals: [0.; FILTER_RESOLUTION],
         }
     }
 
@@ -96,10 +98,10 @@ impl Block {
     }
 
     #[inline(always)]
-    pub fn blocks<'a>(&'a mut self, dims: I2) -> BlockIter<'a> {
+    pub fn blocks(&mut self, dims: I2) -> BlockIter<'_> {
         BlockIter {
             pos: I2::ZERO,
-            dims: dims,
+            dims,
             grid: (self.dims + dims - 1) / dims,
             block: self,
         }
