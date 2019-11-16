@@ -23,13 +23,13 @@ impl Perspective {
 
 impl CameraModel for Perspective {
     #[inline(always)]
-    fn ray_at(&self, P2(x, y): F2, sampler: &mut Sampler) -> R {
+    fn ray_at(&self, A2(x, y): F2, sampler: &mut Sampler) -> R {
         let v = V::v(x * self.fov_scale, y * self.fov_scale, 1.).unit();
         let ray = R::unbounded(P::ZERO, v);
 
         if self.lens_radius < F::EPSILON { ray }
         else {
-            let sp = self.lens_radius * warp::uniform_disk(sampler.next_2d());
+            let sp = warp::uniform_disk(sampler.next_2d()) * self.lens_radius;
             let focus_point = ray.at(self.focal_distance * ray.d_inv[Z]);
             let o = P::p(sp[X], sp[Y], 0.);
             R::unbounded(o, focus_point - o)

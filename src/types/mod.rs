@@ -1,20 +1,15 @@
 mod array;
-mod array_num;
+mod array2;
 mod color;
 mod dim;
 mod num;
-mod point2;
+mod ops;
 
 pub use array::*;
-pub use array_num::*;
+pub use array2::*;
 pub use color::Color;
 pub use dim::*;
 pub use num::*;
-pub use point2::P2;
 
-pub type I = i32;
 pub type F = f32;
-
-pub type F3 = A3<F>;
-pub type I2 = P2<I>;
-pub type F2 = P2<F>;
+pub type I = i32;

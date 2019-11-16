@@ -12,7 +12,7 @@ impl Zero for V { const ZERO: Self = V(F3::ZERO); }
 impl V {
     #[inline(always)] pub fn v(x: F, y: F, z: F) -> V { V(A3(x, y, z)) }
 
-    #[inline(always)] pub fn dot(self, V(v): V) -> F { dot(*self, v) }
+    #[inline(always)] pub fn dot(self, v: V) -> F { A3::dot(*self, *v) }
     #[inline(always)] pub fn norm2(self) -> F { self.dot(self) }
     #[inline(always)] pub fn norm(self) -> F { self.norm2().sqrt() }
     #[inline(always)] pub fn unit(self) -> V { self / self.norm() }

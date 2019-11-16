@@ -39,7 +39,7 @@ impl Integrator {
                 let render_pixel = |pos: I2| {
                     sampler.prepare_for_pixel(pos);
 
-                    let sample_pos = pos + sampler.next_2d();
+                    let sample_pos = F2::from(pos) + sampler.next_2d();
                     let ray = camera.ray_at(sample_pos, &mut sampler);
                     let color = self.tracer.trace(&self.scene,
                                                   &mut sampler,

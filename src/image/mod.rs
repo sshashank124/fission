@@ -5,7 +5,7 @@ use crate::types::*;
 use crate::filter::*;
 
 
-const BLOCK_SIZE: I2 = P2(16, 16);
+const BLOCK_SIZE: I2 = A2(8, 8);
 
 pub struct Image {
     dims: I2,
@@ -50,7 +50,7 @@ impl Block {
     pub fn put(&mut self, offset: F2, color: Color) {
         let img = unsafe { &mut *self.img };
 
-        let offset = offset - F2::HALF - self.pos;
+        let offset = offset - A2(0.5, 0.5) - F2::from(self.pos);
         let r = img.rfilter.radius();
         let lo = offset - r; let hi = offset + r;
         let (lx, ly) = (Num::max(lo[X].ceili(), 0),
@@ -61,7 +61,7 @@ impl Block {
         for y in ly..=hy { for x in lx..=hx {
             let w = img.rfilter.eval(Num::abs(x as F - offset[X]))
                   * img.rfilter.eval(Num::abs(y as F - offset[Y]));
-            let loc = img.flat_pos(self.pos + P2(x, y));
+            let loc = img.flat_pos(self.pos + A2(x, y));
             img.data[loc] += color * w;
             img.weights[loc] += w;
         } }
@@ -99,11 +99,11 @@ impl<'a> Iterator for BlockIter<'a> {
             let a = self.pos[X]; self.pos[X] += 1; a
         } else { self.pos[X] = 1; self.pos[Y] += 1; 0 };
         if self.pos[Y] < self.grid[Y] {
-            let pos = P2(a, self.pos[Y]) * self.dims;
+            let pos = A2(a, self.pos[Y]) * self.dims;
             Some(Block {
                 img: self.block.img as *mut Image,
                 pos: self.block.pos + pos,
-                dims: self.dims.cw_min(self.block.dims - pos),
+                dims: self.dims.zip(self.block.dims - pos, Num::min),
             })
         } else { None }
     }
@@ -133,7 +133,7 @@ impl Iterator for PixelIter {
             let a = self.pos[X]; self.pos[X] += 1; a
         } else { self.pos[X] = 1; self.pos[Y] += 1; 0 };
         if self.pos[Y] < self.block_dims[Y] {
-            let pos = P2(a, self.pos[Y]);
+            let pos = A2(a, self.pos[Y]);
             Some(self.block_pos + pos)
         } else { None }
     }

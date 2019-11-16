@@ -11,7 +11,7 @@ use crate::integrator::*;
 use crate::loader::obj;
 use crate::sampler::*;
 use crate::scene::*;
-use crate::structure::*;
+use crate::shape::*;
 use crate::tracer::*;
 use crate::util::*;
 
@@ -73,23 +73,23 @@ fn load_scene(config: &Yaml) -> Res<Scene> {
 
     let shapes = v(&config["shapes"], "missing list of shapes")?
                     .iter()
-                    .flat_map(|c| load_structure(c))
+                    .flat_map(|c| load_shape(c))
                     .collect::<Vec<_>>();
 
-    let root = Structure::new(BVH::new(shapes), T::ONE);
+    let root = Shape::new(BVH::new(shapes), T::ONE);
     Ok(Scene::new(root, camera))
 }
 
-fn load_structure(config: &Yaml) -> Res<Structure> {
+fn load_shape(config: &Yaml) -> Res<Shape> {
     let to_world = load_transforms(&config["transforms"])?;
 
-    let st: StructureType =
-        match s(&config["type"], "missing structure type")? {
+    let st: ShapeType =
+        match s(&config["type"], "missing shape type")? {
             "mesh" => load_mesh(config)?.into(),
-            _ => return Err("unknown structure type".into()),
+            _ => return Err("unknown shape type".into()),
         };
 
-    Ok(Structure::new(st, to_world))
+    Ok(Shape::new(st, to_world))
 }
 
 fn load_mesh(config: &Yaml) -> Res<Mesh> {
@@ -100,7 +100,7 @@ fn load_mesh(config: &Yaml) -> Res<Mesh> {
 fn load_camera(config: &Yaml) -> Res<Camera> {
     let res = v(&config["resolution"], "missing resolution")?;
     if res.len() != 2 { return Err("malformed resolution".into()); }
-    let res = P2(i(&res[0], "malformed width")?,
+    let res = A2(i(&res[0], "malformed width")?,
                  i(&res[1], "malformed height")?);
 
     let to_world = load_transforms(&config["transforms"])?;

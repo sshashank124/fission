@@ -38,7 +38,7 @@ impl Sobol {
     #[inline(always)]
     fn sample_index(&self) -> u64 {
         if self.m == 0 { return 0; }
-        let P2(x, y) = self.pixel_pos - self.block_pos;
+        let A2(x, y) = self.pixel_pos - self.block_pos;
         let mut delta = self.cache.d ^ (y as u64) | ((x as u64) << self.m);
         let mut index = self.cache.i;
         let mut c = 0;
@@ -90,7 +90,7 @@ impl Sample for Sobol {
     }
 
     #[inline(always)]
-    fn next_2d(&mut self) -> F2 { P2(self.next_1d(), self.next_1d()) }
+    fn next_2d(&mut self) -> F2 { A2(self.next_1d(), self.next_1d()) }
 
     #[inline(always)] fn rng(&mut self) -> F { self.rng.rng() }
 }

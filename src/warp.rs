@@ -5,7 +5,7 @@ use crate::geometry::*;
 pub fn uniform_disk(s: F2) -> F2 {
     let r = s[X].sqrt();
     let t = 2. * F::PI * s[Y];
-    P2(r * t.cos(), r * t.sin())
+    A2(r * t.cos(), r * t.sin())
 }
 
 #[inline(always)]

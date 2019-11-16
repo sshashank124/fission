@@ -1,22 +1,22 @@
 use std::ops::Deref;
 
 use crate::camera::Camera;
-use crate::structure::Structure;
+use crate::shape::Shape;
 
 
 pub struct Scene {
-    objects: Structure,
+    shapes: Shape,
     pub camera: Camera,
 }
 
 impl Scene {
     #[inline(always)]
-    pub fn new(objects: Structure, camera: Camera) -> Scene {
-        Scene { objects, camera }
+    pub fn new(shapes: Shape, camera: Camera) -> Scene {
+        Scene { shapes, camera }
     }
 }
 
 impl Deref for Scene {
-    type Target = Structure;
-    #[inline(always)] fn deref(&self) -> &Self::Target { &self.objects }
+    type Target = Shape;
+    #[inline(always)] fn deref(&self) -> &Self::Target { &self.shapes }
 }

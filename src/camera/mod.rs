@@ -32,8 +32,8 @@ impl Camera {
                   to_world: T) -> Camera
             where C: Into<CameraType> {
         Camera {
-            from_pixel: T2::scale(P2(2., -2.) / resolution[Y])
-                      * T2::translate(resolution / -2.),
+            from_pixel: T2::scale(A2(2., -2.) / resolution[Y] as F)
+                      * T2::translate(F2::from(resolution) / -2.),
             resolution,
             model: model.into(),
             rfilter: filter.unwrap_or_else(ReconstructionFilter::default),

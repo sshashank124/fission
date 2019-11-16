@@ -15,7 +15,7 @@ impl Independent {
 
 impl Sample for Independent {
     #[inline(always)]
-    fn clone_for_block(&self, (i, Block { pos: P2(x, y), .. }): BlockSeed)
+    fn clone_for_block(&self, (i, Block { pos: A2(x, y), .. }): BlockSeed)
             -> Self {
         Self::from_seed(((i as u64) << 42) +
                         ((*y as u64) << 21) +
@@ -27,7 +27,7 @@ impl Sample for Independent {
     #[inline(always)] fn next_1d(&mut self) -> F { self.next_ft() }
 
     #[inline(always)]
-    fn next_2d(&mut self) -> F2 { P2(self.next_ft(), self.next_ft()) }
+    fn next_2d(&mut self) -> F2 { A2(self.next_ft(), self.next_ft()) }
 
     #[inline(always)]
     fn rng(&mut self) -> F { self.next_1d() }

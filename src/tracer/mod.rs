@@ -5,7 +5,7 @@ mod silhouette;
 use crate::geometry::*;
 use crate::sampler::*;
 use crate::scene::Scene;
-use crate::structure::*;
+use crate::shape::*;
 
 pub use av::AverageVisibility;
 pub use normals::Normals;

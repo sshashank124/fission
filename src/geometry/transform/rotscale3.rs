@@ -15,15 +15,13 @@ impl RotScale3 {
     pub fn from_rows(r1: F3, r2: F3, r3: F3) -> Self { Self(A3(r1, r2, r3)) }
 
     #[inline(always)]
-    pub fn from_cols(c1: F3, c2: F3, c3: F3) -> Self {
-        Self::from_rows(c1, c2, c3).t()
-    }
+    pub fn from_cols(c1: F3, c2: F3, c3: F3) -> Self
+    { Self::from_rows(c1, c2, c3).t() }
 
     #[inline(always)]
     pub fn from_diag(d: F3) -> Self { Self(Self::ONE.zip(d, Mul::mul)) }
 
-    #[inline(always)]
-    pub fn scale(v: F3) -> Self { Self::from_diag(v) }
+    #[inline(always)] pub fn scale(v: F3) -> Self { Self::from_diag(v) }
 
     #[inline(always)]
     pub fn rotate(axis: F3, theta: F) -> Self {
@@ -47,9 +45,7 @@ impl<B, C> Mul<A3<B>> for RotScale3 where B: Copy + Mul<F, Output=C>,
                                           C: Add<C, Output=C> {
     type Output = A3<C>;
     #[inline(always)]
-    fn mul(self, o: A3<B>) -> A3<C> {
-        zip(rep(o), *self, dot)
-    }
+    fn mul(self, o: A3<B>) -> A3<C> { A3::rep(o).zip(*self, A3::dot) }
 }
 
 impl Deref for RotScale3 {

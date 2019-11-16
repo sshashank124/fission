@@ -6,7 +6,7 @@ use std::str::FromStr;
 use std::sync::Arc;
 
 use crate::geometry::*;
-use crate::structure::*;
+use crate::shape::*;
 use crate::util::*;
 
 
@@ -147,7 +147,7 @@ fn parse_f3<'a, It>(tokens: &mut It) -> Res<F3>
 #[inline(always)]
 fn parse_f2<'a, It>(tokens: &mut It) -> Res<F2>
         where It: Iterator<Item=&'a str> {
-    Ok(P2(parse(tokens)?, parse(tokens)?))
+    Ok(A2(parse(tokens)?, parse(tokens)?))
 }
 
 #[inline(always)]

@@ -3,7 +3,7 @@ use std::ops::{BitOr, Mul, Div, Deref};
 use super::*;
 
 use crate::op;
-use crate::structure::*;
+use crate::shape::*;
 
 
 #[derive(Clone, Copy)]
@@ -53,21 +53,8 @@ impl Intersectable for BBox {
     #[inline(always)] fn hit_info(&self, its: Its) -> Its { its }
 }
 
-impl BitOr for BBox {
-    type Output = BBox;
-    #[inline(always)]
-    fn bitor(self, bbox: BBox) -> BBox {
-        BBox(zip(*self, *bbox, BitOr::bitor))
-    }
-}
-
-impl BitOr<P> for BBox {
-    type Output = BBox;
-    #[inline(always)]
-    fn bitor(self, p: P) -> BBox {
-        BBox(zip(*self, *p, BitOr::bitor))
-    }
-}
+op!(BitOr::bitor, *BBox -> *BBox -> BBox);
+op!(BitOr::bitor, *BBox ->    *P -> BBox);
 
 op!(Mul::mul, T -> *BBox -> BBox);
 op!(Div::div, T -> *BBox -> BBox);

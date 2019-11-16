@@ -1,4 +1,4 @@
-pub mod bvh;
+mod bvh;
 
 use crate::geometry::*;
 

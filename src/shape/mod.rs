@@ -13,44 +13,44 @@ pub trait Intersectable {
     fn hit_info(&self, its: Its) -> Its;
 }
 
-pub struct Structure {
-    structure: StructureType,
+pub struct Shape {
+    shape: ShapeType,
     to_world: T,
 }
 
-pub enum StructureType {
-    BVH(BVH<Structure>),
+pub enum ShapeType {
+    BVH(BVH<Shape>),
     Mesh(Mesh),
 }
 
-impl Structure {
+impl Shape {
     #[inline(always)]
-    pub fn new<S>(obj: S, to_world: T) -> Self where S: Into<StructureType> {
-        Self { structure: obj.into(), to_world }
+    pub fn new<S>(obj: S, to_world: T) -> Self where S: Into<ShapeType> {
+        Self { shape: obj.into(), to_world }
     }
 }
 
-impl Intersectable for Structure {
+impl Intersectable for Shape {
     #[inline(always)] fn bbox(&self, t: T) -> BBox {
-        self.structure.bbox(t * self.to_world)
+        self.shape.bbox(t * self.to_world)
     }
 
     #[inline(always)]
     fn intersects(&self, ray: R) -> bool {
-        self.structure.intersects(self.to_world / ray)
+        self.shape.intersects(self.to_world / ray)
     }
 
     #[inline(always)]
     fn intersect(&self, ray: R) -> Option<Its> {
-        self.structure.intersect(self.to_world / ray)
+        self.shape.intersect(self.to_world / ray)
                       .map(|its| self.to_world * its)
     }
 
     #[inline(always)]
-    fn hit_info(&self, its: Its) -> Its { self.structure.hit_info(its) }
+    fn hit_info(&self, its: Its) -> Its { self.shape.hit_info(its) }
 }
 
-impl Intersectable for StructureType {
+impl Intersectable for ShapeType {
     #[inline(always)]
     fn bbox(&self, t: T) -> BBox {
         match self {
@@ -84,12 +84,12 @@ impl Intersectable for StructureType {
     }
 }
 
-impl From<BVH<Structure>> for StructureType {
+impl From<BVH<Shape>> for ShapeType {
     #[inline(always)]
-    fn from(s: BVH<Structure>) -> Self { Self::BVH(s) }
+    fn from(s: BVH<Shape>) -> Self { Self::BVH(s) }
 }
 
-impl From<Mesh> for StructureType {
+impl From<Mesh> for ShapeType {
     #[inline(always)]
     fn from(s: Mesh) -> Self { Self::Mesh(s) }
 }

@@ -53,7 +53,7 @@ impl<B, C> Mul<A3<B>> for Affine3 where B: Copy + Mul<F, Output=C>,
                                         C: Add<F, Output=C> {
     type Output = A3<C>;
     #[inline(always)]
-    fn mul(self, o: A3<B>) -> A3<C> { zip(self.r * o, self.t, Add::add) }
+    fn mul(self, o: A3<B>) -> A3<C> { (self.r * o).zip(self.t, Add::add) }
 }
 
 impl Add<F3> for Affine3 {

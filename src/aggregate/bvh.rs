@@ -4,7 +4,7 @@ use either::Either;
 
 use super::*;
 
-use crate::structure::*;
+use crate::shape::*;
 
 
 pub struct BVH<S> {

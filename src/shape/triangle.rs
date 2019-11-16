@@ -76,7 +76,7 @@ impl Triangle {
         if v < 0. || u + v > 1. { return None; }
 
         let t = self.ac().dot(q) * dinv;
-        if ray.tb.bounds(t) { Some((t, P2(u, v))) }
+        if ray.tb.bounds(t) { Some((t, A2(u, v))) }
         else { None }
     }
 }
@@ -101,10 +101,10 @@ impl Intersectable for Triangle {
 
     #[inline(always)]
     fn hit_info(&self, mut its: Its) -> Its {
-        let bary = A3(1. - its.uv[0] - its.uv[1], its.uv[0], its.uv[1]);
-        its.p = dot(self.abc(), bary);
+        let bary = A3(F::ONE - its.uv[0] - its.uv[1], its.uv[0], its.uv[1]);
+        its.p = self.abc().dot(bary);
         its.n = if self.n.is_empty() { self.n() }
-                else { dot(self.abcn(), bary) };
+                else { self.abcn().dot(bary) };
         its
     }
 }

@@ -9,7 +9,7 @@ mod integrator;
 mod loader;
 mod sampler;
 mod scene;
-mod structure;
+mod shape;
 mod tracer;
 mod types;
 mod util;
