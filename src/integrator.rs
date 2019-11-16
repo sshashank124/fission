@@ -39,7 +39,7 @@ impl Integrator {
                 let mut sampler = self.sampler.clone_seeded((i, &block));
 
                 let render_pixel = |pos: I2| {
-                    sampler.prepare_pixel(pos);
+                    sampler.prepare_for_pixel(pos);
 
                     let sample_pos = pos + sampler.next_2d();
                     let ray = camera.ray_at(sample_pos, &mut sampler);

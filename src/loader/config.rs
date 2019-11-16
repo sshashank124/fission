@@ -11,6 +11,7 @@ use crate::integrator::*;
 use crate::loader::obj;
 use crate::sampler::*;
 use crate::scene::*;
+use crate::structure::*;
 use crate::tracer::*;
 use crate::util::*;
 
@@ -70,26 +71,30 @@ fn load_scene(config: &Yaml) -> Res<Scene> {
     let camera = load_camera(&config["camera"])
                      .with_msg("failed to parse camera config")?;
 
-    let shapes = load_shapes(&config["shapes"])
-                         .with_msg("failed to parse shapes config")?;
+    let shapes = v(&config["shapes"], "missing list of shapes")?
+                    .iter()
+                    .flat_map(|c| load_structure(c))
+                    .collect::<Vec<_>>();
 
-    Ok(Scene::new(camera, shapes))
+    let root = Structure::new(BVH::new(shapes), T::ONE);
+    Ok(Scene::new(root, camera))
 }
 
-fn load_shapes(config: &Yaml) -> Res<Mesh> {
-    let shapes = v(config, "missing list of shapes")?
-                     .iter()
-                     .flat_map(|c| load_mesh(c))
-                     .flatten().collect::<Vec<_>>();
-
-    Ok(Mesh::new(shapes))
-}
-
-fn load_mesh(config: &Yaml) -> Res<Vec<Triangle>> {
+fn load_structure(config: &Yaml) -> Res<Structure> {
     let to_world = load_transforms(&config["transforms"])?;
 
+    let st: StructureType =
+        match s(&config["type"], "missing structure type")? {
+            "mesh" => load_mesh(config)?.into(),
+            _ => return Err("unknown structure type".into()),
+        };
+
+    Ok(Structure::new(st, to_world))
+}
+
+fn load_mesh(config: &Yaml) -> Res<Mesh> {
     let filename = s(&config["obj"], "malformed filename")?;
-    obj::load_from_file(filename, to_world)
+    obj::load_from_file(filename)
 }
 
 fn load_camera(config: &Yaml) -> Res<Camera> {

@@ -15,7 +15,7 @@ pub type BlockSeed<'a> = (I, &'a Block);  // (sample iteration, pixel)
 
 pub trait Sample {
     fn clone_for_block(&self, seed: BlockSeed) -> Self;
-    fn prepare_pixel(&mut self, pos: I2);
+    fn prepare_for_pixel(&mut self, pos: I2);
 
     fn next_1d(&mut self) -> F;
     fn next_2d(&mut self) -> F2;
@@ -68,10 +68,10 @@ impl Sample for SamplerType {
     }
 
     #[inline(always)]
-    fn prepare_pixel(&mut self, pos: I2) {
+    fn prepare_for_pixel(&mut self, pos: I2) {
         match self {
-            Self::Independent(s) => s.prepare_pixel(pos),
-            Self::Sobol(s) => s.prepare_pixel(pos),
+            Self::Independent(s) => s.prepare_for_pixel(pos),
+            Self::Sobol(s) => s.prepare_for_pixel(pos),
         }
     }
 

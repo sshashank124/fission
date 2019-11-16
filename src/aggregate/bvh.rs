@@ -4,6 +4,8 @@ use either::Either;
 
 use super::*;
 
+use crate::structure::*;
+
 
 pub struct BVH<S> {
     nodes: Vec<BVHNode>,
@@ -214,11 +216,11 @@ fn partition<E, FN>(items: &mut [E], pred: FN) -> I
 impl<S> Intersectable for BVH<S> where S: Intersectable {
     #[inline(always)]
     fn bbox(&self, t: T) -> BBox {
-        t * self.nodes[0].bbox
+        self.elements.iter().fold(BBox::ZERO, |bbox, e| bbox | e.bbox(t))
     }
 
     #[inline(always)]
-    fn intersects(&self, ray: &R) -> bool {
+    fn intersects(&self, ray: R) -> bool {
         self.fold(ray.d.map(|i| i > 0.), false,
                   |_, node| node.bbox.intersects(ray),
                   |_, isectable| {
@@ -228,18 +230,15 @@ impl<S> Intersectable for BVH<S> where S: Intersectable {
     }
 
     #[inline(always)]
-    fn intersect(&self, ray: &mut R) -> Option<Its> {
+    fn intersect(&self, ray: R) -> Option<Its> {
         self.fold(ray.d.map(|i| i > 0.), (ray, None),
-                  |(ray, _), node| node.bbox.intersects(ray),
+                  |(ray, _), node| node.bbox.intersects(*ray),
                   |(ray, acc), isectable| {
-                      let acc = isectable.intersect(ray)
-                                         .map(|it| (isectable, it))
-                                         .or(acc);
-                      Either::Right((ray, acc))
-                  }).1.map(|(closest, mut its)| {
-                               closest.hit_info(&mut its); its
-                           })
+                      Either::Right(isectable.intersect(ray).map(|it| {
+                          (ray.clipped(it.t), Some((isectable, it)))
+                      }).unwrap_or((ray, acc)))
+                  }).1.map(|(closest, its)| closest.hit_info(its))
     }
     
-    #[inline(always)] fn hit_info(&self, _: &mut Its) { }
+    #[inline(always)] fn hit_info(&self, its: Its) -> Its { its }
 }

@@ -3,6 +3,7 @@ use std::ops::{Mul, Div};
 use super::*;
 
 
+#[derive(Clone, Copy)]
 pub struct R {
     pub o: P,
     pub d: V,
@@ -23,7 +24,10 @@ impl R {
     #[inline(always)]
     pub fn at(&self, t: F) -> P { self.o + self.d * t }
 
-    #[inline(always)] pub fn clip(&mut self, t: F) { self.tb.set_upper(t) }
+    #[inline(always)] pub fn clipped(self, t: F) -> R {
+        R::r(self.o, self.d, self.d_inv, self.tb.with_upper(t))
+        // self.tb = self.tb.with_upper(t); self
+    }
 }
 
 impl Mul<R> for T {

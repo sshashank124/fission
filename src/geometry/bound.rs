@@ -20,8 +20,6 @@ impl B {
 
     #[inline(always)] pub fn with_upper(self, u: F) -> B { B(self.0, u) }
 
-    #[inline(always)] pub fn set_upper(&mut self, u: F) { self.1 = u; }
-
     #[inline(always)]
     pub fn bounds(self, f: F) -> bool { self.0 <= f && f <= self.1 }
 

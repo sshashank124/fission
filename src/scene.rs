@@ -1,23 +1,22 @@
 use std::ops::Deref;
 
-use crate::aggregate::*;
 use crate::camera::Camera;
+use crate::structure::Structure;
 
 
 pub struct Scene {
-    objs: Mesh,
+    objects: Structure,
     pub camera: Camera,
 }
 
 impl Scene {
     #[inline(always)]
-    pub fn new(camera: Camera, objs: Mesh) -> Scene {
-        Scene { objs, camera }
+    pub fn new(objects: Structure, camera: Camera) -> Scene {
+        Scene { objects, camera }
     }
 }
 
 impl Deref for Scene {
-    type Target = Mesh;
-    #[inline(always)]
-    fn deref(&self) -> &Mesh { &self.objs }
+    type Target = Structure;
+    #[inline(always)] fn deref(&self) -> &Self::Target { &self.objects }
 }

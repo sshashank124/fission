@@ -1,7 +1,9 @@
 use std::ops::{BitOr, Mul, Div, Deref};
 
 use super::*;
+
 use crate::op;
+use crate::structure::*;
 
 
 #[derive(Clone, Copy)]
@@ -46,7 +48,7 @@ impl Intersectable for BBox {
     #[inline(always)] fn bbox(&self, _: T) -> BBox { *self }
 
     #[inline(always)]
-    fn intersects(&self, ray: &R) -> bool {
+    fn intersects(&self, ray: R) -> bool {
         let mut b = ray.tb & ((self[X] - ray.o[X]) * ray.d_inv[X]);
         if b.degen() { return false; }
         b = b & ((self[Y] - ray.o[Y]) * ray.d_inv[Y]);
@@ -55,9 +57,9 @@ impl Intersectable for BBox {
         !b.degen()
     }
 
-    #[inline(always)] fn intersect(&self, _: &mut R) -> Option<Its> { None }
+    #[inline(always)] fn intersect(&self, _: R) -> Option<Its> { None }
 
-    #[inline(always)] fn hit_info(&self, _: &mut Its) { }
+    #[inline(always)] fn hit_info(&self, its: Its) -> Its { its }
 }
 
 impl BitOr for BBox {

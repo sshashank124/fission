@@ -4,6 +4,8 @@ use std::sync::Arc;
 use super::*;
 
 
+pub type Mesh = BVH<Triangle>;
+
 pub struct Triangle {
     pub f: Face,
     pub mesh_data: Arc<MeshData>,
@@ -59,7 +61,7 @@ impl Triangle {
     #[inline(always)] fn n(&self) -> N { N(self.ab().cross(self.ac())) }
 
     #[inline(always)]
-    fn intersection_point(&self, ray: &R) -> Option<(F, F2)> {
+    fn intersection_point(&self, ray: R) -> Option<(F, F2)> {
         let pv = ray.d.cross(self.ac());
         let det = self.ab().dot(pv);
         if det.abs() < F::EPSILON { return None; }
@@ -86,24 +88,24 @@ impl Intersectable for Triangle {
     }
 
     #[inline(always)]
-    fn intersects(&self, ray: &R) -> bool {
+    fn intersects(&self, ray: R) -> bool {
         self.intersection_point(ray).is_some()
     }
 
     #[inline(always)]
-    fn intersect(&self, ray: &mut R) -> Option<Its> {
+    fn intersect(&self, ray: R) -> Option<Its> {
         self.intersection_point(ray).map(|(t, uv)| {
-            ray.clip(t);
-            Its::new(P::ZERO, N::ZERO, uv)
+            Its::new(P::ZERO, N::ZERO, uv, t)
         })
     }
 
     #[inline(always)]
-    fn hit_info(&self, its: &mut Its) {
-            let bary = A3(1. - its.uv[0] - its.uv[1], its.uv[0], its.uv[1]);
-            its.p = dot(self.abc(), bary);
-            its.n = if self.n.is_empty() { self.n() }
-                    else { dot(self.abcn(), bary) };
+    fn hit_info(&self, mut its: Its) -> Its {
+        let bary = A3(1. - its.uv[0] - its.uv[1], its.uv[0], its.uv[1]);
+        its.p = dot(self.abc(), bary);
+        its.n = if self.n.is_empty() { self.n() }
+                else { dot(self.abcn(), bary) };
+        its
     }
 }
 

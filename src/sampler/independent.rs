@@ -22,7 +22,7 @@ impl Sample for Independent {
                         (*x as u64))
     }
 
-    #[inline(always)] fn prepare_pixel(&mut self, _: I2) { }
+    #[inline(always)] fn prepare_for_pixel(&mut self, _: I2) { }
 
     #[inline(always)] fn next_1d(&mut self) -> F { self.next_ft() }
 

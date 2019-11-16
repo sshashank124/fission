@@ -1,6 +1,10 @@
+image blocks rendering
+
 mitchell-netravali
 
-BSSRDF
+sphere structure
+
+BSDF
 
 point lights
 
@@ -9,6 +13,8 @@ DirectLighting
 emissive surfaces
 
 area lights
+
+BSSRDF
 
 MCIntegrators
 

@@ -6,12 +6,13 @@ use std::str::FromStr;
 use std::sync::Arc;
 
 use crate::geometry::*;
+use crate::structure::*;
 use crate::util::*;
 
 
-pub fn load_from_file(filename: &str, to_world: T) -> Res<Vec<Triangle>> {
+pub fn load_from_file(filename: &str) -> Res<Mesh> {
     let f = File::open(filename).with_msg("Error opening OBJ file")?;
-    ObjLoader::new(to_world).load(BufReader::new(f))
+    ObjLoader::new().load(BufReader::new(f))
 }
 
 struct ObjLoader {
@@ -19,7 +20,6 @@ struct ObjLoader {
     obj_data: MeshData,
     faces: Vec<Face>,
     vertex_map: HashMap<Vertex, I>,
-    to_world: T,
 }
 
 #[derive(Eq, Hash, PartialEq)]
@@ -31,17 +31,16 @@ struct Vertex {
 
 impl ObjLoader {
     #[inline(always)]
-    fn new(to_world: T) -> ObjLoader {
+    fn new() -> ObjLoader {
         ObjLoader {
             tmp_data: MeshData::new(),
             obj_data: MeshData::new(),
             faces: Vec::new(),
             vertex_map: HashMap::new(),
-            to_world,
         }
     }
 
-    fn load<B>(mut self, mut buf: B) -> Res<Vec<Triangle>> where B: BufRead {
+    fn load<B>(mut self, mut buf: B) -> Res<Mesh> where B: BufRead {
         let mut line = String::with_capacity(120);
         while buf.read_line(&mut line).with_msg("Error reading line")? > 0 {
             let mut tokens = line[..].split_whitespace();
@@ -62,13 +61,13 @@ impl ObjLoader {
             f, mesh_data: mesh_data.clone(),
         }).collect();
 
-        Ok(triangles)
+        Ok(Mesh::new(triangles))
     }
 
     #[inline(always)]
     fn add_point<'a, It>(&mut self, tokens: &mut It) -> Res<()>
             where It: Iterator<Item=&'a str> {
-        self.tmp_data.p.push(self.to_world * P(parse_f3(tokens)?));
+        self.tmp_data.p.push(P(parse_f3(tokens)?));
         Ok(())
     }
 
@@ -82,7 +81,7 @@ impl ObjLoader {
     #[inline(always)]
     fn add_normal<'a, It>(&mut self, tokens: &mut It) -> Res<()>
             where It: Iterator<Item=&'a str> {
-        self.tmp_data.n.push(self.to_world * N(V(parse_f3(tokens)?).unit()));
+        self.tmp_data.n.push(N(V(parse_f3(tokens)?).unit()));
         Ok(())
     }
 
