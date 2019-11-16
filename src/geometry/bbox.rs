@@ -14,15 +14,9 @@ impl Zero for BBox {
 }
 
 impl BBox {
-    #[inline(always)]
-    pub fn center(&self) -> P {
-        P(self.map(B::center))
-    }
+    #[inline(always)] pub fn center(&self) -> P { P(self.map(B::center)) }
 
-    #[inline(always)]
-    pub fn extents(&self) -> F3 {
-        self.map(B::extent)
-    }
+    #[inline(always)] pub fn extents(&self) -> F3 { self.map(B::extent) }
 
     #[inline(always)]
     pub fn max_extent(&self) -> (Dim, F) {
@@ -30,11 +24,8 @@ impl BBox {
         if ye > xe {
             if ze > ye { (Z, ze) }
             else { (Y, ye) }
-        } else if ze > xe {
-            (Z, ze)
-        } else {
-            (X, xe)
-        }
+        } else if ze > xe { (Z, ze) }
+        else { (X, xe) }
     }
 
     #[inline(always)]

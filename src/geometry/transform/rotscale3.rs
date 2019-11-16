@@ -7,46 +7,40 @@ use super::*;
 pub struct RotScale3(A3<F3>);
 
 impl One for RotScale3 {
-    const ONE: Self = RotScale3(A3(F3::X, F3::Y, F3::Z));
+    const ONE: Self = Self(A3(F3::X, F3::Y, F3::Z));
 }
 
 impl RotScale3 {
     #[inline(always)]
-    pub fn from_rows(r1: F3, r2: F3, r3: F3) -> RotScale3 {
-        RotScale3(A3(r1, r2, r3))
+    pub fn from_rows(r1: F3, r2: F3, r3: F3) -> Self { Self(A3(r1, r2, r3)) }
+
+    #[inline(always)]
+    pub fn from_cols(c1: F3, c2: F3, c3: F3) -> Self {
+        Self::from_rows(c1, c2, c3).t()
     }
 
     #[inline(always)]
-    pub fn from_cols(c1: F3, c2: F3, c3: F3) -> RotScale3 {
-        RotScale3::from_rows(c1, c2, c3).tr()
-    }
+    pub fn from_diag(d: F3) -> Self { Self(Self::ONE.zip(d, Mul::mul)) }
 
     #[inline(always)]
-    pub fn from_diag(d: F3) -> RotScale3 {
-        RotScale3(zip(*Self::ONE, d, Mul::mul))
-    }
+    pub fn scale(v: F3) -> Self { Self::from_diag(v) }
 
     #[inline(always)]
-    pub fn scale(v: F3) -> RotScale3 { RotScale3::from_diag(v) }
-
-    #[inline(always)]
-    pub fn rotate(axis: F3, theta: F) -> RotScale3 {
+    pub fn rotate(axis: F3, theta: F) -> Self {
+        // TODO refactor into more abstract operations
         let V(A3(x, y, z)) = V(axis).unit();
-        let c = theta.cosd(); let cc = 1. - c; let s = theta.sind();
-        Self::from_rows(A3(c+x.sq()*cc, x*y*cc-z*s, x*z*cc+y*s),
-                        A3(y*x*cc+z*s, c+y.sq()*cc, y*z*cc-x*s),
-                        A3(z*x*cc-y*s, z*y*cc+x*s, c+z.sq()*cc))
+        let ct = theta.cosd(); let cc = 1. - ct; let st = theta.sind();
+        Self::from_rows(A3(ct+x.sq()*cc, x*y*cc-z*st, x*z*cc+y*st),
+                        A3(y*x*cc+z*st, ct+y.sq()*cc, y*z*cc-x*st),
+                        A3(z*x*cc-y*st, z*y*cc+x*st, ct+z.sq()*cc))
     }
 
-    #[inline(always)] pub fn tr(self) -> RotScale3 { RotScale3(self.t()) }
+    #[inline(always)] pub fn t(&self) -> Self { Self(self.unzip(A3)) }
 }
 
 impl Mul for RotScale3 {
-    type Output = RotScale3;
-    #[inline(always)]
-    fn mul(self, m: RotScale3) -> RotScale3 {
-        RotScale3(self * *m)
-    }
+    type Output = Self;
+    #[inline(always)] fn mul(self, m: Self) -> Self { Self(self * *m) }
 }
 
 impl<B, C> Mul<A3<B>> for RotScale3 where B: Copy + Mul<F, Output=C>,

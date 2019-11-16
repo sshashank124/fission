@@ -7,8 +7,6 @@ pub use square::Square;
 pub use gaussian::Gaussian;
 
 
-pub const FILTER_RESOLUTION: usize = 32;
-
 pub trait Filter {
     fn eval(&self, dist: F) -> F;
     fn radius(&self) -> F;

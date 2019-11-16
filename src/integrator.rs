@@ -11,8 +11,6 @@ use crate::tracer::*;
 use crate::types::*;
 
 
-const BLOCK_SIZE: I2 = P2(8, 8);
-
 pub struct Integrator {
     tracer: Tracer,
     sampler: Sampler,
@@ -53,7 +51,7 @@ impl Integrator {
                 pixels.for_each(render_pixel);
             };
 
-            img.as_block().blocks(BLOCK_SIZE)
+            img.as_block().blocks()
                           .par_bridge()
                           .for_each(render_block);
         };

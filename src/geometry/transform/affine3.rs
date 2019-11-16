@@ -34,7 +34,7 @@ impl Affine3 {
     }
 
     #[inline(always)]
-    pub fn tr(self) -> Affine3 { Affine3::new(self.r.tr(), F3::ZERO) }
+    pub fn t(self) -> Affine3 { Affine3::new(self.r.t(), F3::ZERO) }
 
     #[inline(always)]
     pub fn rot(self) -> Affine3 { Affine3::new(self.r, F3::ZERO) }

@@ -55,7 +55,7 @@ impl Sim3 {
     #[inline(always)] pub fn inv(self) -> Sim3 { Sim3::new(self.i, self.f) }
 
     #[inline(always)]
-    pub fn tr(self) -> Sim3 { Sim3::new(self.f.tr(), self.i.tr()) }
+    pub fn t(self) -> Sim3 { Sim3::new(self.f.t(), self.i.t()) }
 
     #[inline(always)]
     pub fn rot(self) -> Sim3 { Sim3::new(self.f.rot(), self.i.rot()) }

@@ -23,7 +23,7 @@ impl<N> A3<N> where N: Num {
 pub fn dot<A, B, C>(a: A3<A>, b: A3<B>) -> C
         where A: Mul<B, Output=C>,
               C: Add<C, Output=C> {
-    zip(a, b, Mul::mul).reduce(Add::add)
+    a.zip(b, Mul::mul).reduce(Add::add)
 }
 
 #[macro_export]
@@ -61,33 +61,29 @@ macro_rules! op {
 
 macro_rules! cw_unary_op {
     ($trait:ident, $op:ident) => {
-        impl<N> $trait for A3<N> where N: $trait<Output=N> {
-            type Output = A3<N>;
-            #[inline(always)]
-            fn $op(self) -> A3<N> {
-                self.map($trait::$op)
-            }
+        impl<A> $trait for A3<A> where A: $trait<Output=A> {
+            type Output = A3<A>;
+            #[inline(always)] fn $op(self) -> A3<A> { map(self, $trait::$op) }
         }
     }
 }
 
 macro_rules! cw_binary_op {
     ($trait:ident, $op:ident) => {
-        impl<N> $trait for A3<N> where N: Num {
-            type Output = A3<N>;
+        impl<A, B, C> $trait<A3<B>> for A3<A> where A: $trait<B, Output=C> {
+            type Output = A3<C>;
             #[inline(always)]
-            fn $op(self, b: A3<N>) -> A3<N> {
-                zip(self, b, $trait::$op)
-            }
+            fn $op(self, b: A3<B>) -> Self::Output { zip(self, b, $trait::$op) }
         }
     }
 }
 
 macro_rules! cw_binary_assign_op {
     ($trait:ident, $op:ident) => {
-        impl<N> $trait for A3<N> where N: Num {
+        impl<A, B> $trait<A3<B>> for A3<A> where A: $trait<B>,
+                                                 B: Copy {
             #[inline(always)]
-            fn $op(&mut self, b: A3<N>) {
+            fn $op(&mut self, b: A3<B>) {
                 $trait::$op(&mut self[X], b[X]);
                 $trait::$op(&mut self[Y], b[Y]);
                 $trait::$op(&mut self[Z], b[Z]);
@@ -98,11 +94,12 @@ macro_rules! cw_binary_assign_op {
 
 macro_rules! scalar_binary_op {
     ($trait:ident, $op:ident) => {
-        impl<N> $trait<N> for A3<N> where N: Num {
-            type Output = A3<N>;
+        impl<A, B, N> $trait<N> for A3<A> where N: Num,
+                                                A: $trait<N, Output=B> {
+            type Output = A3<B>;
             #[inline(always)]
-            fn $op(self, b: N) -> A3<N> {
-                $trait::$op(self, rep(b))
+            fn $op(self, n: N) -> Self::Output {
+                $trait::$op(self, rep(n))
             }
         }
     }
@@ -110,10 +107,11 @@ macro_rules! scalar_binary_op {
 
 macro_rules! scalar_binary_assign_op {
     ($trait:ident, $op:ident) => {
-        impl<N> $trait<N> for A3<N> where N: Num {
+        impl<A, N> $trait<N> for A3<A> where N: Num,
+                                             A: $trait<N> {
             #[inline(always)]
-            fn $op(&mut self, b: N) {
-                $trait::$op(self, rep(b))
+            fn $op(&mut self, n: N) {
+                $trait::$op(self, rep(n))
             }
         }
     }

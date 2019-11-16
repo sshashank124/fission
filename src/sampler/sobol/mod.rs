@@ -39,14 +39,14 @@ impl Sobol {
     fn sample_index(&self) -> u64 {
         if self.m == 0 { return 0; }
         let P2(x, y) = self.pixel_pos - self.block_pos;
-        let mut d = self.cache.d ^ (y as u64) | ((x as u64) << self.m);
-        let mut i = self.cache.i;
+        let mut delta = self.cache.d ^ (y as u64) | ((x as u64) << self.m);
+        let mut index = self.cache.i;
         let mut c = 0;
-        while d != 0 {
-            if (d & 1) == 1 { i ^= self.cache.vdc_inv[c]; }
-            d >>= 1; c += 1;
+        while delta != 0 {
+            if (delta & 1) == 1 { index ^= self.cache.vdc_inv[c]; }
+            delta >>= 1; c += 1;
         }
-        i
+        index
     }
 }
 
