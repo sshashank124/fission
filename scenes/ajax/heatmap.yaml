@@ -1,0 +1,29 @@
+integrator:
+  tracer:
+    type: heatmap
+    scale: 20.
+
+  sampler:
+    type: sobol
+    samples_per_pixel: 64
+
+scene:
+  camera:
+    type: perspective
+    fov: 30.
+    resolution: [768, 768]
+
+    transforms:
+      - look_at:
+          origin: [-65.6055, 47.5762, 24.3583]
+          target: [-64.8161, 47.2211, 23.8576]
+          up: [0.299858, 0.934836, -0.190177]
+
+  shapes:
+    - type: mesh
+      obj: obj/ajax.obj
+
+    - type: mesh
+      obj: obj/plane.obj
+      transforms:
+        - scale: [100., 1., 100.]

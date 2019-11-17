@@ -10,9 +10,7 @@ pub struct Color(A3<F>);
 
 impl Color {
     #[inline(always)]
-    pub const fn rgb(r: F, g: F, b: F) -> Color {
-        Color(A3(r, g, b))
-    }
+    pub const fn rgb(r: F, g: F, b: F) -> Color { Color(A3(r, g, b)) }
 
     pub const BLACK: Color = Color(F3::ZERO);
     pub const WHITE: Color = Color(F3::ONE);

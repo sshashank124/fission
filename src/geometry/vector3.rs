@@ -18,9 +18,9 @@ impl V {
     #[inline(always)] pub fn unit(self) -> V { self / self.norm() }
 
     #[inline(always)]
-    pub fn shiftl(self) -> V { let A3(x, y, z) = *self; V::v(y, z, x) }
+    pub fn shiftl(self) -> V { V::v(self[Y], self[Z], self[X]) }
     #[inline(always)]
-    pub fn shiftr(self) -> V { let A3(x, y, z) = *self; V::v(z, x, y) }
+    pub fn shiftr(self) -> V { V::v(self[Z], self[X], self[Y]) }
 
     #[inline(always)]
     pub fn cross(self, v: V) -> V {

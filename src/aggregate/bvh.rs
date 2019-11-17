@@ -2,8 +2,7 @@ use std::mem;
 
 use either::Either;
 
-use super::*;
-
+use crate::geometry::*;
 use crate::shape::*;
 
 
@@ -12,12 +11,12 @@ pub struct BVH<S> {
     elements: Vec<S>,
 }
 
-struct BVHNode {
+pub struct BVHNode {
     bbox: BBox,
     node: BVHNodeType,
 }
 
-enum BVHNodeType {
+pub enum BVHNodeType {
     Leaf(I),
     Tree(Dim, I),
 }
@@ -40,21 +39,21 @@ impl<S> BVH<S> where S: Intersectable {
     }
 
     #[inline(always)]
-    fn fold<'a, A, P, F>(&'a self, trav_order: A3<bool>,
+    pub fn fold<'a, A, P, F>(&'a self, trav_order: A3<bool>,
                   mut acc: A, pred: P, f: F) -> A
-            where P: Fn(&A, &BVHNode) -> bool,
+            where P: Fn(&mut A, &BVHNode) -> bool,
                   F: Fn(A, &'a S) -> Either<A, A> {
         let mut idx = 0;
         let mut stack = [0; 32];
         let mut sp = 0;
         loop {
             let node = &self.nodes[idx as usize];
-            if pred(&acc, node) {
+            if pred(&mut acc, node) {
                 match &node.node {
                     BVHNodeType::Leaf(i) => {
-                        match f(acc, &self.elements[*i as usize]) {
+                        acc = match f(acc, &self.elements[*i as usize]) {
                             Either::Left(b) => { return b; },
-                            Either::Right(a) => { acc = a; },
+                            Either::Right(a) => a,
                         };
                         idx = if sp == 0 { break }
                               else { sp -= 1; stack[sp] };
@@ -100,8 +99,8 @@ impl BuildNode {
     fn size(&self) -> I { self.sizel + self.sizer + 1 }
 }
 
-fn flatten_tree(tree: &BuildNode, nodes: &mut Vec<BVHNode>, offset: I) {
-    let offset = offset + 1;
+fn flatten_tree(tree: &BuildNode, nodes: &mut Vec<BVHNode>, mut offset: I) {
+    offset += 1;
     let node = match &tree.node {
         BuildNodeType::Leaf(idx) => BVHNodeType::Leaf(*idx),
         BuildNodeType::Tree(split_dim, treel, _) => {
@@ -117,7 +116,7 @@ fn flatten_tree(tree: &BuildNode, nodes: &mut Vec<BVHNode>, offset: I) {
     }
 }
 
-const NUM_BUCKETS: I = 16;
+const NUM_BUCKETS: I = 24;
 
 #[derive(Clone, Copy)]
 struct Bucket {
@@ -163,13 +162,13 @@ fn build(build_infos: &mut [BuildInfo]) -> BuildNode {
         });
 
         let cost_of_split = |(a, b): (&[Bucket], &[Bucket])| {
-            let (n1, bbox1) = a.iter().fold((0, BBox::ZERO),
-                                  |(c, bb), Bucket { n, bbox }|
-                                      (c + n, bb | *bbox));
+            let range_cost = |r: &[Bucket]| {
+                r.iter().fold((0, BBox::ZERO),
+                              |(c, bb), Bucket{ n, bbox }| (c + n, bb | *bbox))
+            };
 
-            let (n2, bbox2) = b.iter().fold((0, BBox::ZERO),
-                                  |(c, bb), Bucket { n, bbox }|
-                                      (c + n, bb | *bbox));
+            let (n1, bbox1) = range_cost(a);
+            let (n2, bbox2) = range_cost(b);
 
             1. + (n1 as F * bbox1.surface_area() +
                   n2 as F * bbox2.surface_area()) /
@@ -231,13 +230,20 @@ impl<S> Intersectable for BVH<S> where S: Intersectable {
 
     #[inline(always)]
     fn intersect(&self, ray: R) -> Option<Its> {
-        self.fold(ray.d.map(|i| i > 0.), (ray, None),
-                  |(ray, _), node| node.bbox.intersects(*ray),
-                  |(ray, acc), isectable| {
-                      Either::Right(isectable.intersect(ray).map(|it| {
-                          (ray.clipped(it.t), Some((isectable, it)))
-                      }).unwrap_or((ray, acc)))
-                  }).1.map(|(closest, its)| closest.hit_info(its))
+        let (_, acc, i) =
+            self.fold(ray.d.map(|i| i > 0.), (ray, None, 0),
+                      |(ray, _, i), node| {
+                          *i += 1;
+                          node.bbox.intersects(*ray)
+                      },
+                      |(ray, acc, i), isectable| {
+                          Either::Right(isectable.intersect(ray).map(|it| {
+                              let i = i + it.i + 1;
+                              (ray.clipped(it.t), Some((isectable, it)), i)
+                          }).unwrap_or((ray, acc, i + 1)))
+                      });
+        acc.map(|(closest, mut its)| { its.i = i; closest.hit_info(its) })
+
     }
     
     #[inline(always)] fn hit_info(&self, its: Its) -> Its { its }

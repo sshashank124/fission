@@ -1,4 +1,5 @@
 #![feature(test)]
+#![allow(clippy::suspicious_arithmetic_impl)]
 
 mod aggregate;
 mod camera;
@@ -11,6 +12,7 @@ mod sampler;
 mod scene;
 mod shape;
 mod tracer;
+#[allow(dead_code)]
 mod types;
 mod util;
 mod warp;

@@ -43,12 +43,16 @@ fn load_from_doc(config: &Yaml) -> Res<Integrator> {
 
 fn load_tracer(config: &Yaml) -> Res<Tracer> {
     Ok(match s(&config["type"], "missing tracer type")? {
-        "silhouette" => Silhouette::new().into(),
-        "normals" => Normals::new().into(),
         "av" => {
             let rl = f(&config["ray_length"], "missing ray_length")?;
             AverageVisibility::new(rl).into()
         },
+        "heatmap" => {
+            let scale = f(&config["scale"], "missing scale")?;
+            HeatMap::new(scale).into()
+        },
+        "normals" => Normals::new().into(),
+        "silhouette" => Silhouette::new().into(),
         _ => return Err("unknown tracer type".into()),
     })
 }

@@ -95,7 +95,7 @@ impl Intersectable for Triangle {
     #[inline(always)]
     fn intersect(&self, ray: R) -> Option<Its> {
         self.intersection_point(ray).map(|(t, uv)| {
-            Its::new(P::ZERO, N::ZERO, uv, t)
+            Its::new(P::ZERO, N::ZERO, uv, t, 0)
         })
     }
 
