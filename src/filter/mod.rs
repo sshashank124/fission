@@ -12,39 +12,36 @@ pub trait Filter {
     fn radius(&self) -> F;
 }
 
-#[derive(Clone, Copy)]
+#[derive(Clone)]
 pub enum ReconstructionFilter {
     Square(Square),
     Gaussian(Gaussian),
 }
 
 impl ReconstructionFilter {
-    #[inline(always)] pub fn default() -> Self { Square::new(0.5).into() }
+    #[inline(always)] pub fn default() -> Self { Square::new(F::HALF).into() }
 }
 
 impl Filter for ReconstructionFilter {
     #[inline(always)]
     fn eval(&self, dist: F) -> F {
         match self {
-            ReconstructionFilter::Square(f) => f.eval(dist),
-            ReconstructionFilter::Gaussian(f) => f.eval(dist),
+            Self::Square(f) => f.eval(dist),
+            Self::Gaussian(f) => f.eval(dist),
         }
     }
 
     #[inline(always)]
     fn radius(&self) -> F {
         match self {
-            ReconstructionFilter::Square(f) => f.radius(),
-            ReconstructionFilter::Gaussian(f) => f.radius(),
+            Self::Square(f) => f.radius(),
+            Self::Gaussian(f) => f.radius(),
         }
     }
 }
 
-impl From<Square> for ReconstructionFilter {
-    #[inline(always)] fn from(square: Square) -> Self { Self::Square(square) }
-}
+impl From<Square> for ReconstructionFilter
+{ #[inline(always)] fn from(f: Square) -> Self { Self::Square(f) } }
 
-impl From<Gaussian> for ReconstructionFilter {
-    #[inline(always)]
-    fn from(gaussian: Gaussian) -> Self { Self::Gaussian(gaussian) }
-}
+impl From<Gaussian> for ReconstructionFilter
+{ #[inline(always)] fn from(f: Gaussian) -> Self { Self::Gaussian(f) } }

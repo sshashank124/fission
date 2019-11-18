@@ -36,22 +36,14 @@ impl Trace for Tracer {
     }
 }
 
-impl From<AverageVisibility> for Tracer {
-    #[inline(always)]
-    fn from(t: AverageVisibility) -> Self { Self::AV(t) }
-}
+impl From<AverageVisibility> for Tracer
+{ #[inline(always)] fn from(t: AverageVisibility) -> Self { Self::AV(t) } }
 
-impl From<HeatMap> for Tracer {
-    #[inline(always)]
-    fn from(t: HeatMap) -> Self { Self::HeatMap(t) }
-}
+impl From<HeatMap> for Tracer
+{ #[inline(always)] fn from(t: HeatMap) -> Self { Self::HeatMap(t) } }
 
-impl From<Normals> for Tracer {
-    #[inline(always)]
-    fn from(t: Normals) -> Self { Self::Normals(t) }
-}
+impl From<Normals> for Tracer
+{ #[inline(always)] fn from(t: Normals) -> Self { Self::Normals(t) } }
 
-impl From<Silhouette> for Tracer {
-    #[inline(always)]
-    fn from(t: Silhouette) -> Self { Self::Silhouette(t) }
-}
+impl From<Silhouette> for Tracer
+{ #[inline(always)] fn from(t: Silhouette) -> Self { Self::Silhouette(t) } }

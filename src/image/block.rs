@@ -47,7 +47,7 @@ impl Block {
     pub fn put(&mut self, offset: F2, color: Color) {
         let img = unsafe { &mut *self.img };
 
-        let offset = offset - A2(0.5, 0.5) - F2::from(self.pos);
+        let offset = offset - F2::HALF - F2::from(self.pos);
         let r = img.rfilter.radius();
         let lo = offset - r; let hi = offset + r;
         let (lx, ly) = (Num::max(lo[X].ceili(), 0),

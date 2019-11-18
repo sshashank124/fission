@@ -24,30 +24,24 @@ pub enum ShapeType {
 }
 
 impl Shape {
-    #[inline(always)]
-    pub fn new<S>(obj: S, to_world: T) -> Self where S: Into<ShapeType> {
-        Self { shape: obj.into(), to_world }
-    }
+    #[inline(always)] pub fn new(shape: ShapeType, to_world: T) -> Self
+    { Self { shape, to_world } }
 }
 
 impl Intersectable for Shape {
-    #[inline(always)] fn bbox(&self, t: T) -> BBox {
-        self.shape.bbox(t * self.to_world)
-    }
+    #[inline(always)] fn bbox(&self, t: T) -> BBox
+    { self.shape.bbox(t * self.to_world) }
+
+    #[inline(always)] fn intersects(&self, ray: R) -> bool
+    { self.shape.intersects(self.to_world / ray) }
 
     #[inline(always)]
-    fn intersects(&self, ray: R) -> bool {
-        self.shape.intersects(self.to_world / ray)
-    }
+    fn intersect(&self, ray: R) -> Option<Its>
+    { self.shape.intersect(self.to_world / ray)
+                .map(|its| self.to_world * its) }
 
-    #[inline(always)]
-    fn intersect(&self, ray: R) -> Option<Its> {
-        self.shape.intersect(self.to_world / ray)
-                      .map(|its| self.to_world * its)
-    }
-
-    #[inline(always)]
-    fn hit_info(&self, its: Its) -> Its { self.shape.hit_info(its) }
+    #[inline(always)] fn hit_info(&self, its: Its) -> Its
+    { self.shape.hit_info(its) }
 }
 
 impl Intersectable for ShapeType {
@@ -84,12 +78,8 @@ impl Intersectable for ShapeType {
     }
 }
 
-impl From<BVH<Shape>> for ShapeType {
-    #[inline(always)]
-    fn from(s: BVH<Shape>) -> Self { Self::BVH(s) }
-}
+impl From<BVH<Shape>> for ShapeType
+{ #[inline(always)] fn from(s: BVH<Shape>) -> Self { Self::BVH(s) } }
 
-impl From<Mesh> for ShapeType {
-    #[inline(always)]
-    fn from(s: Mesh) -> Self { Self::Mesh(s) }
-}
+impl From<Mesh> for ShapeType
+{ #[inline(always)] fn from(s: Mesh) -> Self { Self::Mesh(s) } }

@@ -1,111 +1,58 @@
-use std::ops::{Add, BitAnd, BitOr, Sub, Mul, Div};
+use std::ops::{Add, BitAnd, BitOr, Deref, Div, Mul, Sub};
 
 use super::*;
+use crate::op;
 
 
 #[derive(Clone, Copy)]
-pub struct B(pub F, pub F);
+pub struct B(pub F2);
 
-impl Zero for B {
-    const ZERO: Self = B(F::POS_INF, F::NEG_INF);
-}
+impl Zero for B { const ZERO: Self = B::b(F::POS_INF, F::NEG_INF); }
 
 impl B {
-    #[inline(always)] pub fn point(f: F) -> B { B(f, f) }
+    #[inline(always)] pub const fn b(l: F, u: F) -> B { B(A2(l, u)) }
+    #[inline(always)] pub fn point(f: F) -> B { B(A2::rep(f)) }
 
     #[inline(always)]
-    pub fn ordered(a: F, b: F) -> B { if a < b { B(a, b) } else { B(b, a) } }
+    pub fn ordered(a: F2) -> B
+    { if a[0] > a[1] { B::b(a[1], a[0]) } else { B::b(a[0], a[1]) } }
 
-    #[inline(always)] pub fn with_ceil(u: F) -> B { B(F::EPSILON, u) }
+    #[inline(always)] pub fn bounds(self, t: F) -> bool
+    { self[0] <= t && t <= self[1] }
 
-    #[inline(always)] pub fn with_upper(self, u: F) -> B { B(self.0, u) }
-
-    #[inline(always)]
-    pub fn bounds(self, f: F) -> bool { self.0 <= f && f <= self.1 }
-
-    #[inline(always)] pub fn degen(self) -> bool { self.0 > self.1 }
-
-    #[inline(always)]
-    pub fn overlaps(self, b: B) -> bool { self.0 < b.1 && b.0 < self.1 }
-
-    #[inline(always)] pub fn center(self) -> F { 0.5 * self.0 + 0.5 * self.1 }
-
-    #[inline(always)] pub fn extent(self) -> F { self.1 - self.0 }
-
-    pub const INF:      B = B(F::NEG_INF, F::POS_INF);
-    pub const POSITIVE: B = B(F::EPSILON, F::POS_INF);
+    #[inline(always)] pub fn degen(self) -> bool { self[0] > self[1] }
+    #[inline(always)] pub fn center(self) -> F { self.dot(F2::HALF) }
+    #[inline(always)] pub fn extent(self) -> F { self[1] - self[0] }
 }
 
-impl Add for B {
-    type Output = B;
-    #[inline(always)]
-    fn add(self, B(l, u): B) -> B {
-        B(self.0 + l, self.1 + u)
-    }
+op!(Add::add, *B -> *B -> B);
+op!(Add::add, *B ->  F -> B);
+op!(Sub::sub, *B ->  F -> B);
+
+impl Mul<F> for B { type Output = B;
+    #[inline(always)] fn mul(self, f: F) -> B { B::ordered(*self * f) }
 }
 
-impl Add<F> for B {
-    type Output = B;
-    #[inline(always)]
-    fn add(self, f: F) -> B {
-        B(self.0 + f, self.1 + f)
-    }
+impl Div<F> for B { type Output = B;
+    #[inline(always)] fn div(self, f: F) -> B { self * f.inv() }
 }
 
-impl Sub<F> for B {
-    type Output = B;
+impl BitOr for B { type Output = B;
     #[inline(always)]
-    fn sub(self, f: F) -> B {
-        B(self.0 - f, self.1 - f)
-    }
+    fn bitor(self, b: B) -> B
+    { B::b(F::min(self[0], b[0]), F::max(self[1], b[1])) }
 }
 
-impl Mul<F> for B {
-    type Output = B;
-    #[inline(always)]
-    fn mul(self, f: F) -> B {
-        B::ordered(self.0 * f, self.1 * f)
-    }
+impl BitOr<F> for B { type Output = B;
+    #[inline(always)] fn bitor(self, f: F) -> B { self | B::point(f) }
 }
 
-impl Mul<B> for F {
-    type Output = B;
+impl BitAnd for B { type Output = B;
     #[inline(always)]
-    fn mul(self, b: B) -> B {
-        b * self
-    }
+    fn bitand(self, b: B) -> B
+    { B::b(F::max(self[0], b[0]), F::min(self[1], b[1])) }
 }
 
-impl Div<F> for B {
-    type Output = B;
-    #[inline(always)]
-    fn div(self, f: F) -> B {
-        self * f.inv()
-    }
-}
-
-// Union
-impl BitOr for B {
-    type Output = B;
-    #[inline(always)]
-    fn bitor(self, B(l, u): B) -> B {
-        B(F::min(self.0, l), F::max(self.1, u))
-    }
-}
-
-impl BitOr<F> for B {
-    type Output = B;
-    #[inline(always)]
-    fn bitor(self, f: F) -> B {
-        self | B::point(f)
-    }
-}
-
-// Intersection
-impl BitAnd for B {
-    type Output = B;
-    #[inline(always)]
-    fn bitand(self, B(l, u): B) -> B {
-        B(F::max(self.0, l), F::min(self.1, u))
-    }
+impl Deref for B { type Target = F2;
+    #[inline(always)] fn deref(&self) -> &F2 { &self.0 }
 }

@@ -12,7 +12,6 @@ mod sampler;
 mod scene;
 mod shape;
 mod tracer;
-#[allow(dead_code)]
 mod types;
 mod util;
 mod warp;

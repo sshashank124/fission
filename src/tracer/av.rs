@@ -8,22 +8,18 @@ pub struct AverageVisibility {
 }
 
 impl AverageVisibility {
-    #[inline(always)]
-    pub fn new(ray_len: F) -> AverageVisibility {
-        AverageVisibility { ray_len }
-    }
+    #[inline(always)] pub fn new(ray_len: F) -> Self { Self { ray_len } }
 }
 
 impl Trace for AverageVisibility {
     #[inline(always)]
-    fn trace(&self, scene: &Scene, sampler: &mut Sampler, ray: R)
-            -> Color {
+    fn trace(&self, scene: &Scene, sampler: &mut Sampler, ray: R) -> Color {
         match scene.intersect(ray) {
             None => Color::WHITE,
             Some(its) => {
-                let dir = T::from_dir(*its.n.unitn())
+                let dir = T::from_frame(*its.n.unitn())
                         * V(warp::uniform_hemisphere(sampler.next_2d()));
-                let ray = R::new(its.p, dir, B::with_ceil(self.ray_len));
+                let ray = R::r(its.p, dir, self.ray_len);
                 if scene.intersects(ray) { Color::BLACK }
                 else { Color::WHITE }
             }

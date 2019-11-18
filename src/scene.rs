@@ -10,13 +10,10 @@ pub struct Scene {
 }
 
 impl Scene {
-    #[inline(always)]
-    pub fn new(shapes: Shape, camera: Camera) -> Scene {
-        Scene { shapes, camera }
-    }
+    #[inline(always)] pub fn new(shapes: Shape, camera: Camera) -> Self
+    { Self { shapes, camera } }
 }
 
-impl Deref for Scene {
-    type Target = Shape;
-    #[inline(always)] fn deref(&self) -> &Self::Target { &self.shapes }
+impl Deref for Scene { type Target = Shape;
+    #[inline(always)] fn deref(&self) -> &Shape { &self.shapes }
 }

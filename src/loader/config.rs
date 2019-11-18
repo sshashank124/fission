@@ -80,7 +80,7 @@ fn load_scene(config: &Yaml) -> Res<Scene> {
                     .flat_map(|c| load_shape(c))
                     .collect::<Vec<_>>();
 
-    let root = Shape::new(BVH::new(shapes), T::ONE);
+    let root = Shape::new(BVH::new(shapes).into(), T::ONE);
     Ok(Scene::new(root, camera))
 }
 

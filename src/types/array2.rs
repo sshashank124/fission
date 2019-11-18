@@ -26,7 +26,7 @@ impl<A> A2<A> {
     { A2(f(self.0, b.0), f(self.1, b.1)) }
 
     #[inline(always)]
-    pub fn reduce<G>(self, f: G) -> A where G: Fn(A, A) -> A
+    pub fn reduce<B, G>(self, f: G) -> B where G: Fn(A, A) -> B
     { f(self.0, self.1) }
 
     #[inline(always)]
@@ -84,6 +84,10 @@ impl<A> One for A2<A> where A: One {
     const ONE: Self = A2(A::ONE, A::ONE);
 }
 
+impl<A> Half for A2<A> where A: Half {
+    const HALF: Self = A2(A::HALF, A::HALF);
+}
+
 impl<A> A2<A> where A: Zero + One {
     pub const X: A2<A> = A2(A::ONE , A::ZERO);
     pub const Y: A2<A> = A2(A::ZERO, A::ONE );
@@ -135,6 +139,5 @@ scalar_binary_assign_op!(A2, SubAssign, sub_assign);
 scalar_binary_assign_op!(A2, MulAssign, mul_assign);
 scalar_binary_assign_op!(A2, DivAssign, div_assign);
 
-impl From<I2> for F2 {
-    #[inline(always)] fn from(a: I2) -> F2 { A2(a.0 as F, a.1 as F) }
-}
+impl From<I2> for F2
+{ #[inline(always)] fn from(a: I2) -> F2 { A2(a.0 as F, a.1 as F) } }

@@ -6,7 +6,7 @@ use crate::op;
 
 
 #[derive(Clone, Copy, Debug, PartialEq)]
-pub struct Color(A3<F>);
+pub struct Color(pub A3<F>);
 
 impl Color {
     #[inline(always)]

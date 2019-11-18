@@ -4,6 +4,7 @@ use either::Either;
 
 use crate::geometry::*;
 use crate::shape::*;
+use crate::util::*;
 
 
 pub struct BVH<S> {
@@ -22,7 +23,7 @@ pub enum BVHNodeType {
 }
 
 impl<S> BVH<S> where S: Intersectable {
-    pub fn new(elements: Vec<S>) -> BVH<S> {
+    pub fn new(elements: Vec<S>) -> Self {
         assert!(!elements.is_empty());
 
         let mut build_infos = elements.iter().enumerate().map(|(idx, e)| {
@@ -35,7 +36,7 @@ impl<S> BVH<S> where S: Intersectable {
         let mut nodes = Vec::with_capacity(root.size() as usize);
         flatten_tree(&root, &mut nodes, 0);
 
-        BVH { elements, nodes }
+        Self { elements, nodes }
     }
 
     #[inline(always)]
@@ -50,14 +51,6 @@ impl<S> BVH<S> where S: Intersectable {
             let node = &self.nodes[idx as usize];
             if pred(&mut acc, node) {
                 match &node.node {
-                    BVHNodeType::Leaf(i) => {
-                        acc = match f(acc, &self.elements[*i as usize]) {
-                            Either::Left(b) => { return b; },
-                            Either::Right(a) => a,
-                        };
-                        idx = if sp == 0 { break }
-                              else { sp -= 1; stack[sp] };
-                    },
                     BVHNodeType::Tree(split_dim, ri) => {
                         idx = if trav_order[*split_dim] {
                             stack[sp] = *ri; idx + 1
@@ -65,6 +58,14 @@ impl<S> BVH<S> where S: Intersectable {
                             stack[sp] = idx + 1; *ri
                         };
                         sp += 1;
+                    },
+                    BVHNodeType::Leaf(i) => {
+                        acc = match f(acc, &self.elements[*i as usize]) {
+                            Either::Left(b) => { return b; },
+                            Either::Right(a) => a,
+                        };
+                        idx = if sp == 0 { break }
+                              else { sp -= 1; stack[sp] };
                     },
                 }
             } else {
@@ -140,11 +141,11 @@ fn build(build_infos: &mut [BuildInfo]) -> BuildNode {
             (bb | b.bbox, bc | b.center)
         });
 
-    let (split_dim, extent) = centers_bbox.max_extent();
+    let (extent, split_dim) = centers_bbox.max_extent();
 
-    let pivot = if extent < F::EPSILON { n / 2 }
+    let pivot = if F::approx_zero(extent) { n / 2 }
     else {
-        let B(lb, _) = centers_bbox[split_dim];
+        let lb = centers_bbox[split_dim][0];
         let mut buckets = [Bucket { n: 0, bbox: BBox::ZERO };
                            NUM_BUCKETS as usize];
 
@@ -177,10 +178,8 @@ fn build(build_infos: &mut [BuildInfo]) -> BuildNode {
 
         let min_cost_idx = (1..NUM_BUCKETS-1)
                                .map(|i| (i, buckets.split_at(i as usize)))
-                               .map(|(idx, bb)| (idx, cost_of_split(bb)))
-                               .fold((0, F::POS_INF), |(ii, cc), (i, c)| {
-                                   if c < cc { (i, c) } else { (ii, cc) }
-                               }).0;
+                               .map(|(idx, bb)| (cost_of_split(bb), idx))
+                               .fold((F::POS_INF, 0), tup_cmp_lt).1;
 
         partition(build_infos,
                   |ref build_info| bucket_index(build_info) < min_cost_idx)
@@ -215,12 +214,13 @@ fn partition<E, FN>(items: &mut [E], pred: FN) -> I
 impl<S> Intersectable for BVH<S> where S: Intersectable {
     #[inline(always)]
     fn bbox(&self, t: T) -> BBox {
-        self.elements.iter().fold(BBox::ZERO, |bbox, e| bbox | e.bbox(t))
+        let grow_bbox = |bbox: BBox, e: &S| bbox | e.bbox(t);
+        self.elements.iter().fold(BBox::ZERO, grow_bbox)
     }
 
     #[inline(always)]
     fn intersects(&self, ray: R) -> bool {
-        self.fold(ray.d.map(|i| i > 0.), false,
+        self.fold(ray.d.map(Num::is_pos), false,
                   |_, node| node.bbox.intersects(ray),
                   |_, isectable| {
                       if isectable.intersects(ray) { Either::Left(true) }
@@ -231,7 +231,7 @@ impl<S> Intersectable for BVH<S> where S: Intersectable {
     #[inline(always)]
     fn intersect(&self, ray: R) -> Option<Its> {
         let (_, acc, i) =
-            self.fold(ray.d.map(|i| i > 0.), (ray, None, 0),
+            self.fold(ray.d.map(Num::is_pos), (ray, None, 0),
                       |(ray, _, i), node| {
                           *i += 1;
                           node.bbox.intersects(*ray)
@@ -240,7 +240,7 @@ impl<S> Intersectable for BVH<S> where S: Intersectable {
                           Either::Right(isectable.intersect(ray).map(|it| {
                               let i = i + it.i + 1;
                               (ray.clipped(it.t), Some((isectable, it)), i)
-                          }).unwrap_or((ray, acc, i + 1)))
+                          }).unwrap_or_else(|| (ray, acc, i + 1)))
                       });
         acc.map(|(closest, mut its)| { its.i = i; closest.hit_info(its) })
 

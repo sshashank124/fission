@@ -5,7 +5,7 @@ use super::*;
 
 
 pub trait Zero: Copy { const ZERO: Self; }
-pub trait One: Copy { const ONE: Self; }
+pub trait One:  Copy { const ONE: Self; }
 
 pub trait Num: Copy + PartialOrd
              + Zero + One
@@ -27,6 +27,12 @@ pub trait Num: Copy + PartialOrd
     fn max(a: Self, b: Self) -> Self { if a < b { b } else { a } }
 
     #[inline(always)]
+    fn is_pos(a: Self) -> bool { a >= Self::ZERO }
+
+    #[inline(always)]
+    fn is_neg(a: Self) -> bool { !Self::is_pos(a) }
+
+    #[inline(always)]
     fn clamp(v: Self, a: Self, b: Self) -> Self { Num::min(Num::max(v, a), b) }
 
     #[inline(always)]
@@ -45,12 +51,11 @@ impl One  for F { const ONE: Self = 1.; }
 impl Num  for F { }
 
 
-pub trait Inv {
-    type Output;
-    fn inv(self) -> Self;
-}
+pub trait Half: Copy { const HALF: Self; }
 
-pub trait Float: Num + Inv {
+pub trait Inv { type Output; fn inv(self) -> Self; }
+
+pub trait Float: Num + Inv + Half {
     const NEG_INF: Self;
     const POS_INF: Self;
     const EPSILON: Self;
@@ -74,19 +79,24 @@ pub trait Float: Num + Inv {
 
     #[inline(always)]
     fn approx_eq(a: Self, b: Self) -> bool { Self::abs(a - b) < Self::EPSILON }
+
+    #[inline(always)]
+    fn approx_zero(a: Self) -> bool { Self::approx_eq(a, Self::ZERO) }
 }
 
-impl Inv for f32 {
-    type Output = Self;
-    #[inline(always)] fn inv(self) -> Self { self.recip() }
+impl Half for F { const HALF: Self = 0.5; }
+
+impl Inv for F {
+    type Output = F;
+    #[inline(always)] fn inv(self) -> F { self.recip() }
 }
 
-impl Float for f32 {
-    const NEG_INF: Self = std::f32::NEG_INFINITY;
-    const POS_INF: Self = std::f32::INFINITY;
+impl Float for F {
+    const NEG_INF: Self = fmod::NEG_INFINITY;
+    const POS_INF: Self = fmod::INFINITY;
     const EPSILON: Self = 1e-4;
 
-    const PI: Self = std::f32::consts::PI;
+    const PI: Self = fmod::consts::PI;
 
     const FRAC_1_2POW32: Self = 2.328_306_4e-10;
 

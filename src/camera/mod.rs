@@ -19,31 +19,30 @@ pub trait CameraModel {
 pub struct Camera {
     pub resolution: I2,
     model: CameraType,
-    rfilter: ReconstructionFilter,
     to_world: T,
     from_pixel: T2,
+    rfilter: ReconstructionFilter,
 }
 
 impl Camera {
     #[inline(always)]
-    pub fn new<C>(model: C,
-                  resolution: I2,
-                  filter: Option<ReconstructionFilter>,
-                  to_world: T) -> Camera
-            where C: Into<CameraType> {
-        Camera {
+    pub fn new(model: CameraType,
+               resolution: I2,
+               filter: Option<ReconstructionFilter>,
+               to_world: T) -> Self {
+        Self {
             from_pixel: T2::scale(A2(2., -2.) / resolution[Y] as F)
                       * T2::translate(F2::from(resolution) / -2.),
             resolution,
-            model: model.into(),
-            rfilter: filter.unwrap_or_else(ReconstructionFilter::default),
+            model,
             to_world,
+            rfilter: filter.unwrap_or_else(ReconstructionFilter::default),
         }
     }
 
     #[inline(always)]
     pub fn new_image(&self) -> Image {
-        Image::new(self.resolution, self.rfilter)
+        Image::new(self.resolution, self.rfilter.clone())
     }
 }
 
@@ -58,14 +57,10 @@ impl CameraModel for CameraType {
     #[inline(always)]
     fn ray_at(&self, point: F2, sampler: &mut Sampler) -> R {
         match self {
-            CameraType::Perspective(model) => model.ray_at(point, sampler),
+            Self::Perspective(c) => c.ray_at(point, sampler),
         }
     }
 }
 
-impl From<Perspective> for CameraType {
-    #[inline(always)]
-    fn from(perspective: Perspective) -> CameraType {
-        CameraType::Perspective(perspective)
-    }
-}
+impl From<Perspective> for CameraType
+{ #[inline(always)] fn from(p: Perspective) -> Self { Self::Perspective(p) } }

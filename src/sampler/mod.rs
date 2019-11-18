@@ -13,6 +13,8 @@ pub use sobol::Sobol;
 
 pub type BlockSeed<'a> = (I, &'a Block);  // (sample iteration, pixel)
 
+pub trait RngFloat<FT> { fn next_ft(&mut self) -> FT; }
+
 pub trait Sample {
     fn clone_for_block(&self, seed: BlockSeed) -> Self;
     fn prepare_for_pixel(&mut self, pos: I2);
@@ -35,26 +37,21 @@ pub enum SamplerType {
 
 impl Sampler {
     #[inline(always)]
-    pub fn new<S>(sampler_type: S, spp: I) -> Self
-            where S: Into<SamplerType> {
-        Self { sampler_type: sampler_type.into(), spp }
-    }
+    pub fn new(sampler_type: SamplerType, spp: I) -> Self
+    { Self { sampler_type, spp } }
 
     #[inline(always)]
-    pub fn clone_seeded(&self, seed: BlockSeed) -> Self {
-        Self::new(self.sampler_type.clone_for_block(seed), self.spp)
-    }
+    pub fn clone_seeded(&self, seed: BlockSeed) -> Self
+    { Self::new(self.sampler_type.clone_for_block(seed), self.spp) }
 }
 
-impl Deref for Sampler {
-    type Target = SamplerType;
-    #[inline(always)]
-    fn deref(&self) -> &Self::Target { &self.sampler_type }
+impl Deref for Sampler { type Target = SamplerType;
+    #[inline(always)] fn deref(&self) -> &Self::Target { &self.sampler_type }
 }
 
 impl DerefMut for Sampler {
-    #[inline(always)]
-    fn deref_mut(&mut self) -> &mut Self::Target { &mut self.sampler_type }
+    #[inline(always)] fn deref_mut(&mut self) -> &mut Self::Target
+    { &mut self.sampler_type }
 }
 
 
@@ -100,14 +97,8 @@ impl Sample for SamplerType {
     }
 }
 
-impl From<Independent> for SamplerType {
-    #[inline(always)]
-    fn from(s: Independent) -> Self { Self::Independent(s) }
-}
+impl From<Independent> for SamplerType
+{ #[inline(always)] fn from(s: Independent) -> Self { Self::Independent(s) } }
 
-impl From<Sobol> for SamplerType {
-    #[inline(always)]
-    fn from(s: Sobol) -> Self { Self::Sobol(s) }
-}
-
-pub trait RngFloat<FT> { fn next_ft(&mut self) -> FT; }
+impl From<Sobol> for SamplerType
+{ #[inline(always)] fn from(s: Sobol) -> Self { Self::Sobol(s) } }

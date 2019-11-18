@@ -13,3 +13,4 @@ pub use num::*;
 
 pub type F = f32;
 pub type I = i32;
+use std::f32 as fmod;

@@ -1,7 +1,7 @@
 use super::*;
 
 
-#[derive(Clone, Copy)]
+#[derive(Clone)]
 pub struct Square {
     radius: F,
 }

@@ -11,14 +11,10 @@ impl HeatMap {
 
 impl Trace for HeatMap {
     #[inline(always)]
-    fn trace(&self, scene: &Scene, _: &mut Sampler, ray: R)
-            -> Color {
+    fn trace(&self, scene: &Scene, _: &mut Sampler, ray: R) -> Color {
         match scene.intersect(ray) {
             None => Color::BLACK,
-            Some(its) => {
-                let i = F::sqrt(its.i as F) / self.scale;
-                Color::rgb(i, i, i)
-            }
+            Some(its) => Color(A3::rep(F::sqrt(its.i as F) / self.scale)),
         }
     }
 }

@@ -9,11 +9,11 @@ mod vector3;
 
 pub use crate::types::*;
 
-pub use bbox::BBox;
-pub use bound::B;
+pub use bbox::*;
+pub use bound::*;
 pub use intersection::*;
-pub use normal3::N;
-pub use point3::P;
-pub use ray3::R;
+pub use normal3::*;
+pub use point3::*;
+pub use ray3::*;
 pub use transform::*;
-pub use vector3::V;
+pub use vector3::*;

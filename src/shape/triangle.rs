@@ -64,7 +64,7 @@ impl Triangle {
     fn intersection_point(&self, ray: R) -> Option<(F, F2)> {
         let pv = ray.d.cross(self.ac());
         let det = self.ab().dot(pv);
-        if det.abs() < F::EPSILON { return None; }
+        if F::approx_zero(det) { return None; }
 
         let dinv = det.inv();
         let tv = ray.o - self.a();
@@ -76,7 +76,7 @@ impl Triangle {
         if v < 0. || u + v > 1. { return None; }
 
         let t = self.ac().dot(q) * dinv;
-        if ray.tb.bounds(t) { Some((t, A2(u, v))) }
+        if ray.range().bounds(t) { Some((t, A2(u, v))) }
         else { None }
     }
 }

@@ -7,41 +7,32 @@ use super::*;
 pub struct R {
     pub o: P,
     pub d: V,
-    pub d_inv: V,
-    pub tb: B,
+    pub t: F,
 }
 
 impl R {
     #[inline(always)]
-    pub fn r(o: P, d: V, d_inv: V, tb: B) -> R { R { o, d, d_inv, tb } }
+    pub fn r(o: P, d: V, t: F) -> R { R { o, d, t } }
 
     #[inline(always)]
-    pub fn new(o: P, d: V, tb: B) -> R { R::r(o, d, V(d.inv()), tb) }
-
-    #[inline(always)]
-    pub fn unbounded(o: P, d: V) -> R { R::new(o, d, B::POSITIVE) }
+    pub fn unbounded(o: P, d: V) -> R { R::r(o, d, F::POS_INF) }
 
     #[inline(always)]
     pub fn at(&self, t: F) -> P { self.o + self.d * t }
 
-    #[inline(always)] pub fn clipped(self, t: F) -> R {
-        R::r(self.o, self.d, self.d_inv, self.tb.with_upper(t))
-        // self.tb = self.tb.with_upper(t); self
-    }
+    #[inline(always)]
+    pub fn clipped(self, t: F) -> R { R::r(self.o, self.d, t) }
+
+    #[inline(always)]
+    pub fn range(&self) -> B { B::b(F::EPSILON, self.t) }
 }
 
-impl Mul<R> for T {
-    type Output = R;
+impl Mul<R> for T { type Output = R;
     #[inline(always)]
-    fn mul(self, R{o, d, tb, ..}: R) -> R {
-        R::new(self * o, self * d, tb)
-    }
+    fn mul(self, R{o, d, t}: R) -> R { R::r(self * o, self * d, t) }
 }
 
-impl Div<R> for T {
-    type Output = R;
+impl Div<R> for T { type Output = R;
     #[inline(always)]
-    fn div(self, R{o, d, tb, ..}: R) -> R {
-        R::new(self / o, self / d, tb)
-    }
+    fn div(self, R{o, d, t}: R) -> R { R::r(self / o, self / d, t) }
 }

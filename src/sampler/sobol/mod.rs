@@ -111,8 +111,8 @@ fn sample_sobol(mut idx: u64, dim: u32) -> u32 {
 }
 
 impl SampleIndexMemo {
-    #[inline(always)]
-    fn default() -> Self { Self { d: 0, i: 0, vdc_inv: &[] } }
+    #[inline(always)] fn default() -> Self
+    { Self { d: 0, i: 0, vdc_inv: &[] } }
 
     #[inline(always)]
     fn new(mut idx: u64, m: u32) -> Self {
