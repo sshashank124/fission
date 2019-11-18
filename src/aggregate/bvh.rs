@@ -28,7 +28,12 @@ impl<S> BVH<S> where S: Intersectable {
 
         let mut build_infos = elements.iter().enumerate().map(|(idx, e)| {
             let bbox = e.bbox(T::ONE);
-            BuildInfo { bbox, center: bbox.center(), idx: idx as I }
+            BuildInfo {
+                bbox,
+                center: bbox.center(),
+                idx: idx as I,
+                isect_cost: e.intersection_cost(),
+            }
         }).collect::<Vec<_>>();
 
         let root = build(&mut build_infos[..]);
@@ -93,6 +98,7 @@ struct BuildInfo {
     bbox: BBox,
     center: P,
     idx: I,
+    isect_cost: F,
 }
 
 impl BuildNode {
@@ -121,7 +127,7 @@ const NUM_BUCKETS: I = 24;
 
 #[derive(Clone, Copy)]
 struct Bucket {
-    n: I,
+    cost: F,
     bbox: BBox,
 }
 
@@ -146,7 +152,7 @@ fn build(build_infos: &mut [BuildInfo]) -> BuildNode {
     let pivot = if F::approx_zero(extent) { n / 2 }
     else {
         let lb = centers_bbox[split_dim][0];
-        let mut buckets = [Bucket { n: 0, bbox: BBox::ZERO };
+        let mut buckets = [Bucket { cost: 0., bbox: BBox::ZERO };
                            NUM_BUCKETS as usize];
 
         let bucket_index = |build_info: &BuildInfo| {
@@ -157,22 +163,23 @@ fn build(build_infos: &mut [BuildInfo]) -> BuildNode {
 
         build_infos.iter().for_each(|build_info| {
             let idx = bucket_index(build_info);
-            buckets[idx as usize].n += 1;
+            buckets[idx as usize].cost += build_info.isect_cost;
             buckets[idx as usize].bbox = buckets[idx as usize].bbox
                                        | build_info.bbox;
         });
 
         let cost_of_split = |(a, b): (&[Bucket], &[Bucket])| {
             let range_cost = |r: &[Bucket]| {
-                r.iter().fold((0, BBox::ZERO),
-                              |(c, bb), Bucket{ n, bbox }| (c + n, bb | *bbox))
+                r.iter().fold((0., BBox::ZERO),
+                              |(c, bb), Bucket{ cost, bbox }|
+                               (c + cost, bb | *bbox))
             };
 
-            let (n1, bbox1) = range_cost(a);
-            let (n2, bbox2) = range_cost(b);
+            let (cost1, bbox1) = range_cost(a);
+            let (cost2, bbox2) = range_cost(b);
 
-            1. + (n1 as F * bbox1.surface_area() +
-                  n2 as F * bbox2.surface_area()) /
+            1. + (cost1 * bbox1.surface_area() +
+                  cost2 * bbox2.surface_area()) /
                  bbox.surface_area()
         };
 
@@ -212,11 +219,8 @@ fn partition<E, FN>(items: &mut [E], pred: FN) -> I
 }
 
 impl<S> Intersectable for BVH<S> where S: Intersectable {
-    #[inline(always)]
-    fn bbox(&self, t: T) -> BBox {
-        let grow_bbox = |bbox: BBox, e: &S| bbox | e.bbox(t);
-        self.elements.iter().fold(BBox::ZERO, grow_bbox)
-    }
+    #[inline(always)] fn bbox(&self, t: T) -> BBox
+    { self.elements.iter().fold(BBox::ZERO, |bbox, e| bbox | e.bbox(t)) }
 
     #[inline(always)]
     fn intersects(&self, ray: R) -> bool {
@@ -247,4 +251,8 @@ impl<S> Intersectable for BVH<S> where S: Intersectable {
     }
     
     #[inline(always)] fn hit_info(&self, its: Its) -> Its { its }
+
+    #[inline(always)] fn intersection_cost(&self) -> F
+    { 2. * ((self.nodes.len() as F).log2() * BBox::ZERO.intersection_cost()
+            + self.elements[0].intersection_cost()) }
 }

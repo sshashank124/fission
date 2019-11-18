@@ -39,6 +39,7 @@ impl Intersectable for BBox {
     #[inline(always)] fn bbox(&self, _: T) -> BBox { *self }
     #[inline(always)] fn intersect(&self, _: R) -> Option<Its> { None }
     #[inline(always)] fn hit_info(&self, its: Its) -> Its { its }
+    #[inline(always)] fn intersection_cost(&self) -> F { 1. }
 }
 
 op!(Add::add, *BBox -> *P -> BBox);

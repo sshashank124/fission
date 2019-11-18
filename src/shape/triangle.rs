@@ -11,11 +11,7 @@ pub struct Triangle {
     pub mesh_data: Arc<MeshData>,
 }
 
-pub struct Face {
-    a: I,
-    b: I,
-    c: I,
-}
+pub struct Face(I, I, I);
 
 pub struct MeshData {
     pub p:  Vec<P>,
@@ -23,12 +19,8 @@ pub struct MeshData {
     pub uv: Vec<F2>,
 }
 
-impl Face {
-    #[inline(always)]
-    pub fn new(a: I, b: I, c: I) -> Face {
-        Face { a, b, c }
-    }
-}
+impl Face
+{ #[inline(always)] pub fn new(a: I, b: I, c: I) -> Face { Face(a, b, c) } }
 
 impl MeshData {
     #[inline(always)]
@@ -42,13 +34,13 @@ impl MeshData {
 }
 
 impl Triangle {
-    #[inline(always)] fn a(&self) -> P { self.p[self.f.a as usize] }
-    #[inline(always)] fn b(&self) -> P { self.p[self.f.b as usize] }
-    #[inline(always)] fn c(&self) -> P { self.p[self.f.c as usize] }
+    #[inline(always)] fn a(&self) -> P { self.p[self.f.0 as usize] }
+    #[inline(always)] fn b(&self) -> P { self.p[self.f.1 as usize] }
+    #[inline(always)] fn c(&self) -> P { self.p[self.f.2 as usize] }
 
-    #[inline(always)] fn an(&self) -> N { self.n[self.f.a as usize] }
-    #[inline(always)] fn bn(&self) -> N { self.n[self.f.b as usize] }
-    #[inline(always)] fn cn(&self) -> N { self.n[self.f.c as usize] }
+    #[inline(always)] fn an(&self) -> N { self.n[self.f.0 as usize] }
+    #[inline(always)] fn bn(&self) -> N { self.n[self.f.1 as usize] }
+    #[inline(always)] fn cn(&self) -> N { self.n[self.f.2 as usize] }
 
     #[inline(always)]
     fn abc(&self) -> A3<P> { A3(self.a(), self.b(), self.c()) }
@@ -82,22 +74,16 @@ impl Triangle {
 }
 
 impl Intersectable for Triangle {
-    #[inline(always)]
-    fn bbox(&self, t: T) -> BBox {
-        self.abc().map(|vert| t * vert).fold(BBox::ZERO, BitOr::bitor)
-    }
+    #[inline(always)] fn bbox(&self, t: T) -> BBox
+    { self.abc().map(|vert| t * vert).fold(BBox::ZERO, BitOr::bitor) }
+
+    #[inline(always)] fn intersects(&self, ray: R) -> bool
+    { self.intersection_point(ray).is_some() }
 
     #[inline(always)]
-    fn intersects(&self, ray: R) -> bool {
-        self.intersection_point(ray).is_some()
-    }
-
-    #[inline(always)]
-    fn intersect(&self, ray: R) -> Option<Its> {
-        self.intersection_point(ray).map(|(t, uv)| {
-            Its::new(P::ZERO, N::ZERO, uv, t, 0)
-        })
-    }
+    fn intersect(&self, ray: R) -> Option<Its>
+    { self.intersection_point(ray)
+          .map(|(t, uv)| { Its::new(P::ZERO, N::ZERO, uv, t, 0) }) }
 
     #[inline(always)]
     fn hit_info(&self, mut its: Its) -> Its {
@@ -107,9 +93,10 @@ impl Intersectable for Triangle {
                 else { self.abcn().dot(bary) };
         its
     }
+
+    #[inline(always)] fn intersection_cost(&self) -> F { 2. }
 }
 
-impl Deref for Triangle {
-    type Target = Arc<MeshData>;
+impl Deref for Triangle { type Target = Arc<MeshData>;
     #[inline(always)] fn deref(&self) -> &Self::Target { &self.mesh_data }
 }

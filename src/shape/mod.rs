@@ -11,6 +11,7 @@ pub trait Intersectable {
     fn intersects(&self, ray: R) -> bool;
     fn intersect(&self, ray: R) -> Option<Its>;
     fn hit_info(&self, its: Its) -> Its;
+    fn intersection_cost(&self) -> F;
 }
 
 pub struct Shape {
@@ -42,6 +43,9 @@ impl Intersectable for Shape {
 
     #[inline(always)] fn hit_info(&self, its: Its) -> Its
     { self.shape.hit_info(its) }
+
+    #[inline(always)] fn intersection_cost(&self) -> F
+    { self.shape.intersection_cost() }
 }
 
 impl Intersectable for ShapeType {
@@ -74,6 +78,14 @@ impl Intersectable for ShapeType {
         match self {
             Self::BVH(s) => s.hit_info(its),
             Self::Mesh(s) => s.hit_info(its),
+        }
+    }
+
+    #[inline(always)]
+    fn intersection_cost(&self) -> F {
+        match self {
+            Self::BVH(s) => s.intersection_cost(),
+            Self::Mesh(s) => s.intersection_cost(),
         }
     }
 }
