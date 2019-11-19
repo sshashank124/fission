@@ -1,10 +1,8 @@
-use std::mem;
+use std::collections::HashMap;
 
 use either::Either;
 
-use crate::geometry::*;
-use crate::shape::*;
-use crate::util::*;
+use super::*;
 
 
 pub struct BVH<S> {
@@ -18,15 +16,15 @@ pub struct BVHNode {
 }
 
 pub enum BVHNodeType {
-    Leaf(I),
-    Tree(Dim, I),
+    Leaf(I, I),
+    Tree(I, Dim),
 }
 
 impl<S> BVH<S> where S: Intersectable {
-    pub fn new(elements: Vec<S>) -> Self {
-        assert!(!elements.is_empty());
+    pub fn new(elems: Vec<S>) -> Self {
+        assert!(!elems.is_empty());
 
-        let mut build_infos = elements.iter().enumerate().map(|(idx, e)| {
+        let mut build_infos = elems.iter().enumerate().map(|(idx, e)| {
             let bbox = e.bbox(T::ONE);
             BuildInfo {
                 bbox,
@@ -36,17 +34,25 @@ impl<S> BVH<S> where S: Intersectable {
             }
         }).collect::<Vec<_>>();
 
-        let root = build(&mut build_infos[..]);
+        let mut idx_map = HashMap::with_capacity(elems.len());
+        let root = build(&mut build_infos[..],
+                         &mut idx_map);
 
         let mut nodes = Vec::with_capacity(root.size() as usize);
         flatten_tree(&root, &mut nodes, 0);
+
+        let idx_ord = (0..elems.len() as I).map(|i| idx_map[&i]);
+        let mut elems_idx = elems.into_iter().zip(idx_ord).collect::<Vec<_>>();
+        elems_idx.sort_unstable_by_key(|(_, i)| *i);
+        let elements = elems_idx.into_iter().map(|(e, _)| e)
+                                .collect::<Vec<_>>();
 
         Self { elements, nodes }
     }
 
     #[inline(always)]
     pub fn fold<'a, A, P, F>(&'a self, trav_order: A3<bool>,
-                  mut acc: A, pred: P, f: F) -> A
+                             mut acc: A, pred: P, f: F) -> A
             where P: Fn(&mut A, &BVHNode) -> bool,
                   F: Fn(A, &'a S) -> Either<A, A> {
         let mut idx = 0;
@@ -55,20 +61,21 @@ impl<S> BVH<S> where S: Intersectable {
         loop {
             let node = &self.nodes[idx as usize];
             if pred(&mut acc, node) {
-                match &node.node {
-                    BVHNodeType::Tree(split_dim, ri) => {
-                        idx = if trav_order[*split_dim] {
-                            stack[sp] = *ri; idx + 1
-                        } else {
-                            stack[sp] = idx + 1; *ri
-                        };
+                match node.node {
+                    BVHNodeType::Tree(ri, dim) => {
+                        let ii = A2(ri, idx + 1);
+                        stack[sp] = ii[!trav_order[dim]];
+                        idx = ii[trav_order[dim]];
                         sp += 1;
                     },
-                    BVHNodeType::Leaf(i) => {
-                        acc = match f(acc, &self.elements[*i as usize]) {
-                            Either::Left(b) => { return b; },
-                            Either::Right(a) => a,
-                        };
+                    BVHNodeType::Leaf(i, n) => {
+                        for elem in &self.elements[i as usize..
+                                                   (i + n) as usize] {
+                            acc = match f(acc, elem) {
+                                Either::Left(b) => { return b; },
+                                Either::Right(a) => a,
+                            };
+                        }
                         idx = if sp == 0 { break }
                               else { sp -= 1; stack[sp] };
                     },
@@ -90,7 +97,7 @@ struct BuildNode {
 }
 
 enum BuildNodeType {
-    Leaf(I),
+    Leaf(I, I),
     Tree(Dim, Box<BuildNode>, Box<BuildNode>),
 }
 
@@ -102,16 +109,16 @@ struct BuildInfo {
 }
 
 impl BuildNode {
-    #[inline(always)]
-    fn size(&self) -> I { self.sizel + self.sizer + 1 }
+    #[inline(always)] fn size(&self) -> I
+    { self.sizel + self.sizer + 1 }
 }
 
 fn flatten_tree(tree: &BuildNode, nodes: &mut Vec<BVHNode>, mut offset: I) {
     offset += 1;
-    let node = match &tree.node {
-        BuildNodeType::Leaf(idx) => BVHNodeType::Leaf(*idx),
-        BuildNodeType::Tree(split_dim, treel, _) => {
-            BVHNodeType::Tree(*split_dim, offset + treel.size())
+    let node = match tree.node {
+        BuildNodeType::Leaf(idx, n) => BVHNodeType::Leaf(idx, n),
+        BuildNodeType::Tree(dim, ref treel, _) => {
+            BVHNodeType::Tree(offset + treel.size(), dim)
         }
     };
 
@@ -131,33 +138,38 @@ struct Bucket {
     bbox: BBox,
 }
 
-fn build(build_infos: &mut [BuildInfo]) -> BuildNode {
+const MAX_LEAF_LEN: I = 4;
+
+fn build(build_infos: &mut [BuildInfo],
+         idx_map: &mut HashMap<I, I>) -> BuildNode {
     let n = build_infos.len() as I;
 
-    if n == 1 {
+    if n <= MAX_LEAF_LEN {
+        build_infos.iter().for_each(|bi| {
+            idx_map.insert(bi.idx, idx_map.len() as I);
+        });
         return BuildNode {
-            bbox: build_infos[0].bbox,
-            node: BuildNodeType::Leaf(build_infos[0].idx),
+            bbox: build_infos.iter().fold(BBox::ZERO, |bb, bi| bb | bi.bbox),
+            node: BuildNodeType::Leaf(idx_map.len() as I - n, n),
             sizel: 0, sizer: 0,
         };
     }
 
     let (bbox, centers_bbox) =
-        build_infos.iter().fold((BBox::ZERO, BBox::ZERO), |(bb, bc), b| {
-            (bb | b.bbox, bc | b.center)
-        });
+        build_infos.iter().fold((BBox::ZERO, BBox::ZERO),
+                                |(bb, bc), b| (bb | b.bbox, bc | b.center));
 
-    let (extent, split_dim) = centers_bbox.max_extent();
+    let (extent, dim) = centers_bbox.max_extent();
 
     let pivot = if F::approx_zero(extent) { n / 2 }
     else {
-        let lb = centers_bbox[split_dim][0];
+        let lb = centers_bbox[dim][0];
         let mut buckets = [Bucket { cost: 0., bbox: BBox::ZERO };
                            NUM_BUCKETS as usize];
 
         let bucket_index = |build_info: &BuildInfo| {
             let idx = (NUM_BUCKETS as F *
-                       ((build_info.center[split_dim] - lb) / extent)) as I;
+                       ((build_info.center[dim] - lb) / extent)) as I;
             idx.min(NUM_BUCKETS - 1)
         };
 
@@ -183,44 +195,27 @@ fn build(build_infos: &mut [BuildInfo]) -> BuildNode {
                  bbox.surface_area()
         };
 
-        let min_cost_idx = (1..NUM_BUCKETS-1)
-                               .map(|i| (i, buckets.split_at(i as usize)))
-                               .map(|(idx, bb)| (cost_of_split(bb), idx))
-                               .fold((F::POS_INF, 0), tup_cmp_lt).1;
+        let mc_idx = (1..NUM_BUCKETS-1)
+                         .map(|i| (i, buckets.split_at(i as usize)))
+                         .map(|(idx, bb)| (cost_of_split(bb), idx))
+                         .fold((F::POS_INF, 0), tup_cmp_lt).1;
 
-        partition(build_infos,
-                  |ref build_info| bucket_index(build_info) < min_cost_idx)
+        partition(build_infos, |build_info| bucket_index(build_info) < mc_idx)
     };
 
-    let treel = build(&mut build_infos[..pivot as usize]);
-    let treer = build(&mut build_infos[pivot as usize..]);
+    let treel = build(&mut build_infos[..pivot as usize], idx_map);
+    let treer = build(&mut build_infos[pivot as usize..], idx_map);
 
     BuildNode {
         bbox,
         sizel: treel.size(), sizer: treer.size(),
-        node: BuildNodeType::Tree(split_dim, Box::new(treel), Box::new(treer)),
+        node: BuildNodeType::Tree(dim, Box::new(treel), Box::new(treer)),
     }
-}
-
-fn partition<E, FN>(items: &mut [E], pred: FN) -> I
-        where FN: Fn(&E) -> bool {
-    let mut pivot = 0;
-    let mut it = items.iter_mut();
-    'main: while let Some(i) = it.next() {
-        if !pred(i) { loop {
-            match it.next_back() {
-                Some(j) => if pred(j) { mem::swap(i, j); break; },
-                None => break 'main,
-            }
-        } }
-        pivot += 1;
-    }
-    pivot
 }
 
 impl<S> Intersectable for BVH<S> where S: Intersectable {
     #[inline(always)] fn bbox(&self, t: T) -> BBox
-    { self.elements.iter().fold(BBox::ZERO, |bbox, e| bbox | e.bbox(t)) }
+    { (&self.elements[..]).bbox(t) }
 
     #[inline(always)]
     fn intersects(&self, ray: R) -> bool {
@@ -236,18 +231,9 @@ impl<S> Intersectable for BVH<S> where S: Intersectable {
     fn intersect(&self, ray: R) -> Option<Its> {
         let (_, acc, i) =
             self.fold(ray.d.map(Num::is_pos), (ray, None, 0),
-                      |(ray, _, i), node| {
-                          *i += 1;
-                          node.bbox.intersects(*ray)
-                      },
-                      |(ray, acc, i), isectable| {
-                          Either::Right(isectable.intersect(ray).map(|it| {
-                              let i = i + it.i + 1;
-                              (ray.clipped(it.t), Some((isectable, it)), i)
-                          }).unwrap_or_else(|| (ray, acc, i + 1)))
-                      });
+                      |(r, _, i), node| { *i += 1; node.bbox.intersects(*r) },
+                      |acc, s| Either::Right(intersect_update(acc, s)));
         acc.map(|(closest, mut its)| { its.i = i; closest.hit_info(its) })
-
     }
     
     #[inline(always)] fn hit_info(&self, its: Its) -> Its { its }

@@ -28,16 +28,6 @@ impl<A> A2<A> {
     #[inline(always)]
     pub fn reduce<B, G>(self, f: G) -> B where G: Fn(A, A) -> B
     { f(self.0, self.1) }
-
-    #[inline(always)]
-    pub fn fold<B, G>(self, acc: B, f: G) -> B where G: Fn(B, A) -> B
-    { f(f(acc, self.0), self.1) }
-}
-
-impl<A> A2<A2<A>> {
-    #[inline(always)]
-    pub fn unzip<B, G>(self, f: G) -> A2<B> where G: Fn(A, A) -> B
-    { self.0.zip(self.1, f) }
 }
 
 macro_rules! index {
@@ -68,6 +58,7 @@ macro_rules! index {
 index!(I, 0, 1);
 index!(usize, 0, 1);
 index!(Dim, X, Y);
+index!(bool, false, true);
 
 
 
@@ -86,11 +77,6 @@ impl<A> One for A2<A> where A: One {
 
 impl<A> Half for A2<A> where A: Half {
     const HALF: Self = A2(A::HALF, A::HALF);
-}
-
-impl<A> A2<A> where A: Zero + One {
-    pub const X: A2<A> = A2(A::ONE , A::ZERO);
-    pub const Y: A2<A> = A2(A::ZERO, A::ONE );
 }
 
 impl<A> A2<A> {

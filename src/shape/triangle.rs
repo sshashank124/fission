@@ -83,7 +83,7 @@ impl Intersectable for Triangle {
     #[inline(always)]
     fn intersect(&self, ray: R) -> Option<Its>
     { self.intersection_point(ray)
-          .map(|(t, uv)| { Its::new(P::ZERO, N::ZERO, uv, t, 0) }) }
+          .map(|(t, uv)| { Its::new(P::ZERO, N::ZERO, uv, t, 1) }) }
 
     #[inline(always)]
     fn hit_info(&self, mut its: Its) -> Its {

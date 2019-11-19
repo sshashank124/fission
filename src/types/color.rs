@@ -9,9 +9,6 @@ use crate::op;
 pub struct Color(pub A3<F>);
 
 impl Color {
-    #[inline(always)]
-    pub const fn rgb(r: F, g: F, b: F) -> Color { Color(A3(r, g, b)) }
-
     pub const BLACK: Color = Color(F3::ZERO);
     pub const WHITE: Color = Color(F3::ONE);
 }
@@ -23,13 +20,10 @@ op!(AddAssign::add_assign, *mut Color -> *Color -> ());
 op!(DivAssign::div_assign, *mut Color ->      F -> ());
 
 impl Sum<Color> for Color {
-    #[inline(always)]
-    fn sum<I: Iterator<Item=Color>>(iter: I) -> Color {
-        iter.fold(Color::BLACK, Add::add)
-    }
+    #[inline(always)] fn sum<I: Iterator<Item=Color>>(iter: I) -> Color
+    { iter.fold(Color::BLACK, Add::add) }
 }
 
-impl Deref for Color {
-    type Target = F3;
+impl Deref for Color { type Target = F3;
     #[inline(always)] fn deref(&self) -> &Self::Target { &self.0 }
 }

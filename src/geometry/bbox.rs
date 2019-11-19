@@ -47,6 +47,7 @@ op!(Sub::sub, *BBox -> *P -> BBox);
 op!(Mul::mul, *BBox -> *V -> BBox);
 op!(Div::div, *BBox -> *V -> BBox);
 
+op!(BitAnd::bitand, *BBox -> *BBox -> BBox);
 op!(BitOr::bitor, *BBox -> *BBox -> BBox);
 op!(BitOr::bitor, *BBox ->    *P -> BBox);
 
