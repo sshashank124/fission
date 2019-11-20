@@ -1,4 +1,4 @@
-mod av;
+mod ao;
 mod heatmap;
 mod normals;
 mod silhouette;
@@ -8,7 +8,7 @@ use crate::sampler::*;
 use crate::scene::Scene;
 use crate::shape::*;
 
-pub use av::AverageVisibility;
+pub use ao::AmbientOcclusion;
 pub use heatmap::HeatMap;
 pub use normals::Normals;
 pub use silhouette::Silhouette;
@@ -19,7 +19,7 @@ pub trait Trace {
 }
 
 pub enum Tracer {
-    AV(AverageVisibility),
+    AO(AmbientOcclusion),
     HeatMap(HeatMap),
     Normals(Normals),
     Silhouette(Silhouette),
@@ -28,7 +28,7 @@ pub enum Tracer {
 impl Trace for Tracer {
     fn trace(&self, scene: &Scene, sampler: &mut Sampler, ray: R) -> Color {
         match self {
-            Self::AV(t) => t.trace(scene, sampler, ray),
+            Self::AO(t) => t.trace(scene, sampler, ray),
             Self::HeatMap(t) => t.trace(scene, sampler, ray),
             Self::Normals(t) => t.trace(scene, sampler, ray),
             Self::Silhouette(t) => t.trace(scene, sampler, ray),
@@ -36,8 +36,8 @@ impl Trace for Tracer {
     }
 }
 
-impl From<AverageVisibility> for Tracer
-{ #[inline(always)] fn from(t: AverageVisibility) -> Self { Self::AV(t) } }
+impl From<AmbientOcclusion> for Tracer
+{ #[inline(always)] fn from(t: AmbientOcclusion) -> Self { Self::AO(t) } }
 
 impl From<HeatMap> for Tracer
 { #[inline(always)] fn from(t: HeatMap) -> Self { Self::HeatMap(t) } }

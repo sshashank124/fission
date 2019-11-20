@@ -4,7 +4,7 @@ use super::*;
 use crate::op;
 
 
-#[derive(Clone, Copy)]
+#[derive(Clone, Copy, Debug)]
 pub struct V(pub F3);
 
 impl Zero for V { const ZERO: Self = V(F3::ZERO); }
@@ -12,7 +12,7 @@ impl Zero for V { const ZERO: Self = V(F3::ZERO); }
 #[inline(always)] pub fn v(x: F, y: F, z: F) -> V { V(A3(x, y, z)) }
 
 impl V {
-    #[inline(always)] pub fn a2(a: F2, z: F) -> V { V(A3(a[X], a[Y], z)) }
+    #[inline(always)] pub fn a2(a: F2, z: F) -> V { V(A3::a2(a, z)) }
 
     #[inline(always)] pub fn dot(self, v: V) -> F { A3::dot(*self, *v) }
     #[inline(always)] pub fn norm2(self) -> F { self.dot(self) }

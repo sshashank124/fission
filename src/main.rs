@@ -14,6 +14,7 @@ mod shape;
 mod tracer;
 mod types;
 mod util;
+#[allow(dead_code)]
 mod warp;
 
 use std::env;

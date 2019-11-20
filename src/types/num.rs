@@ -61,6 +61,11 @@ pub trait Float: Num + Inv + Half {
     const EPSILON: Self;
 
     const PI: Self;
+    const HALF_PI: Self;
+    const TWO_PI: Self;
+    const INV_PI: Self;
+    const INV_2PI: Self;
+    const INV_4PI: Self;
 
     const FRAC_1_2POW32: Self;
 
@@ -97,6 +102,11 @@ impl Float for F {
     const EPSILON: Self = 1e-4;
 
     const PI: Self = fmod::consts::PI;
+    const HALF_PI: Self = fmod::consts::FRAC_PI_2;
+    const TWO_PI: Self = 2. * fmod::consts::PI;
+    const INV_PI: Self = fmod::consts::FRAC_1_PI;
+    const INV_2PI: Self = Self::HALF * Self::INV_PI;
+    const INV_4PI: Self = Self::HALF * Self::INV_2PI;
 
     const FRAC_1_2POW32: Self = 2.328_306_4e-10;
 

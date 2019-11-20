@@ -22,6 +22,4 @@ MCIntegrators
 
 PhotonMapping
 
-uv-textures
-
-packet-tracing BVH
+uv-textures & emitters

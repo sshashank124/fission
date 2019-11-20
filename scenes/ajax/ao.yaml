@@ -1,11 +1,11 @@
 integrator:
   tracer:
-    type: av
-    ray_length: 10.
+    type: ambient_occlusion
+    samples: 4
 
   sampler:
     type: sobol
-    samples_per_pixel: 64
+    samples_per_pixel: 32
 
 scene:
   camera:

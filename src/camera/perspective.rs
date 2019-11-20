@@ -29,8 +29,8 @@ impl CameraModel for Perspective {
         if F::approx_zero(self.lens_radius) { ray }
         else {
             let focus_point = ray.at(self.focal_distance / ray.d[Z]);
-            let sp = warp::uniform_disk(sampler.next_2d()) * self.lens_radius;
-            let o = P::a2(sp, 0.);
+            let o = P::a2(warp::uniform_disk(sampler.next_2d()).0
+                          * self.lens_radius, 0.);
             R::unbounded(o, focus_point - o)
         }
     }

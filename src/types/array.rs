@@ -17,8 +17,10 @@ impl<A> A3<A> {
     #[inline(always)] pub fn rep(a: A) -> A3<A> where A: Copy
     { A3(a, a, a) }
 
-    #[inline(always)]
-    pub fn map<B, G>(self, f: G) -> A3<B> where G: Fn(A) -> B
+    #[inline(always)] pub fn a2(a2: A2<A>, a: A) -> A3<A> where A: Copy
+    { A3(a2[0], a2[1], a) }
+
+    #[inline(always)] pub fn map<B, G>(self, f: G) -> A3<B> where G: Fn(A) -> B
     { A3(f(self.0), f(self.1), f(self.2)) }
 
     #[inline(always)]
@@ -30,8 +32,7 @@ impl<A> A3<A> {
     where G: Fn(A, B, C) -> D
     { A3(f(self.0, b.0, c.0), f(self.1, b.1, c.1), f(self.2, b.2, c.2)) }
 
-    #[inline(always)]
-    pub fn reduce<G>(self, f: G) -> A where G: Fn(A, A) -> A
+    #[inline(always)] pub fn reduce<G>(self, f: G) -> A where G: Fn(A, A) -> A
     { f(f(self.0, self.1), self.2) }
 
     #[inline(always)]

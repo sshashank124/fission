@@ -43,9 +43,10 @@ fn load_from_doc(config: &Yaml) -> Res<Integrator> {
 
 fn load_tracer(config: &Yaml) -> Res<Tracer> {
     Ok(match s(&config["type"], "missing tracer type")? {
-        "av" => {
-            let rl = f(&config["ray_length"], "missing ray_length")?;
-            AverageVisibility::new(rl).into()
+        "ambient_occlusion" => {
+            let rl = fo(&config["ray_length"]);
+            let s = io(&config["samples"]);
+            AmbientOcclusion::new(s, rl).into()
         },
         "heatmap" => {
             let scale = f(&config["scale"], "missing scale")?;
@@ -196,27 +197,23 @@ fn f3(vec: &Yaml) -> Res<F3> {
           f(&v[2], "malformed Z value")?))
 }
 
-#[inline(always)]
-fn f(f: &Yaml, msg: &str) -> Res<F> { fo(f).ok_or_else(|| msg.into()) }
+#[inline(always)] fn f(f: &Yaml, msg: &str) -> Res<F>
+{ fo(f).ok_or_else(|| msg.into()) }
 
-#[inline(always)]
-fn i(i: &Yaml, msg: &str) -> Res<I> { io(i).ok_or_else(|| msg.into()) }
+#[inline(always)] fn i(i: &Yaml, msg: &str) -> Res<I>
+{ io(i).ok_or_else(|| msg.into()) }
 
-#[inline(always)]
-fn s<'a>(s: &'a Yaml, msg: &str) -> Res<&'a str> {
-    s.as_str().ok_or_else(|| msg.into())
-}
+#[inline(always)] fn s<'a>(s: &'a Yaml, msg: &str) -> Res<&'a str>
+{ so(s).ok_or_else(|| msg.into()) }
 
-#[inline(always)]
-fn v<'a>(v: &'a Yaml, msg: &str) -> Res<&'a Vec<Yaml>> {
-    vo(v).ok_or_else(|| msg.into())
-}
+#[inline(always)] fn v<'a>(v: &'a Yaml, msg: &str) -> Res<&'a Vec<Yaml>>
+{ vo(v).ok_or_else(|| msg.into()) }
 
-#[inline(always)]
-fn fo(f: &Yaml) -> Option<F> { f.as_f64().map(|f| f as F) }
+#[inline(always)] fn fo(f: &Yaml) -> Option<F> { f.as_f64().map(|f| f as F) }
 
-#[inline(always)]
-fn io(i: &Yaml) -> Option<I> { i.as_i64().map(|i| i as I) }
+#[inline(always)] fn io(i: &Yaml) -> Option<I> { i.as_i64().map(|i| i as I) }
 
-#[inline(always)]
-fn vo<'a>(v: &'a Yaml) -> Option<&'a Vec<Yaml>> { v.as_vec() }
+#[inline(always)] fn so<'a>(s: &'a Yaml) -> Option<&'a str> { s.as_str() }
+
+#[inline(always)] fn vo<'a>(v: &'a Yaml) -> Option<&'a Vec<Yaml>>
+{ v.as_vec() }
