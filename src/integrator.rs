@@ -18,46 +18,33 @@ pub struct Integrator {
 }
 
 impl Integrator {
-    pub fn new(tracer: Tracer, sampler: Sampler, scene: Scene)
-            -> Self {
-        Self { tracer, sampler, scene }
-    }
+    pub fn new(tracer: Tracer, sampler: Sampler, scene: Scene) -> Self
+    { Self { tracer, sampler, scene } }
 
     pub fn render(&self) -> Image {
-        let camera = &self.scene.camera;
+        let mut img = self.scene.camera.new_image();
 
-        let mut img = camera.new_image();
-
-        let render_view = |i| {
+        let t = Instant::now();
+        for i in 0..self.sampler.spp {
             print!("\rRENDERING ... [{:4}/{:4}]", i + 1, self.sampler.spp);
             stdout().flush().unwrap();
 
-            let render_block = |mut block: Block| {
-                let pixels = block.pixels();
+            img.as_block().blocks().par_bridge().for_each(|mut block| {
                 let mut sampler = self.sampler.clone_seeded((i, &block));
 
-                let render_pixel = |pos: I2| {
+                for pos in block.pixels() {
                     sampler.prepare_for_pixel(pos);
 
-                    let sample_pos = F2::from(pos) + sampler.next_2d();
-                    let ray = camera.ray_at(sample_pos, &mut sampler);
+                    let pos = F2::from(pos) + sampler.next_2d();
+                    let ray = self.scene.camera.ray_at(pos, &mut sampler);
                     let color = self.tracer.trace(&self.scene,
                                                   &mut sampler,
                                                   ray);
 
-                    block.put(sample_pos, color);
-                };
-
-                pixels.for_each(render_pixel);
-            };
-
-            img.as_block().blocks()
-                          .par_bridge()
-                          .for_each(render_block);
-        };
-
-        let t = Instant::now();
-        (0..self.sampler.spp).for_each(render_view);
+                    block.put(pos, color);
+                }
+            });
+        }
         println!("\rRendering ... DONE ({:?})", t.elapsed());
 
         img

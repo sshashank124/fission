@@ -13,10 +13,6 @@ scene:
     type: perspective
     fov: 30.
     resolution: [800, 600]
-    reconstruction_filter:
-      type: gaussian
-      radius: 2.
-      stdev: 0.4
 
     transforms:
       - look_at:

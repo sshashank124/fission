@@ -5,7 +5,6 @@ use yaml_rust::{Yaml, YamlLoader};
 
 use crate::aggregate::*;
 use crate::camera::*;
-use crate::filter::*;
 use crate::geometry::*;
 use crate::integrator::*;
 use crate::loader::obj;
@@ -115,25 +114,7 @@ fn load_camera(config: &Yaml) -> Res<Camera> {
         _ => return Err("unknown camera type".into()),
     };
 
-    let rfilter_config = &config["reconstruction_filter"];
-    let rfilter = if !rfilter_config.is_badvalue() {
-        Some(load_rfilter(rfilter_config)?)
-    } else { None };
-
-    Ok(Camera::new(model, res, rfilter, to_world))
-}
-
-fn load_rfilter(config: &Yaml) -> Res<ReconstructionFilter> {
-    let radius = f(&config["radius"], "missing filter radius")?;
-
-    Ok(match s(&config["type"], "missing filter type")? {
-        "square" => Square::new(radius).into(),
-        "gaussian" => {
-            let stdev = f(&config["stdev"], "missing gaussian stdev")?;
-            Gaussian::new(radius, stdev).into()
-        },
-        _ => return Err("unknown filter type".into()),
-    })
+    Ok(Camera::new(model, res, to_world))
 }
 
 fn load_perspective_camera(config: &Yaml) -> Res<Perspective> {

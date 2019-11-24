@@ -1,8 +1,6 @@
-// mod block;
 mod io;
 
 use crate::types::*;
-use crate::filter::*;
 
 
 const BLOCK_SIZE: I2 = A2(8, 8);
@@ -11,18 +9,16 @@ pub struct Image {
     dims: I2,
     data: Vec<Color>,
     weights: Vec<F>,
-    rfilter: ReconstructionFilter,
 }
 
 impl Image {
     #[inline(always)]
-    pub fn new(dims: I2, rfilter: ReconstructionFilter) -> Self {
+    pub fn new(dims: I2) -> Self {
         let len = (dims[X] * dims[Y]) as usize;
         Self {
             dims,
             data: vec![Color::BLACK; len],
             weights: vec![0.; len],
-            rfilter,
         }
     }
 
@@ -47,24 +43,12 @@ unsafe impl Send for Block { }
 
 impl Block {
     #[inline(always)]
-    pub fn put(&mut self, offset: F2, color: Color) {
+    pub fn put(&mut self, pos: F2, color: Color) {
         let img = unsafe { &mut *self.img };
-
-        let offset = offset - F2::HALF - F2::from(self.pos);
-        let r = img.rfilter.radius();
-        let lo = offset - r; let hi = offset + r;
-        let (lx, ly) = (Num::max(lo[X].ceili(), 0),
-                        Num::max(lo[Y].ceili(), 0));
-        let (hx, hy) = (Num::min(hi[X].floori(), self.dims[X] - 1),
-                        Num::min(hi[Y].floori(), self.dims[Y] - 1));
-
-        for y in ly..=hy { for x in lx..=hx {
-            let w = img.rfilter.eval(Num::abs(x as F - offset[X]))
-                  * img.rfilter.eval(Num::abs(y as F - offset[Y]));
-            let loc = img.flat_pos(self.pos + A2(x, y));
-            img.data[loc] += color * w;
-            img.weights[loc] += w;
-        } }
+        let pos = pos.map(F::floori);
+        let loc = img.flat_pos(pos);
+        img.data[loc] += color;
+        img.weights[loc] += 1.;
     }
 
     #[inline(always)]
