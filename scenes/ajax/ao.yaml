@@ -11,7 +11,7 @@ scene:
   camera:
     type: perspective
     fov: 30.
-    resolution: [2160, 2160]
+    resolution: [768, 768]
 
     transforms:
       - look_at:

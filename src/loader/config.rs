@@ -47,10 +47,6 @@ fn load_tracer(config: &Yaml) -> Res<Tracer> {
             let s = io(&config["samples"]);
             AmbientOcclusion::new(s, rl).into()
         },
-        "heatmap" => {
-            let scale = f(&config["scale"], "missing scale")?;
-            HeatMap::new(scale).into()
-        },
         "normals" => Normals::new().into(),
         "silhouette" => Silhouette::new().into(),
         _ => return Err("unknown tracer type".into()),
@@ -80,7 +76,7 @@ fn load_scene(config: &Yaml) -> Res<Scene> {
                     .flat_map(|c| load_shape(c))
                     .collect::<Vec<_>>();
 
-    let root = Shape::new(BVH::new(shapes).into(), T::ONE);
+    let root = Shape::new(BVH::new(shapes).into());
     Ok(Scene::new(root, camera))
 }
 
@@ -89,16 +85,20 @@ fn load_shape(config: &Yaml) -> Res<Shape> {
 
     let st: ShapeType =
         match s(&config["type"], "missing shape type")? {
-            "mesh" => load_mesh(config)?.into(),
+            "mesh" => {
+                let filename = s(&config["obj"], "malformed filename")?;
+                obj::load_from_file(filename, to_world)?.into()
+            },
+            "sphere" => {
+                let c = P(f3(&config["center"])
+                            .with_msg("failed to parse sphere center")?);
+                let r = f(&config["radius"], "failed to parse sphere radius")?;
+                Sphere::new(c, r).into()
+            }
             _ => return Err("unknown shape type".into()),
         };
 
-    Ok(Shape::new(st, to_world))
-}
-
-fn load_mesh(config: &Yaml) -> Res<Mesh> {
-    let filename = s(&config["obj"], "malformed filename")?;
-    obj::load_from_file(filename)
+    Ok(Shape::new(st))
 }
 
 fn load_camera(config: &Yaml) -> Res<Camera> {

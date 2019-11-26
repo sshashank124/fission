@@ -25,7 +25,7 @@ impl<S> BVH<S> where S: Intersectable {
         assert!(!elems.is_empty());
 
         let mut build_infos = elems.iter().enumerate().map(|(idx, e)| {
-            let bbox = e.bbox(T::ONE);
+            let bbox = e.bbox();
             BuildInfo {
                 bbox,
                 center: bbox.center(),
@@ -54,7 +54,7 @@ impl<S> BVH<S> where S: Intersectable {
     pub fn fold<'a, A, P, F>(&'a self, trav_order: A3<bool>,
                              mut acc: A, pred: P, f: F) -> A
             where P: Fn(&mut A, &BVHNode) -> bool,
-                  F: Fn(A, &'a S) -> Either<A, A> {
+                  F: Fn(A, usize, &'a S) -> Either<A, A> {
         let mut idx = 0;
         let mut stack = [0; 32];
         let mut sp = 0;
@@ -69,9 +69,8 @@ impl<S> BVH<S> where S: Intersectable {
                         sp += 1;
                     },
                     BVHNodeType::Leaf(i, n) => {
-                        for elem in &self.elements[i as usize..
-                                                   (i + n) as usize] {
-                            acc = match f(acc, elem) {
+                        for j in i as usize..(i + n) as usize {
+                            acc = match f(acc, j, &self.elements[j]) {
                                 Either::Left(b) => { return b; },
                                 Either::Right(a) => a,
                             };
@@ -214,29 +213,26 @@ fn build(build_infos: &mut [BuildInfo],
 }
 
 impl<S> Intersectable for BVH<S> where S: Intersectable {
-    #[inline(always)] fn bbox(&self, t: T) -> BBox
-    { (&self.elements[..]).bbox(t) }
+    #[inline(always)] fn bbox(&self) -> BBox { (&self.elements[..]).bbox() }
 
-    #[inline(always)]
-    fn intersects(&self, ray: R) -> bool {
+    #[inline(always)] fn intersects(&self, ray: R) -> bool {
         self.fold(ray.d.map(Num::is_pos), false,
                   |_, node| node.bbox.intersects(ray),
-                  |_, isectable| {
+                  |_, _, isectable| {
                       if isectable.intersects(ray) { Either::Left(true) }
                       else { Either::Right(false) }
                   })
     }
 
-    #[inline(always)]
-    fn intersect(&self, ray: R) -> Option<Its> {
-        let (_, acc, i) =
-            self.fold(ray.d.map(Num::is_pos), (ray, None, 0),
-                      |(r, _, i), node| { *i += 1; node.bbox.intersects(*r) },
-                      |acc, s| Either::Right(intersect_update(acc, s)));
-        acc.map(|(closest, mut its)| { its.i = i; closest.hit_info(its) })
+    #[inline(always)] fn intersect(&self, ray: R) -> Option<Its> {
+        self.fold(ray.d.map(Num::is_pos), (ray, None),
+                  |(r, _), node| node.bbox.intersects(*r),
+                  |acc, i, s| Either::Right(intersect_update(acc, (i, s))))
+            .1.map(Its::with_hit_info)
     }
     
-    #[inline(always)] fn hit_info(&self, its: Its) -> Its { its }
+    #[inline(always)] fn hit_info<'a>(&'a self, i: Its<'a>) -> Its<'a>
+    { self.elements[i.shape.1 as usize].hit_info(i) }
 
     #[inline(always)] fn intersection_cost(&self) -> F
     { 2. * ((self.nodes.len() as F).log2() * BBox::ZERO.intersection_cost()

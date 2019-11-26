@@ -74,19 +74,18 @@ impl Triangle {
 }
 
 impl Intersectable for Triangle {
-    #[inline(always)] fn bbox(&self, t: T) -> BBox
-    { self.abc().map(|vert| t * vert).fold(BBox::ZERO, BitOr::bitor) }
+    #[inline(always)] fn bbox(&self) -> BBox
+    { self.abc().fold(BBox::ZERO, BitOr::bitor) }
 
     #[inline(always)] fn intersects(&self, ray: R) -> bool
     { self.intersection_point(ray).is_some() }
 
-    #[inline(always)]
-    fn intersect(&self, ray: R) -> Option<Its>
+    #[inline(always)] fn intersect(&self, ray: R) -> Option<Its>
     { self.intersection_point(ray)
-          .map(|(t, uv)| { Its::new(P::ZERO, N::ZERO, uv, t, 1) }) }
+          .map(|(t, uv)| Its::new(P::ZERO, N::ZERO, uv, t)) }
 
     #[inline(always)]
-    fn hit_info(&self, mut its: Its) -> Its {
+    fn hit_info<'a>(&'a self, mut its: Its<'a>) -> Its<'a> {
         let bary = A3(F::ONE - its.uv[0] - its.uv[1], its.uv[0], its.uv[1]);
         its.p = self.abc().dot(bary);
         its.n = if self.n.is_empty() { self.n() }

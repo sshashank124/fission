@@ -128,6 +128,19 @@ impl Float for F {
 
 
 #[inline(always)]
+pub fn quad(a: F, b: F, c: F) -> Option<F2> {
+    let dis = b * b - 4. * a * c;
+    if dis < 0. { return None; }
+    let disqrt = dis.sqrt();
+    let q = -0.5 * (b + b.signum() * disqrt);
+    let t1 = q / a;
+    let t2 = c / q;
+    if t1 <= t2 { Some(A2(t1, t2)) }
+    else { Some(A2(t2, t1)) }
+}
+
+
+#[inline(always)]
 pub fn ceil_pow2_u32(i: u32) -> u32 {
     1 << (32 - i.saturating_sub(1).leading_zeros())
 }

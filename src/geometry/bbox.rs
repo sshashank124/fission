@@ -36,9 +36,10 @@ impl Intersectable for BBox {
         !bb.fold(ray.range(), BitAnd::bitand).degen()
     }
 
-    #[inline(always)] fn bbox(&self, _: T) -> BBox { *self }
+    #[inline(always)] fn bbox(&self) -> BBox { *self }
     #[inline(always)] fn intersect(&self, _: R) -> Option<Its> { None }
-    #[inline(always)] fn hit_info(&self, its: Its) -> Its { its }
+    #[inline(always)] fn hit_info<'a>(&'a self, i: Its<'a>) -> Its<'a> { i }
+
     #[inline(always)] fn intersection_cost(&self) -> F { 1. }
 }
 

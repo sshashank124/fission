@@ -13,4 +13,6 @@ rayon = "*"
 yaml-rust = "*"
 
 [profile.release]
+opt-level = 3
 lto = true
+debug = false

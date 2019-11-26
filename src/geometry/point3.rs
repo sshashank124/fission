@@ -15,8 +15,10 @@ impl P {
 
 op!(Add::add, *P -> *P -> P);
 op!(Add::add, *P -> *V -> P);
-op!(Sub::sub, *P -> *V -> P);
+op!(Add::add, *P ->  F -> P);
 op!(Sub::sub, *P -> *P -> V);
+op!(Sub::sub, *P -> *V -> P);
+op!(Sub::sub, *P ->  F -> P);
 op!(Mul::mul, *P ->  F -> P);
 op!(Mul::mul,  T -> *P -> P);
 op!(Div::div,  T -> *P -> P);
