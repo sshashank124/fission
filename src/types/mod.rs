@@ -4,12 +4,14 @@ mod color;
 mod dim;
 mod num;
 mod ops;
+mod tuple;
 
 pub use array::*;
 pub use array2::*;
 pub use color::Color;
 pub use dim::*;
 pub use num::*;
+pub use tuple::*;
 
 pub type F = f32;
 pub type I = i32;

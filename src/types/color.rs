@@ -9,11 +9,14 @@ use crate::op;
 pub struct Color(pub A3<F>);
 
 impl Color {
+    #[inline(always)] pub fn gray(g: F) -> Self { Self(A3::rep(g)) }
+
     pub const BLACK: Color = Color(F3::ZERO);
     pub const WHITE: Color = Color(F3::ONE);
 }
 
 op!(Add::add, *Color -> *Color -> Color);
+op!(Mul::mul, *Color -> *Color -> Color);
 op!(Mul::mul, *Color ->      F -> Color);
 op!(Div::div, *Color ->      F -> Color);
 op!(AddAssign::add_assign, *mut Color -> *Color -> ());

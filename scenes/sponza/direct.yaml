@@ -1,8 +1,6 @@
 integrator:
   tracer:
-    type: ambient_occlusion
-    samples: 4
-    ray_length: 10.
+    type: direct
 
   sampler:
     type: sobol
@@ -23,3 +21,10 @@ scene:
   elements:
     - type: mesh
       obj: obj/sponza.obj
+      bsdf:
+        type: diffuse
+        albedo: [0.8, 0.8, 0.8]
+
+    - type: pointlight
+      power: [500., 250., 250.]
+      position: [-8., 5., 0.]

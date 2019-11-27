@@ -4,8 +4,6 @@ use std::sync::Arc;
 use super::*;
 
 
-pub type Mesh = BVH<Triangle>;
-
 pub struct Triangle {
     pub f: Face,
     pub mesh_data: Arc<MeshData>,
@@ -50,7 +48,7 @@ impl Triangle {
     #[inline(always)] fn ab(&self) -> V { self.b() - self.a() }
     #[inline(always)] fn ac(&self) -> V { self.c() - self.a() }
 
-    #[inline(always)] fn n(&self) -> N { N(self.ab().cross(self.ac())) }
+    #[inline(always)] fn n(&self) -> N { N::v(self.ab().cross(self.ac())) }
 
     #[inline(always)]
     fn intersection_point(&self, ray: R) -> Option<(F, F2)> {

@@ -34,7 +34,7 @@ macro_rules! index {
     ($type:ident, $v1:tt, $v2:tt) => {
         impl<A> Index<$type> for A2<A> {
             type Output = A;
-            #[inline(always)]
+            #[inline(always)] #[allow(clippy::match_bool)]
             fn index(&self, i: $type) -> &Self::Output {
                 match i {
                     $v1 => &self.0, $v2 => &self.1,
@@ -44,7 +44,7 @@ macro_rules! index {
         }
 
         impl<A> IndexMut<$type> for A2<A> {
-            #[inline(always)]
+            #[inline(always)] #[allow(clippy::match_bool)]
             fn index_mut(&mut self, i: $type) -> &mut Self::Output {
                 match i {
                     $v1 => &mut self.0, $v2 => &mut self.1,

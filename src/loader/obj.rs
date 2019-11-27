@@ -5,9 +5,9 @@ use std::io::{BufRead, BufReader};
 use std::str::FromStr;
 use std::sync::Arc;
 
+use super::*;
 use crate::geometry::*;
 use crate::shape::*;
-use crate::util::*;
 
 
 pub fn load_from_file(filename: &str, to_world: T) -> Res<Mesh> {
@@ -83,7 +83,7 @@ impl ObjLoader {
     #[inline(always)]
     fn add_normal<'a, It>(&mut self, tokens: &mut It) -> Res<()>
             where It: Iterator<Item=&'a str> {
-        self.tmp_data.n.push(self.to_world * N(V(parse_f3(tokens)?).unit()));
+        self.tmp_data.n.push(self.to_world * N::a3(parse_f3(tokens)?));
         Ok(())
     }
 

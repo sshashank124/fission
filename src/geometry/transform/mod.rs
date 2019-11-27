@@ -32,8 +32,10 @@ impl TransformPair3 {
     #[inline(always)] pub fn rotate(axis: F3, theta: F) -> Self
     { Self::new(T3::rotate(axis, theta), T3::rotate(axis, -theta)) }
 
-    #[inline(always)] pub fn from_frame(v: V) -> Self
-    { Self::new(T3::from_frame(v), T3::ONE) }
+    #[inline(always)] pub fn from_frame(v: V) -> Self {
+        let t = T3::from_frame(v);
+        Self::new(t, t.t())
+    }
 
     #[inline(always)] pub fn look_at(pos: P, target: P, up: V) -> Self
     { Self::new(T3::look_at(pos, target, up), T3::ONE) }

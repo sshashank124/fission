@@ -10,7 +10,7 @@ impl Trace for Normals {
     fn trace(&self, scene: &Scene, _: &mut Sampler, ray: R) -> Color {
         match scene.intersect(ray) {
             None => Color::BLACK,
-            Some(its) => Color(its.n.unitn().map(F::abs)),
+            Some(its) => Color(its.n.map(F::abs)),
         }
     }
 }

@@ -23,12 +23,11 @@ impl Trace for AmbientOcclusion {
         match scene.intersect(ray) {
             None => Color::BLACK,
             Some(its) => {
-                let n = its.n.unitn();
-                let f = T::from_frame(*n);
-                Color::WHITE * (0..self.samples).map(|_| {
+                let f = its.to_world();
+                Color::gray((0..self.samples).filter(|_| {
                     let wi = V(warp::cosine_hemisphere(sampler.next_2d()).0);
-                    !scene.intersects(R::r(its.p, f * wi, self.ray_len)) as I
-                }).sum::<I>() as F / self.samples as F
+                    !scene.intersects(R::r(its.p, f * wi, self.ray_len))
+                }).count() as F / self.samples as F)
             }
         }
     }

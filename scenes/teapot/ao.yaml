@@ -21,7 +21,7 @@ scene:
           target: [0., -2., 10.]
           up:     [0., 1., 0.]
 
-  shapes:
+  elements:
     - type: mesh
       obj: obj/teapot.obj
       transforms:

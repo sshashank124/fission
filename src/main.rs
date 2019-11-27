@@ -2,25 +2,25 @@
 #![allow(clippy::suspicious_arithmetic_impl)]
 
 mod aggregate;
+mod bsdf;
 mod camera;
 mod geometry;
 mod image;
 mod integrator;
+mod light;
 mod loader;
 mod sampler;
 mod scene;
 mod shape;
 mod tracer;
 mod types;
-mod util;
 #[allow(dead_code)]
 mod warp;
 
 use std::env;
 use std::path::Path;
 
-use loader::config;
-use util::*;
+use loader::*;
 
 
 fn main() -> Res<()> {

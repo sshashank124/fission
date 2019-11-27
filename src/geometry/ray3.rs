@@ -17,6 +17,11 @@ impl R {
     #[inline(always)]
     pub fn unbounded(o: P, d: V) -> R { R::r(o, d, F::POS_INF) }
 
+    #[inline(always)] pub fn unit(o: P, d: V) -> R
+    { R::r(o, d.unit(), d.norm() - F::EPSILON) }
+
+    #[inline(always)] pub fn p2(a: P, b: P) -> R { R::unit(a, b - a) }
+
     #[inline(always)]
     pub fn at(&self, t: F) -> P { self.o + self.d * t }
 

@@ -1,11 +1,12 @@
+mod mesh;
 mod sphere;
-mod triangle;
 
 use crate::aggregate::*;
 use crate::geometry::*;
+use crate::bsdf::*;
 
+pub use mesh::*;
 pub use sphere::*;
-pub use triangle::*;
 
 
 pub trait Intersectable {
@@ -19,17 +20,21 @@ pub trait Intersectable {
 }
 
 pub struct Shape {
-    shape: ShapeType,
+    pub shape: ShapeType,
+    pub bsdf: BSDF,
 }
 
 pub enum ShapeType {
-    BVH(BVH<Shape>),
+    None,
     Mesh(Mesh),
     Sphere(Sphere),
 }
 
-impl Shape
-{ #[inline(always)] pub fn new(shape: ShapeType) -> Self { Self { shape } } }
+impl Shape {
+    #[inline(always)]
+    pub const fn new(shape: ShapeType, bsdf: BSDF) -> Self
+    { Self { shape, bsdf } }
+}
 
 impl Intersectable for Shape {
     #[inline(always)] fn bbox(&self) -> BBox { self.shape.bbox() }
@@ -49,10 +54,13 @@ impl Intersectable for Shape {
     { self.shape.intersection_cost() }
 }
 
+impl Zero for Shape
+{ const ZERO: Self = Self::new(ShapeType::ZERO, BSDF::ZERO); }
+
 impl Intersectable for ShapeType {
     #[inline(always)] fn bbox(&self) -> BBox {
         match self {
-            Self::BVH(s) => s.bbox(),
+            Self::None => BBox::ZERO,
             Self::Mesh(s) => s.bbox(),
             Self::Sphere(s) => s.bbox(),
         }
@@ -60,7 +68,7 @@ impl Intersectable for ShapeType {
 
     #[inline(always)] fn intersects(&self, ray: R) -> bool {
         match self {
-            Self::BVH(s) => s.intersects(ray),
+            Self::None => false,
             Self::Mesh(s) => s.intersects(ray),
             Self::Sphere(s) => s.intersects(ray),
         }
@@ -68,7 +76,7 @@ impl Intersectable for ShapeType {
 
     #[inline(always)] fn intersect(&self, ray: R) -> Option<Its> {
         match self {
-            Self::BVH(s) => s.intersect(ray),
+            Self::None => None,
             Self::Mesh(s) => s.intersect(ray),
             Self::Sphere(s) => s.intersect(ray),
         }
@@ -76,7 +84,7 @@ impl Intersectable for ShapeType {
 
     #[inline(always)] fn hit_info<'a>(&'a self, its: Its<'a>) -> Its<'a> {
         match self {
-            Self::BVH(s) => s.hit_info(its),
+            Self::None => its,
             Self::Mesh(s) => s.hit_info(its),
             Self::Sphere(s) => s.hit_info(its),
         }
@@ -84,18 +92,17 @@ impl Intersectable for ShapeType {
 
     #[inline(always)] fn intersection_cost(&self) -> F {
         match self {
-            Self::BVH(s) => s.intersection_cost(),
+            Self::None => 0.,
             Self::Mesh(s) => s.intersection_cost(),
             Self::Sphere(s) => s.intersection_cost(),
         }
     }
 }
 
-impl From<BVH<Shape>> for ShapeType
-{ #[inline(always)] fn from(s: BVH<Shape>) -> Self { Self::BVH(s) } }
-
 impl From<Mesh> for ShapeType
 { #[inline(always)] fn from(s: Mesh) -> Self { Self::Mesh(s) } }
 
 impl From<Sphere> for ShapeType
 { #[inline(always)] fn from(s: Sphere) -> Self { Self::Sphere(s) } }
+
+impl Zero for ShapeType { const ZERO: Self = Self::None; }

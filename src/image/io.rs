@@ -37,8 +37,6 @@ impl Image {
 }
 
 unsafe impl PixelStruct for Color {
-    #[inline(always)] fn channel_count() -> usize { 3 }
-
-    #[inline(always)]
+    fn channel_count() -> usize { 3 }
     fn channel(i: usize) -> (PixelType, usize) { (FLOAT, 4 * i) }
 }

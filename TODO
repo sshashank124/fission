@@ -1,21 +1,11 @@
-sphere structure
+Textured BDSF
 
-BSDF
+mirror BSDF
 
-point lights
+Additional BSDFs (Microfacet, Fresnel, Specular, Glossy)
 
-DirectLighting
+Emissive Surfaces / Area Lights
 
-emissive surfaces
+QMC Integrators
 
-area lights
-
-tone mapper and live rendering
-
-BSSRDF
-
-MCIntegrators
-
-PhotonMapping
-
-uv-textures & emitters
+Participating Media

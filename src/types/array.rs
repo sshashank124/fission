@@ -89,7 +89,7 @@ impl<A> One for A3<A> where A: One {
     const ONE: Self = A3(A::ONE, A::ONE, A::ONE);
 }
 
-impl<A> A3<A> where A: Zero + One {
+impl<A> A3<A> where A: Copy + Zero + One {
     pub const X: A3<A> = A3(A::ONE , A::ZERO, A::ZERO);
     pub const Y: A3<A> = A3(A::ZERO, A::ONE , A::ZERO);
     pub const Z: A3<A> = A3(A::ZERO, A::ZERO, A::ONE );

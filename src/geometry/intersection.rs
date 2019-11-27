@@ -1,10 +1,14 @@
 use std::ops::{Mul, Div};
 
 use super::*;
+use crate::bsdf::*;
 use crate::shape::*;
 
 
-pub type ShapeRef<'a> = (Option<&'a Shape>, I);
+pub type ShapeRef<'a> = (&'a Shape, I);
+
+impl<'a> Zero for ShapeRef<'a>
+{ const ZERO: Self = (&Shape::ZERO, 0); }
 
 pub struct Its<'a> {
     pub p: P,
@@ -20,29 +24,20 @@ impl<'a> Its<'a> {
     { Self { p, n, uv, t, shape } }
 
     #[inline(always)] pub fn new(p: P, n: N, uv: F2, t: F) -> Self
-    { Self::its(p, n, uv, t, (None, 0)) }
+    { Self::its(p, n, uv, t, ShapeRef::ZERO) }
 
-    #[inline(always)] pub fn for_shape(mut self, s: &'a Shape) -> Self {
-        match self.shape.0 {
-            None => { self.shape = (Some(s), self.shape.1); self },
-            Some(_) => self,
-        }
-    }
+    #[inline(always)] pub fn for_shape(mut self, s: &'a Shape) -> Self
+    { self.shape = (s, self.shape.1); self }
 
-    #[inline(always)]
-    pub fn for_idx(mut self, idx: I) -> Self {
-        match self.shape.0 {
-            None => { self.shape = (self.shape.0, idx); self },
-            Some(_) => self,
-        }
-    }
+    #[inline(always)] pub fn for_idx(mut self, idx: usize) -> Self
+    { self.shape = (self.shape.0, idx as I); self }
 
-    #[inline(always)] pub fn with_hit_info(self) -> Self {
-        match self.shape.0 {
-            None => self,
-            Some(s) => s.hit_info(self),
-        }
-    }
+    #[inline(always)] pub fn with_hit_info(self) -> Self
+    { self.shape.0.hit_info(self) }
+
+    #[inline(always)] pub fn to_world(&self) -> T { T::from_frame(*self.n) }
+
+    #[inline(always)] pub fn bsdf(&self) -> &BSDF { &self.shape.0.bsdf }
 }
 
 impl<'a> Mul<Its<'a>> for T { type Output = Its<'a>;

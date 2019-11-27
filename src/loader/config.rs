@@ -3,16 +3,17 @@ use std::io::Read;
 
 use yaml_rust::{Yaml, YamlLoader};
 
-use crate::aggregate::*;
+use super::*;
+use crate::bsdf::*;
 use crate::camera::*;
 use crate::geometry::*;
 use crate::integrator::*;
+use crate::light::*;
 use crate::loader::obj;
 use crate::sampler::*;
 use crate::scene::*;
 use crate::shape::*;
 use crate::tracer::*;
-use crate::util::*;
 
 
 pub fn load_from_file(filename: &str) -> Res<Integrator> {
@@ -47,6 +48,7 @@ fn load_tracer(config: &Yaml) -> Res<Tracer> {
             let s = io(&config["samples"]);
             AmbientOcclusion::new(s, rl).into()
         },
+        "direct" => Direct::new().into(),
         "normals" => Normals::new().into(),
         "silhouette" => Silhouette::new().into(),
         _ => return Err("unknown tracer type".into()),
@@ -67,38 +69,78 @@ fn load_sampler(config: &Yaml) -> Res<Sampler> {
     Ok(Sampler::new(st, spp))
 }
 
+enum Element {
+    Shape(Shape),
+    Light(Light),
+}
+
+impl From<Shape> for Element
+{ #[inline(always)] fn from(s: Shape) -> Self { Self::Shape(s) } }
+
+impl From<Light> for Element
+{ #[inline(always)] fn from(s: Light) -> Self { Self::Light(s) } }
+
 fn load_scene(config: &Yaml) -> Res<Scene> {
     let camera = load_camera(&config["camera"])
                      .with_msg("failed to parse camera config")?;
 
-    let shapes = v(&config["shapes"], "missing list of shapes")?
-                    .iter()
-                    .flat_map(|c| load_shape(c))
-                    .collect::<Vec<_>>();
+    let (shapes, lights): (Vec<Element>, Vec<Element>)
+        = v(&config["elements"], "missing list of elements")?
+                      .iter()
+                      .flat_map(|c| load_element(c))
+                      .partition(|e| match e { Element::Shape(_) => true,
+                                               _ => false });
 
-    let root = Shape::new(BVH::new(shapes).into());
-    Ok(Scene::new(root, camera))
+    let shapes = shapes.into_iter().map(|e| match e { Element::Shape(s) => s,
+                                                      _ => unreachable!() })
+                       .collect::<Vec<_>>();
+
+    let lights = lights.into_iter().map(|e| match e { Element::Light(l) => l,
+                                                      _ => unreachable!() })
+                       .collect::<Vec<_>>();
+
+    Ok(Scene::new(shapes, lights, camera))
 }
 
-fn load_shape(config: &Yaml) -> Res<Shape> {
+fn load_element(config: &Yaml) -> Res<Element> {
     let to_world = load_transforms(&config["transforms"])?;
+    let bsdf = load_bsdf(&config["bsdf"])?;
 
-    let st: ShapeType =
-        match s(&config["type"], "missing shape type")? {
-            "mesh" => {
-                let filename = s(&config["obj"], "malformed filename")?;
-                obj::load_from_file(filename, to_world)?.into()
-            },
-            "sphere" => {
-                let c = P(f3(&config["center"])
-                            .with_msg("failed to parse sphere center")?);
-                let r = f(&config["radius"], "failed to parse sphere radius")?;
-                Sphere::new(c, r).into()
-            }
-            _ => return Err("unknown shape type".into()),
-        };
+    Ok(match s(&config["type"], "missing element type")? {
+        "mesh" => {
+            let filename = s(&config["obj"], "malformed filename")?;
+            Shape::new(obj::load_from_file(filename, to_world)?.into(),
+                       bsdf).into()
+        },
+        "sphere" => {
+            let c = P(f3(&config["center"])
+                        .with_msg("failed to parse sphere center")?);
+            let r = f(&config["radius"], "failed to parse sphere radius")?;
+            Shape::new(Sphere::new(c, r).into(),
+                       bsdf).into()
+        },
+        "pointlight" => {
+            let power = Color(f3(&config["power"])
+                            .with_msg("failed to parse light power")?);
+            let pos = P(f3(&config["position"])
+                          .with_msg("failed to parse light position")?);
+            Light::new(Point::new(power, pos).into()).into()
+        },
+        _ => return Err("unknown element type".into()),
+    })
+}
 
-    Ok(Shape::new(st))
+fn load_bsdf(config: &Yaml) -> Res<BSDF> {
+    if config.is_badvalue() { return Ok(BSDF::ZERO); }
+
+    Ok(match s(&config["type"], "missing bsdf type")? {
+        "diffuse" => {
+            let albedo = Color(f3(&config["albedo"])
+                             .with_msg("failed to parse albedo")?);
+            Diffuse::new(albedo).into()
+        },
+        _ => return Err("unknown bsdf type".into()),
+    })
 }
 
 fn load_camera(config: &Yaml) -> Res<Camera> {
@@ -194,7 +236,7 @@ fn f3(vec: &Yaml) -> Res<F3> {
 
 #[inline(always)] fn io(i: &Yaml) -> Option<I> { i.as_i64().map(|i| i as I) }
 
-#[inline(always)] fn so<'a>(s: &'a Yaml) -> Option<&'a str> { s.as_str() }
+#[inline(always)] fn so(s: &Yaml) -> Option<&'_ str> { s.as_str() }
 
 #[inline(always)] fn vo<'a>(v: &'a Yaml) -> Option<&'a Vec<Yaml>>
 { v.as_vec() }

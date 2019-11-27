@@ -22,7 +22,7 @@ impl Sphere {
 
 impl Intersectable for Sphere {
     #[inline(always)] fn bbox(&self) -> BBox
-    { BBox::ZERO | self.c - self.r | self.c + self.r }
+    { BBox::ZERO | (self.c - self.r) | (self.c + self.r) }
 
     #[inline(always)] fn intersects(&self, ray: R) -> bool
     { self.intersection_point(ray).is_some() }
@@ -32,7 +32,7 @@ impl Intersectable for Sphere {
           .map(|t| Its::new(ray.at(t), N::ZERO, F2::ZERO, t)) }
 
     #[inline(always)] fn hit_info<'a>(&'a self, mut its: Its<'a>) -> Its<'a> {
-        its.n = N(its.p - self.c);
+        its.n = N::v(its.p - self.c);
         // TODO set uv coordinates
         its
     }

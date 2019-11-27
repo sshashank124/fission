@@ -1,4 +1,5 @@
 use std::collections::HashMap;
+use std::mem;
 
 use either::Either;
 
@@ -7,11 +8,11 @@ use super::*;
 
 pub struct BVH<S> {
     nodes: Vec<BVHNode>,
-    elements: Vec<S>,
+    pub elements: Vec<S>,
 }
 
 pub struct BVHNode {
-    bbox: BBox,
+    pub bbox: BBox,
     node: BVHNodeType,
 }
 
@@ -213,7 +214,8 @@ fn build(build_infos: &mut [BuildInfo],
 }
 
 impl<S> Intersectable for BVH<S> where S: Intersectable {
-    #[inline(always)] fn bbox(&self) -> BBox { (&self.elements[..]).bbox() }
+    #[inline(always)] fn bbox(&self) -> BBox
+    { self.elements.iter().fold(BBox::ZERO, |bbox, e| bbox | e.bbox()) }
 
     #[inline(always)] fn intersects(&self, ray: R) -> bool {
         self.fold(ray.d.map(Num::is_pos), false,
@@ -227,14 +229,36 @@ impl<S> Intersectable for BVH<S> where S: Intersectable {
     #[inline(always)] fn intersect(&self, ray: R) -> Option<Its> {
         self.fold(ray.d.map(Num::is_pos), (ray, None),
                   |(r, _), node| node.bbox.intersects(*r),
-                  |acc, i, s| Either::Right(intersect_update(acc, (i, s))))
+                  |acc, _, s| Either::Right(intersect_update(acc, s)))
             .1.map(Its::with_hit_info)
     }
-    
-    #[inline(always)] fn hit_info<'a>(&'a self, i: Its<'a>) -> Its<'a>
-    { self.elements[i.shape.1 as usize].hit_info(i) }
+
+    #[inline(always)] fn hit_info<'a>(&'a self, i: Its<'a>) -> Its<'a> { i }
 
     #[inline(always)] fn intersection_cost(&self) -> F
     { 2. * ((self.nodes.len() as F).log2() * BBox::ZERO.intersection_cost()
             + self.elements[0].intersection_cost()) }
+}
+
+type Acc<'a> = (R, Option<Its<'a>>);
+#[inline(always)]
+pub fn intersect_update<'a, S>((ray, acc): Acc<'a>, s: &'a S) -> Acc<'a>
+    where S: Intersectable
+{ s.intersect(ray).map(|it| (ray.clipped(it.t), Some(it)))
+                  .unwrap_or_else(|| (ray, acc)) }
+
+#[inline(always)] pub fn partition<E, FN>(items: &mut [E], pred: FN) -> I
+        where FN: Fn(&E) -> bool {
+    let mut pivot = 0;
+    let mut it = items.iter_mut();
+    'main: while let Some(i) = it.next() {
+        if !pred(&i) { loop {
+            match it.next_back() {
+                Some(j) => if pred(j) { mem::swap(i, j); break; },
+                None => break 'main,
+            }
+        } }
+        pivot += 1;
+    }
+    pivot
 }

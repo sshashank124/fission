@@ -1,10 +1,8 @@
 use std::ops::{Add, BitAnd, BitOr, Mul, Deref, Div, Sub};
 
 use super::*;
-
 use crate::op;
 use crate::shape::*;
-use crate::util::*;
 
 
 #[derive(Clone, Copy)]

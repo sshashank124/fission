@@ -12,8 +12,7 @@ pub struct Image {
 }
 
 impl Image {
-    #[inline(always)]
-    pub fn new(dims: I2) -> Self {
+    #[inline(always)] pub fn new(dims: I2) -> Self {
         let len = (dims[X] * dims[Y]) as usize;
         Self {
             dims,
@@ -22,15 +21,11 @@ impl Image {
         }
     }
 
-    #[inline(always)]
-    pub fn as_block(&mut self) -> Block {
-        Block { pos: I2::ZERO, dims: self.dims, img: self }
-    }
+    #[inline(always)] pub fn as_block(&mut self) -> Block
+    { Block { pos: I2::ZERO, dims: self.dims, img: self } }
 
-    #[inline(always)]
-    pub fn flat_pos(&self, pos: I2) -> usize {
-        (pos[Y] * self.dims[X] + pos[X]) as usize
-    }
+    #[inline(always)] pub fn flat_pos(&self, pos: I2) -> usize
+    { (pos[Y] * self.dims[X] + pos[X]) as usize }
 }
 
 pub struct Block {
@@ -42,8 +37,7 @@ pub struct Block {
 unsafe impl Send for Block { }
 
 impl Block {
-    #[inline(always)]
-    pub fn put(&mut self, pos: F2, color: Color) {
+    #[inline(always)] pub fn put(&mut self, pos: F2, color: Color) {
         let img = unsafe { &mut *self.img };
         let pos = pos.map(F::floori);
         let loc = img.flat_pos(pos);
@@ -51,8 +45,7 @@ impl Block {
         img.weights[loc] += 1.;
     }
 
-    #[inline(always)]
-    pub fn blocks(&mut self) -> BlockIter<'_> {
+    #[inline(always)] pub fn blocks(&mut self) -> BlockIter<'_> {
         let dims = BLOCK_SIZE;
         BlockIter {
             pos: I2::ZERO,
@@ -62,10 +55,8 @@ impl Block {
         }
     }
 
-    #[inline(always)]
-    pub fn pixels(&self) -> PixelIter {
-        PixelIter { block_pos: self.pos, block_dims: self.dims, pos: I2::ZERO }
-    }
+    #[inline(always)] pub fn pixels(&self) -> PixelIter
+    { PixelIter { block_pos: self.pos, block_dims: self.dims, pos: I2::ZERO } }
 }
 
 pub struct BlockIter<'a> {
@@ -75,10 +66,8 @@ pub struct BlockIter<'a> {
     grid: I2,
 }
 
-impl<'a> Iterator for BlockIter<'a> {
-    type Item = Block;
-    #[inline(always)]
-    fn next(&mut self) -> Option<Block> {
+impl<'a> Iterator for BlockIter<'a> { type Item = Block;
+    #[inline(always)] fn next(&mut self) -> Option<Block> {
         let a = if self.pos[X] < self.grid[X] {
             let a = self.pos[X]; self.pos[X] += 1; a
         } else { self.pos[X] = 1; self.pos[Y] += 1; 0 };
@@ -92,8 +81,7 @@ impl<'a> Iterator for BlockIter<'a> {
         } else { None }
     }
 
-    #[inline(always)]
-    fn size_hint(&self) -> (usize, Option<usize>) {
+    #[inline(always)] fn size_hint(&self) -> (usize, Option<usize>) {
         let size = (self.grid[Y] - self.pos[Y] - 1) * self.grid[X]
                  + (self.grid[X] - self.pos[X]);
         (size as usize, Some(size as usize))
@@ -109,10 +97,8 @@ pub struct PixelIter {
     pos: I2,
 }
 
-impl Iterator for PixelIter {
-    type Item = I2;
-    #[inline(always)]
-    fn next(&mut self) -> Option<Self::Item> {
+impl Iterator for PixelIter { type Item = I2;
+    #[inline(always)] fn next(&mut self) -> Option<Self::Item> {
         let a = if self.pos[X] < self.block_dims[X] {
             let a = self.pos[X]; self.pos[X] += 1; a
         } else { self.pos[X] = 1; self.pos[Y] += 1; 0 };
@@ -122,8 +108,7 @@ impl Iterator for PixelIter {
         } else { None }
     }
 
-    #[inline(always)]
-    fn size_hint(&self) -> (usize, Option<usize>) {
+    #[inline(always)] fn size_hint(&self) -> (usize, Option<usize>) {
         let size = (self.block_dims[Y] - self.pos[Y] - 1) * self.block_dims[X]
                  + (self.block_dims[X] - self.pos[X]);
         (size as usize, Some(size as usize))

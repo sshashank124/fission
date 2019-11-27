@@ -4,8 +4,11 @@ use std::ops::{AddAssign, SubAssign, MulAssign, DivAssign};
 use super::*;
 
 
-pub trait Zero: Copy { const ZERO: Self; }
-pub trait One:  Copy { const ONE: Self; }
+#[allow(clippy::declare_interior_mutable_const)]
+pub trait Zero { const ZERO: Self; }
+
+#[allow(clippy::declare_interior_mutable_const)]
+pub trait One  { const ONE: Self; }
 
 pub trait Num: Copy + PartialOrd
              + Zero + One
@@ -26,11 +29,11 @@ pub trait Num: Copy + PartialOrd
     #[inline(always)]
     fn max(a: Self, b: Self) -> Self { if a < b { b } else { a } }
 
-    #[inline(always)]
-    fn is_pos(a: Self) -> bool { a >= Self::ZERO }
+    #[inline(always)] fn is_pos(a: Self) -> bool { a > Self::ZERO }
+    #[inline(always)] fn is_nonpos(a: Self) -> bool { !Self::is_pos(a) }
 
-    #[inline(always)]
-    fn is_neg(a: Self) -> bool { !Self::is_pos(a) }
+    #[inline(always)] fn is_neg(a: Self) -> bool { a < Self::ZERO }
+    #[inline(always)] fn is_nonneg(a: Self) -> bool { !Self::is_neg(a) }
 
     #[inline(always)]
     fn clamp(v: Self, a: Self, b: Self) -> Self { Num::min(Num::max(v, a), b) }
