@@ -10,7 +10,7 @@ pub trait Zero { const ZERO: Self; }
 #[allow(clippy::declare_interior_mutable_const)]
 pub trait One  { const ONE: Self; }
 
-pub trait Num: Copy + PartialOrd
+pub trait Num: Copy + PartialOrd + PartialEq
              + Zero + One
              + Neg<Output=Self>
              + Add<Self, Output=Self> + AddAssign<Self>
@@ -18,6 +18,7 @@ pub trait Num: Copy + PartialOrd
              + Mul<Self, Output=Self> + MulAssign<Self>
              + Div<Self, Output=Self> + DivAssign<Self>
 {
+    #[inline(always)] fn eq(a: Self, b: Self) -> bool { a == b }
     #[inline(always)] fn sq(self) -> Self { self * self }
 
     #[inline(always)]
@@ -52,6 +53,16 @@ impl Num  for I { }
 impl Zero for F { const ZERO: Self = 0.; }
 impl One  for F { const ONE: Self = 1.; }
 impl Num  for F { }
+
+
+pub trait Integer: Num {
+    fn mod2(i: Self) -> Self;
+}
+
+impl Integer for I {
+    #[inline(always)] fn mod2(i: Self) -> Self
+    { let r = i % 2; if r < 0 { r + 2 } else { r } }
+}
 
 
 pub trait Half: Copy { const HALF: Self; }

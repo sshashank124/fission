@@ -2,19 +2,19 @@ use super::*;
 
 
 pub struct Diffuse {
-    albedo: Color,
+    albedo: Tex<Color>,
 }
 
 impl Diffuse {
-    #[inline(always)] pub const fn new(albedo: Color) -> Self
+    #[inline(always)] pub const fn new(albedo: Tex<Color>) -> Self
     { Self { albedo } }
 }
 
-impl BXDF for Diffuse {
-    #[inline(always)] fn eval(&self, wi: V, wo: V) -> Color {
+impl Bxdf for Diffuse {
+    #[inline(always)] fn eval(&self, (wi, wo, uv): BsdfQuery) -> Color {
         if F::is_nonpos(wi[Z]) || F::is_nonpos(wo[Z]) { Color::BLACK }
-        else { self.albedo * F::INV_PI }
+        else { self.albedo.eval(uv) * F::INV_PI }
     }
 }
 
-impl One for Diffuse { const ONE: Self = Self::new(Color::WHITE); }
+impl Zero for Diffuse { const ZERO: Self = Self::new(Tex::ZERO); }

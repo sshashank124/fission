@@ -3,7 +3,7 @@ use std::ops::Deref;
 use super::*;
 
 
-#[derive(Clone, Copy)]
+#[derive(Clone, Copy, Debug)]
 pub struct RotScale3(Option<A3<F3>>);
 
 impl One for RotScale3 { const ONE: Self = Self(None); }
@@ -47,8 +47,7 @@ impl RotScale3 {
 
 impl Mul for RotScale3 { type Output = Self;
     #[inline(always)] fn mul(self, o: Self) -> Self
-    { self.map(|m| o.map(|om| Self(Some(m * om))).unwrap_or_else(|| self))
-          .unwrap_or_else(|| o) }
+    { self.t().map(|m| Self(Some(o * m)).t()).unwrap_or_else(|| o) }
 }
 
 impl<B> Mul<A3<B>> for RotScale3

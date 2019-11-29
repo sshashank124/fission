@@ -37,7 +37,7 @@ impl<'a> Its<'a> {
 
     #[inline(always)] pub fn to_world(&self) -> T { T::from_frame(*self.n) }
 
-    #[inline(always)] pub fn bsdf(&self) -> &BSDF { &self.shape.0.bsdf }
+    #[inline(always)] pub fn bsdf(&self) -> &Bsdf { &self.shape.0.bsdf }
 }
 
 impl<'a> Mul<Its<'a>> for T { type Output = Its<'a>;

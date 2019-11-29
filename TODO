@@ -1,11 +1,9 @@
-Textured BDSF
-
-mirror BSDF
-
-Additional BSDFs (Microfacet, Fresnel, Specular, Glossy)
-
 Emissive Surfaces / Area Lights
 
 QMC Integrators
+
+Mirror BSDF
+
+Additional BSDFs (Microfacet, Fresnel, Specular, Glossy)
 
 Participating Media

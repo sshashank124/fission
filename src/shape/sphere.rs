@@ -33,7 +33,9 @@ impl Intersectable for Sphere {
 
     #[inline(always)] fn hit_info<'a>(&'a self, mut its: Its<'a>) -> Its<'a> {
         its.n = N::v(its.p - self.c);
-        // TODO set uv coordinates
+        its.uv = cartesian2spherical(**its.n);
+        its.uv[X] = 0.5 + its.uv[X] * F::INV_2PI;
+        its.uv[Y] = its.uv[Y] * F::INV_PI;
         its
     }
 

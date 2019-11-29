@@ -1,0 +1,51 @@
+integrator:
+  tracer:
+    type: direct
+
+  sampler:
+    type: sobol
+    samples_per_pixel: 64
+
+scene:
+  camera:
+    type: perspective
+    fov: 22.11
+    resolution: [768, 432]
+    transforms:
+      - look_at:
+          origin: [20., 20., 50.]
+          target: [0., 4., 0.]
+          up:     [0., 1., 0.]
+
+  elements:
+    - type: mesh
+      obj: obj/cube.obj
+      bsdf:
+        type: diffuse
+        albedo: [0.2, 0.2, 0.2]
+      transforms:
+        - translate: [0., 0.5, 0.]
+        - scale: [1., 9., 4.]
+
+    - type: mesh
+      obj: obj/cube.obj
+      bsdf:
+        type: diffuse
+        albedo: [0.85, 0.85, 0.85]
+      transforms:
+        - translate: [0., -0.5, 0.]
+        - scale: [25., 1., 18.]
+
+    - type: mesh
+      obj: obj/cube.obj
+      bsdf:
+        type: diffuse
+        albedo: [1., 1., 1.]  # TODO [0., 0., 0.] and add emitter [1., 1., 1.]
+      transforms:
+        - translate: [0., 0.5, 0.]
+        - scale: [1., 10., 18.]
+        - translate: [-12., 0., 0.]
+
+    - type: pointlight
+      power: [1200., 1200., 1200.]
+      position: [-6., 10., 0.]

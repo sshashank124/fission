@@ -1,7 +1,5 @@
 use super::*;
 
-use crate::warp;
-
 
 pub struct AmbientOcclusion {
     samples: I,
@@ -25,7 +23,7 @@ impl Trace for AmbientOcclusion {
             Some(its) => {
                 let f = its.to_world();
                 Color::gray((0..self.samples).filter(|_| {
-                    let wi = V(warp::cosine_hemisphere(sampler.next_2d()).0);
+                    let wi = V(CosineHemisphere::warp(sampler.next_2d()));
                     !scene.intersects(R::r(its.p, f * wi, self.ray_len))
                 }).count() as F / self.samples as F)
             }

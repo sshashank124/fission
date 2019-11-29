@@ -40,10 +40,16 @@ impl Triangle {
     #[inline(always)] fn bn(&self) -> N { self.n[self.f.1 as usize] }
     #[inline(always)] fn cn(&self) -> N { self.n[self.f.2 as usize] }
 
+    #[inline(always)] fn at(&self) -> F2 { self.uv[self.f.0 as usize] }
+    #[inline(always)] fn bt(&self) -> F2 { self.uv[self.f.1 as usize] }
+    #[inline(always)] fn ct(&self) -> F2 { self.uv[self.f.2 as usize] }
+
     #[inline(always)]
     fn abc(&self) -> A3<P> { A3(self.a(), self.b(), self.c()) }
     #[inline(always)]
     fn abcn(&self) -> A3<N> { A3(self.an(), self.bn(), self.cn()) }
+    #[inline(always)]
+    fn abct(&self) -> A3<F2> { A3(self.at(), self.bt(), self.ct()) }
 
     #[inline(always)] fn ab(&self) -> V { self.b() - self.a() }
     #[inline(always)] fn ac(&self) -> V { self.c() - self.a() }
@@ -88,6 +94,8 @@ impl Intersectable for Triangle {
         its.p = self.abc().dot(bary);
         its.n = if self.n.is_empty() { self.n() }
                 else { self.abcn().dot(bary) };
+        its.uv = if self.uv.is_empty() { F2::ZERO }
+                 else { self.abct().dot(bary) };
         its
     }
 

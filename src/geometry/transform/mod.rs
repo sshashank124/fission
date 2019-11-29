@@ -12,7 +12,7 @@ pub use TransformPair3 as T;
 
 type T3 = affine3::Affine3;
 
-#[derive(Clone, Copy)]
+#[derive(Clone, Copy, Debug)]
 pub struct TransformPair3 {
     f: T3,
     i: T3,

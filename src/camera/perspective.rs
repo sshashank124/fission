@@ -1,5 +1,4 @@
 use super::*;
-use crate::warp;
 
 
 pub struct Perspective {
@@ -29,7 +28,7 @@ impl CameraModel for Perspective {
         if F::approx_zero(self.lens_radius) { ray }
         else {
             let focus_point = ray.at(self.focal_distance / ray.d[Z]);
-            let o = P::a2(warp::uniform_disk(sampler.next_2d()).0
+            let o = P::a2(UniformDisk::warp(sampler.next_2d())
                           * self.lens_radius, 0.);
             R::unbounded(o, focus_point - o)
         }

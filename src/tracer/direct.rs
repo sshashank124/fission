@@ -19,7 +19,7 @@ impl Trace for Direct {
                     if scene.intersects(sray) { None }
                     else {
                         let wi = f / sray.d;
-                        Some(r * its.bsdf().eval(wi, wo) * wi[Z])
+                        Some(r * its.bsdf().eval((wi, wo, its.uv)) * wi[Z])
                     }
                 }).sum::<Color>()
             }

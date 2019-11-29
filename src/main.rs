@@ -12,10 +12,9 @@ mod loader;
 mod sampler;
 mod scene;
 mod shape;
+mod texture;
 mod tracer;
 mod types;
-#[allow(dead_code)]
-mod warp;
 
 use std::env;
 use std::path::Path;

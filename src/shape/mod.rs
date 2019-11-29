@@ -21,7 +21,7 @@ pub trait Intersectable {
 
 pub struct Shape {
     pub shape: ShapeType,
-    pub bsdf: BSDF,
+    pub bsdf: Bsdf,
 }
 
 pub enum ShapeType {
@@ -32,7 +32,7 @@ pub enum ShapeType {
 
 impl Shape {
     #[inline(always)]
-    pub const fn new(shape: ShapeType, bsdf: BSDF) -> Self
+    pub const fn new(shape: ShapeType, bsdf: Bsdf) -> Self
     { Self { shape, bsdf } }
 }
 
@@ -55,7 +55,7 @@ impl Intersectable for Shape {
 }
 
 impl Zero for Shape
-{ const ZERO: Self = Self::new(ShapeType::ZERO, BSDF::ZERO); }
+{ const ZERO: Self = Self::new(ShapeType::ZERO, Bsdf::ZERO); }
 
 impl Intersectable for ShapeType {
     #[inline(always)] fn bbox(&self) -> BBox {

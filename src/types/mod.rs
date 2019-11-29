@@ -4,6 +4,7 @@ mod color;
 mod dim;
 mod num;
 mod ops;
+mod pdf;
 mod tuple;
 
 pub use array::*;
@@ -11,6 +12,7 @@ pub use array2::*;
 pub use color::Color;
 pub use dim::*;
 pub use num::*;
+pub use pdf::*;
 pub use tuple::*;
 
 pub type F = f32;

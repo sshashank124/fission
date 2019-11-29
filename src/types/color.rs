@@ -11,9 +11,12 @@ pub struct Color(pub A3<F>);
 impl Color {
     #[inline(always)] pub fn gray(g: F) -> Self { Self(A3::rep(g)) }
 
-    pub const BLACK: Color = Color(F3::ZERO);
-    pub const WHITE: Color = Color(F3::ONE);
+    pub const BLACK: Color = Self::ZERO;
+    pub const WHITE: Color = Self::ONE;
 }
+
+impl Zero for Color { const ZERO: Self = Self(A3::ZERO); }
+impl One for Color { const ONE: Self = Self(A3::ONE); }
 
 op!(Add::add, *Color -> *Color -> Color);
 op!(Mul::mul, *Color -> *Color -> Color);

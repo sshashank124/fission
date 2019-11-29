@@ -13,6 +13,7 @@ use crate::loader::obj;
 use crate::sampler::*;
 use crate::scene::*;
 use crate::shape::*;
+use crate::texture::*;
 use crate::tracer::*;
 
 
@@ -130,16 +131,38 @@ fn load_element(config: &Yaml) -> Res<Element> {
     })
 }
 
-fn load_bsdf(config: &Yaml) -> Res<BSDF> {
-    if config.is_badvalue() { return Ok(BSDF::ZERO); }
+fn load_bsdf(config: &Yaml) -> Res<Bsdf> {
+    if config.is_badvalue() { return Ok(Bsdf::ZERO); }
 
     Ok(match s(&config["type"], "missing bsdf type")? {
         "diffuse" => {
-            let albedo = Color(f3(&config["albedo"])
-                             .with_msg("failed to parse albedo")?);
+            let albedo = load_texture(&config["albedo"])
+                             .with_msg("failed to parse texture")?;
             Diffuse::new(albedo).into()
         },
         _ => return Err("unknown bsdf type".into()),
+    })
+}
+
+fn load_texture(config: &Yaml) -> Res<Tex<Color>> {
+    Ok(match s(&config["type"], "missing texture type")? {
+        "checkerboard" => {
+            let val1 = Color(f3(&config["color_1"])
+                          .with_msg("failed to parse color 1")?);
+            let val2 = Color(f3(&config["color_2"])
+                          .with_msg("failed to parse color 2")?);
+            let scale = f2o(&config["scale"])
+                          .with_msg("failed to parse scale")?;
+            let delta = f2o(&config["delta"])
+                          .with_msg("failed to parse delta")?;
+            Checkerboard::new(val1, val2, scale, delta).into()
+        },
+        "constant" => {
+            let val = Color(f3(&config["color"])
+                          .with_msg("failed to parse color")?);
+            Constant::new(val).into()
+        },
+        _ => return Err("unknown texture type".into()),
     })
 }
 
@@ -218,6 +241,18 @@ fn f3(vec: &Yaml) -> Res<F3> {
     Ok(A3(f(&v[0], "malformed X value")?,
           f(&v[1], "malformed Y value")?,
           f(&v[2], "malformed Z value")?))
+}
+
+#[inline(always)]
+fn f2o(vec: &Yaml) -> Res<Option<F2>> {
+    match vo(vec) {
+        None => Ok(None),
+        Some(v) => {
+            if v.len() != 2 { return Err("malformed 2d vector".into()); }
+            Ok(Some(A2(f(&v[0], "malformed X value")?,
+                       f(&v[1], "malformed Y value")?)))
+        }
+    }
 }
 
 #[inline(always)] fn f(f: &Yaml, msg: &str) -> Res<F>

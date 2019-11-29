@@ -1,27 +1,30 @@
 mod diffuse;
 
 use crate::geometry::*;
+use crate::texture::*;
 
 pub use diffuse::Diffuse;
 
 
-pub trait BXDF {
-    fn eval(&self, wi: V, wo: V) -> Color;
+pub type BsdfQuery = (V, V, F2);  // (wi, wo, uv)
+
+pub trait Bxdf {
+    fn eval(&self, bq: BsdfQuery) -> Color;
 }
 
-pub enum BSDF {
+pub enum Bsdf {
     Diffuse(Diffuse),
 }
 
-impl BXDF for BSDF {
-    #[inline(always)] fn eval(&self, wi: V, wo: V) -> Color {
+impl Bxdf for Bsdf {
+    #[inline(always)] fn eval(&self, bq: BsdfQuery) -> Color {
         match self {
-            Self::Diffuse(f) => f.eval(wi, wo),
+            Self::Diffuse(f) => f.eval(bq),
         }
     }
 }
 
-impl From<Diffuse> for BSDF
+impl From<Diffuse> for Bsdf
 { #[inline(always)] fn from(f: Diffuse) -> Self { Self::Diffuse(f) } }
 
-impl Zero for BSDF { const ZERO: Self = Self::Diffuse(Diffuse::ONE); }
+impl Zero for Bsdf { const ZERO: Self = Self::Diffuse(Diffuse::ZERO); }
