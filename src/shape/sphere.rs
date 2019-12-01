@@ -35,7 +35,7 @@ impl Intersectable for Sphere {
         its.n = N::v(its.p - self.c);
         its.uv = cartesian2spherical(**its.n);
         its.uv[X] = 0.5 + its.uv[X] * F::INV_2PI;
-        its.uv[Y] = its.uv[Y] * F::INV_PI;
+        its.uv[Y] *= F::INV_PI;
         its
     }
 

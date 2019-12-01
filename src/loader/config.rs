@@ -162,6 +162,20 @@ fn load_texture(config: &Yaml) -> Res<Tex<Color>> {
                           .with_msg("failed to parse color")?);
             Constant::new(val).into()
         },
+        "random_grid" => {
+            let val1 = Color(f3(&config["color_1"])
+                          .with_msg("failed to parse color 1")?);
+            let val2 = Color(f3(&config["color_2"])
+                          .with_msg("failed to parse color 2")?);
+            let scale = f2o(&config["scale"])
+                          .with_msg("failed to parse scale")?;
+            let delta = f2o(&config["delta"])
+                          .with_msg("failed to parse delta")?;
+            let threshold = fo(&config["threshold"]);
+            let padding = fo(&config["padding"]);
+            RandomGrid::new(val1, val2, scale, delta,
+                            threshold, padding).into()
+        },
         _ => return Err("unknown texture type".into()),
     })
 }

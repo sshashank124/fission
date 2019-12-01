@@ -161,3 +161,14 @@ pub fn ceil_pow2_u32(i: u32) -> u32 {
 
 #[inline(always)]
 pub fn log2_ceil_u32(i: u32) -> u32 { 31 - i.leading_zeros() }
+
+#[inline(always)]
+pub fn shuffle_u64(mut h: u64) -> u64 {
+    h = h.wrapping_mul(5_068_423);
+    h = h.wrapping_add(7_619_237);
+    h ^= h.rotate_right(19);
+    h ^= h.rotate_left(29);
+    h ^= h.rotate_right(13);
+    h = h.wrapping_mul(1_958_239);
+    h.wrapping_add(7_608_345)
+}
