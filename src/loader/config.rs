@@ -120,6 +120,11 @@ fn load_element(config: &Yaml) -> Res<Element> {
             Shape::new(Sphere::new(c, r).into(),
                        bsdf).into()
         },
+        "infinitelight" => {
+            let intensity = load_texture(&config["intensity"])
+                                .with_msg("failed to parse intensity")?;
+            Light::new(Infinite::new(intensity).into()).into()
+        },
         "pointlight" => {
             let power = Color(f3(&config["power"])
                             .with_msg("failed to parse light power")?);
@@ -161,6 +166,17 @@ fn load_texture(config: &Yaml) -> Res<Tex<Color>> {
             let val = Color(f3(&config["color"])
                           .with_msg("failed to parse color")?);
             Constant::new(val).into()
+        },
+        "gradient" => {
+            let val1 = Color(f3(&config["color_1"])
+                          .with_msg("failed to parse color 1")?);
+            let val2 = Color(f3(&config["color_2"])
+                          .with_msg("failed to parse color 2")?);
+            match so(&config["interp"]) {
+                Some("smooth") =>
+                    Tex::SmoothGradient(Gradient::new(val1, val2)),
+                _ => Tex::LinearGradient(Gradient::new(val1, val2)),
+            }
         },
         "random_grid" => {
             let val1 = Color(f3(&config["color_1"])

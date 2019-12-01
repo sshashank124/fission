@@ -1,17 +1,17 @@
+mod infinite;
 mod point;
 
 use std::ops::Deref;
 
 use crate::geometry::*;
 
+pub use infinite::Infinite;
 pub use point::Point;
 
 
-pub type LightQueryResult = (Color, R);
-
 pub trait Lighting {
-    fn eval(&self, pos: P) -> LightQueryResult;
-    fn sample(&self, pos: P, u: F2) -> LightQueryResult;
+    #[inline(always)] fn le(&self, _: &R) -> Color { Color::BLACK }
+    fn sample(&self, pos: P, u: F2) -> (Color, R);
 }
 
 pub struct Light {
@@ -19,6 +19,7 @@ pub struct Light {
 }
 
 pub enum LightType {
+    Infinite(Infinite),
     Point(Point),
 }
 
@@ -30,18 +31,23 @@ impl Deref for Light { type Target = LightType;
 }
 
 impl Lighting for LightType {
-    #[inline(always)] fn eval(&self, pos: P) -> LightQueryResult {
+    #[inline(always)] fn le(&self, ray: &R) -> Color {
         match self {
-            LightType::Point(l) => l.eval(pos),
+            LightType::Infinite(l) => l.le(ray),
+            LightType::Point(l) => l.le(ray),
         }
     }
 
-    #[inline(always)] fn sample(&self, pos: P, u: F2) -> LightQueryResult {
+    #[inline(always)] fn sample(&self, pos: P, u: F2) -> (Color, R) {
         match self {
+            LightType::Infinite(l) => l.sample(pos, u),
             LightType::Point(l) => l.sample(pos, u),
         }
     }
 }
+
+impl From<Infinite> for LightType
+{ #[inline(always)] fn from(s: Infinite) -> Self { Self::Infinite(s) } }
 
 impl From<Point> for LightType
 { #[inline(always)] fn from(s: Point) -> Self { Self::Point(s) } }

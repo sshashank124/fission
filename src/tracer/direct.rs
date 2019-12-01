@@ -10,7 +10,7 @@ impl Trace for Direct {
     #[inline(always)]
     fn trace(&self, scene: &Scene, sampler: &mut Sampler, ray: R) -> Color {
         match scene.intersect(ray) {
-            None => Color::BLACK,
+            None => scene.lights.iter().map(|light| light.le(&ray)).sum(),
             Some(its) => {
                 let f = its.to_world();
                 let wo = f / -ray.d;
@@ -21,7 +21,7 @@ impl Trace for Direct {
                         let wi = f / sray.d;
                         Some(r * its.bsdf().eval((wi, wo, its.uv)) * wi[Z])
                     }
-                }).sum::<Color>()
+                }).sum()
             }
         }
     }

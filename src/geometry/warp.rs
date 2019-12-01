@@ -1,4 +1,4 @@
-use crate::types::*;
+use super::*;
 
 
 pub trait Warp2: Pdf<F2> { fn warp(s: F2) -> F2; }

@@ -7,7 +7,7 @@ use crate::op;
 #[derive(Clone, Copy)]
 pub struct P(pub F3);
 
-impl Zero for P { const ZERO: Self = P(F3::ZERO); }
+impl Zero for P { const ZERO: P = P(F3::ZERO); }
 
 impl P {
     #[inline(always)] pub fn a2(a: F2, z: F) -> P { P(A3::a2(a, z)) }

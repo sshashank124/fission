@@ -12,11 +12,8 @@ impl Point {
 }
 
 impl Lighting for Point {
-    #[inline(always)] fn eval(&self, pos: P) -> LightQueryResult {
+    #[inline(always)] fn sample(&self, pos: P, _: F2) -> (Color, R) {
         let sray = R::p2(pos, self.pos);
         (self.intensity / sray.t.sq(), sray)
     }
-
-    #[inline(always)] fn sample(&self, pos: P, _: F2) -> LightQueryResult
-    { self.eval(pos) }
 }

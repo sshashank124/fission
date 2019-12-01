@@ -1,72 +1,59 @@
+building_bsdf: &building_bsdf
+  type: diffuse
+  albedo:
+    type: random_grid
+    color_1: [10., 10., 10.]
+    color_2: [0.1, 0.1, 0.1]
+    scale: [0.05, 0.002]
+    threshold: 0.2
+    padding: 0.1
+
 integrator:
   tracer:
     type: direct
 
   sampler:
     type: sobol
-    samples_per_pixel: 32
+    samples_per_pixel: 16
 
 scene:
   camera:
     type: perspective
     fov: 40.
-    resolution: [1280, 720]
+    resolution: [1920, 1080]
     transforms:
       - look_at:
-          origin: [-3., 4., -7.]
-          target: [10., 4., 10.]
+          origin: [-3., 9., -7.]
+          target: [10., 9., 10.]
           up:     [0., 1., 0.]
 
   elements:
     - type: mesh
       obj: obj/cube.obj
-      bsdf:
-        type: diffuse
-        albedo:
-          type: checkerboard
-          color_1: [0.8, 0.2, 0.2]
-          color_2: [0.2, 0.2, 0.8]
+      bsdf: *building_bsdf
       transforms:
-        - scale: [0.6, 2., 0.4]
+        - scale: [0.6, 7., 0.4]
         - translate: [20., 0., 20.]
 
     - type: mesh
       obj: obj/cube.obj
-      bsdf:
-        type: diffuse
-        albedo:
-          type: checkerboard
-          color_1: [0.8, 0.2, 0.2]
-          color_2: [0.2, 0.2, 0.8]
+      bsdf: *building_bsdf
       transforms:
-        - scale: [0.3, 3., 0.5]
+        - scale: [0.3, 8., 0.5]
         - translate: [0., 0., 0.]
 
     - type: mesh
       obj: obj/cube.obj
-      bsdf:
-        type: diffuse
-        albedo:
-          type: checkerboard
-          color_1: [0.8, 0.2, 0.2]
-          color_2: [0.2, 0.2, 0.8]
+      bsdf: *building_bsdf
       transforms:
-        - scale: [0.5, 1., 0.7]
+        - scale: [0.5, 6., 0.7]
         - translate: [10., 0., 10.]
 
     - type: mesh
       obj: obj/cube.obj
-      bsdf:
-        type: diffuse
-        albedo:
-          type: random_grid
-          color_1: [10., 10., 10.]
-          color_2: [0.1, 0.1, 0.1]
-          scale: [0.05, 0.005]
-          threshold: 0.1
-          padding: 0.1
+      bsdf: *building_bsdf
       transforms:
-        - scale: [0.8, 3., 1.2]
+        - scale: [0.8, 8., 1.2]
         - translate: [6., 0., 8.]
 
     - type: mesh
@@ -79,13 +66,21 @@ scene:
       transforms:
         - rotate:
             axis: [0., 1., 0.]
-            angle: 45.
+            angle: 53.
         - scale: [40., 1., 40.]
+        - translate: [0., 5., 0.]
 
     - type: pointlight
       power: [3000., 3000., 3000.]
-      position: [0., 10., 10.]
+      position: [0., 15., 10.]
 
     - type: pointlight
       power: [1000., 1000., 1000.]
-      position: [10., 8., 6.]
+      position: [10., 13., 6.]
+
+    - type: infinitelight
+      intensity:
+        type: gradient
+        interp: smooth
+        color_1: [0., 0., 0.]
+        color_2: [0., 0., 0.03]
