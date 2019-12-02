@@ -72,5 +72,5 @@ impl<A> From<RandomGrid<A>> for Tex<A> where A: Copy
                                               + Mul<F, Output=A>
 { #[inline(always)] fn from(t: RandomGrid<A>) -> Self { Self::RandomGrid(t) } }
 
-impl<A: Copy + One> Zero for Tex<A> where A: Add<Output=A> + Mul<F, Output=A>
-{ const ZERO: Self = Self::Constant(Constant::ONE); }
+impl<A: Copy + Zero> Zero for Tex<A> where A: Add<Output=A> + Mul<F, Output=A>
+{ const ZERO: Self = Self::Constant(Constant::ZERO); }

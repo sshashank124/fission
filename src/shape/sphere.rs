@@ -18,6 +18,11 @@ impl Sphere {
                                    else if ray.range().bounds(t2) { Some(t2) }
                                    else { None })
     }
+
+    #[inline(always)] fn cartesian2uv(x: F3) -> F2 {
+        let uv = cartesian2spherical(x);
+        A2(uv[X] * F::INV_PI, 0.5 + uv[Y] * F::INV_2PI)
+    }
 }
 
 impl Intersectable for Sphere {
@@ -33,11 +38,16 @@ impl Intersectable for Sphere {
 
     #[inline(always)] fn hit_info<'a>(&'a self, mut its: Its<'a>) -> Its<'a> {
         its.n = N::v(its.p - self.c);
-        its.uv = cartesian2spherical(**its.n);
-        its.uv[X] = 0.5 + its.uv[X] * F::INV_2PI;
-        its.uv[Y] *= F::INV_PI;
+        its.uv = Sphere::cartesian2uv(**its.n);
         its
     }
+
+    #[inline(always)] fn sample_surface(&self, s: F2) -> Its {
+        let d = V(UniformSphere::warp(s));
+        Its::new(self.c + d * self.r, N::v(d), Sphere::cartesian2uv(*d), 0.)
+    }
+
+    #[inline(always)] fn surface_area(&self) -> F { F::FOUR_PI * self.r.sq() }
 
     #[inline(always)] fn intersection_cost(&self) -> F { 2. }
 }

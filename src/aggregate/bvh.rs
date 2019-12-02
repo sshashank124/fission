@@ -233,7 +233,12 @@ impl<S> Intersectable for BVH<S> where S: Intersectable {
             .1.map(Its::with_hit_info)
     }
 
-    #[inline(always)] fn hit_info<'a>(&'a self, i: Its<'a>) -> Its<'a> { i }
+    #[inline(always)] fn hit_info(&self, _: Its) -> Its { unreachable!() }
+
+    #[inline(always)] fn sample_surface(&self, _: F2) -> Its
+    { unreachable!() }
+
+    #[inline(always)] fn surface_area(&self) -> F { unreachable!() }
 
     #[inline(always)] fn intersection_cost(&self) -> F
     { 2. * ((self.nodes.len() as F).log2() * BBox::ZERO.intersection_cost()

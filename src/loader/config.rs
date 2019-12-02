@@ -71,15 +71,9 @@ fn load_sampler(config: &Yaml) -> Res<Sampler> {
 }
 
 enum Element {
-    Shape(Shape),
+    Shape(Arc<Shape>),
     Light(Light),
 }
-
-impl From<Shape> for Element
-{ #[inline(always)] fn from(s: Shape) -> Self { Self::Shape(s) } }
-
-impl From<Light> for Element
-{ #[inline(always)] fn from(s: Light) -> Self { Self::Light(s) } }
 
 fn load_scene(config: &Yaml) -> Res<Scene> {
     let camera = load_camera(&config["camera"])
@@ -89,6 +83,7 @@ fn load_scene(config: &Yaml) -> Res<Scene> {
         = v(&config["elements"], "missing list of elements")?
                       .iter()
                       .flat_map(|c| load_element(c))
+                      .flatten()
                       .partition(|e| match e { Element::Shape(_) => true,
                                                _ => false });
 
@@ -103,37 +98,59 @@ fn load_scene(config: &Yaml) -> Res<Scene> {
     Ok(Scene::new(shapes, lights, camera))
 }
 
-fn load_element(config: &Yaml) -> Res<Element> {
+fn load_element(config: &Yaml) -> Res<Vec<Element>> {
     let to_world = load_transforms(&config["transforms"])?;
     let bsdf = load_bsdf(&config["bsdf"])?;
+    let emission = load_emission(&config["emission"])?;
+    let emitter = emission.is_some();
 
-    Ok(match s(&config["type"], "missing element type")? {
+    let mut items = vec![];
+    match s(&config["type"], "missing element type")? {
         "mesh" => {
             let filename = s(&config["obj"], "malformed filename")?;
-            Shape::new(obj::load_from_file(filename, to_world)?.into(),
-                       bsdf).into()
+            let shape =
+                Arc::new(Shape::new(obj::load_from_file(filename,
+                                                        to_world)?.into(),
+                                    bsdf, emission));
+            if emitter {
+                items.push(Element::Light(Light::new(shape.clone().into())));
+            }
+            items.push(Element::Shape(shape));
         },
         "sphere" => {
             let c = P(f3(&config["center"])
                         .with_msg("failed to parse sphere center")?);
             let r = f(&config["radius"], "failed to parse sphere radius")?;
-            Shape::new(Sphere::new(c, r).into(),
-                       bsdf).into()
+            let shape = Arc::new(Shape::new(
+                                 Sphere::new(c, r).into(), bsdf, emission));
+            if emitter {
+                items.push(Element::Light(Light::new(shape.clone().into())));
+            }
+            items.push(Element::Shape(shape));
         },
         "infinitelight" => {
             let intensity = load_texture(&config["intensity"])
                                 .with_msg("failed to parse intensity")?;
-            Light::new(Infinite::new(intensity).into()).into()
+            let light = Light::new(Infinite::new(intensity).into());
+            items.push(Element::Light(light));
         },
         "pointlight" => {
             let power = Color(f3(&config["power"])
                             .with_msg("failed to parse light power")?);
             let pos = P(f3(&config["position"])
                           .with_msg("failed to parse light position")?);
-            Light::new(Point::new(power, pos).into()).into()
+            let light = Light::new(Point::new(power, pos).into());
+            items.push(Element::Light(light));
         },
         _ => return Err("unknown element type".into()),
-    })
+    };
+
+    Ok(items)
+}
+
+fn load_emission(config: &Yaml) -> Res<Option<Tex<Color>>> {
+    if config.is_badvalue() { Ok(None) }
+    else { Ok(Some(load_texture(config)?)) }
 }
 
 fn load_bsdf(config: &Yaml) -> Res<Bsdf> {
@@ -145,6 +162,7 @@ fn load_bsdf(config: &Yaml) -> Res<Bsdf> {
                              .with_msg("failed to parse texture")?;
             Diffuse::new(albedo).into()
         },
+        "mirror" => Mirror::new().into(),
         _ => return Err("unknown bsdf type".into()),
     })
 }
@@ -297,7 +315,8 @@ fn f2o(vec: &Yaml) -> Res<Option<F2>> {
 #[inline(always)] fn v<'a>(v: &'a Yaml, msg: &str) -> Res<&'a Vec<Yaml>>
 { vo(v).ok_or_else(|| msg.into()) }
 
-#[inline(always)] fn fo(f: &Yaml) -> Option<F> { f.as_f64().map(|f| f as F) }
+#[inline(always)] fn fo(f: &Yaml) -> Option<F>
+{ f.as_f64().map(|f| f as F).or_else(|| io(f).map(|i| i as F)) }
 
 #[inline(always)] fn io(i: &Yaml) -> Option<I> { i.as_i64().map(|i| i as I) }
 

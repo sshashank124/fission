@@ -12,8 +12,10 @@ impl Point {
 }
 
 impl Lighting for Point {
-    #[inline(always)] fn sample(&self, pos: P, _: F2) -> (Color, R) {
-        let sray = R::p2(pos, self.pos);
+    #[inline(always)] fn sample(&self, its: &Its, _: F2) -> (Color, R) {
+        let sray = R::p2(its.p, self.pos);
         (self.intensity / sray.t.sq(), sray)
     }
+
+    #[inline(always)] fn pdf(&self, _: &Its, _: &R) -> F { 0. }
 }

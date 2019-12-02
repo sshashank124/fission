@@ -29,6 +29,13 @@ impl Intersectable for Mesh {
     #[inline(always)] fn hit_info<'a>(&'a self, i: Its<'a>) -> Its<'a>
     { self.0.elements[i.shape.1 as usize].hit_info(i) }
 
+    #[inline(always)] fn sample_surface(&self, s: F2) -> Its
+    { unimplemented!() }
+
+    // TODO: inefficient
+    #[inline(always)] fn surface_area(&self) -> F
+    { self.0.elements.iter().map(Intersectable::surface_area).sum() }
+
     #[inline(always)] fn intersection_cost(&self) -> F
     { self.0.intersection_cost() }
 }

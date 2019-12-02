@@ -67,9 +67,11 @@ impl Integer for I {
 
 pub trait Half: Copy { const HALF: Self; }
 
+pub trait Two: Copy { const TWO: Self; }
+
 pub trait Inv { type Output; fn inv(self) -> Self; }
 
-pub trait Float: Num + Inv + Half {
+pub trait Float: Num + Half + Two + Inv {
     const NEG_INF: Self;
     const POS_INF: Self;
     const EPSILON: Self;
@@ -78,6 +80,7 @@ pub trait Float: Num + Inv + Half {
     const HALF_PI: Self;
     const FOURTH_PI: Self;
     const TWO_PI: Self;
+    const FOUR_PI: Self;
     const INV_PI: Self;
     const INV_2PI: Self;
     const INV_4PI: Self;
@@ -97,6 +100,8 @@ pub trait Float: Num + Inv + Half {
     fn cosd(self) -> Self;
     fn tand(self) -> Self;
 
+    fn discrete(a: Self, n: I) -> I;
+
     #[inline(always)]
     fn approx_eq(a: Self, b: Self) -> bool { Self::abs(a - b) < Self::EPSILON }
 
@@ -105,6 +110,7 @@ pub trait Float: Num + Inv + Half {
 }
 
 impl Half for F { const HALF: Self = 0.5; }
+impl Two for F { const TWO: Self = 2.; }
 
 impl Inv for F {
     type Output = F;
@@ -119,7 +125,8 @@ impl Float for F {
     const PI: Self = fmod::consts::PI;
     const HALF_PI: Self = fmod::consts::FRAC_PI_2;
     const FOURTH_PI: Self = fmod::consts::FRAC_PI_4;
-    const TWO_PI: Self = 2. * fmod::consts::PI;
+    const TWO_PI: Self = Self::TWO * Self::PI;
+    const FOUR_PI: Self = Self::TWO * Self::TWO_PI;
     const INV_PI: Self = fmod::consts::FRAC_1_PI;
     const INV_2PI: Self = Self::HALF * Self::INV_PI;
     const INV_4PI: Self = Self::HALF * Self::INV_2PI;
@@ -138,6 +145,9 @@ impl Float for F {
     #[inline(always)] fn sind(self) -> Self { self.to_radians().sin() }
     #[inline(always)] fn cosd(self) -> Self { self.to_radians().cos() }
     #[inline(always)] fn tand(self) -> Self { self.to_radians().tan() }
+
+    #[inline(always)] fn discrete(a: Self, n: I) -> I
+    { Num::min(Self::floori(a * n as Self), n - 1) }
 }
 
 

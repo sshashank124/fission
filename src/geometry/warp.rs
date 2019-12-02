@@ -1,8 +1,15 @@
 use super::*;
 
 
-pub trait Warp2: Pdf<F2> { fn warp(s: F2) -> F2; }
-pub trait Warp3: Pdf<F3> { fn warp(s: F2) -> F3; }
+pub trait Warp2 {
+    fn warp(s: F2) -> F2;
+    fn pdf(s: F2) -> F;
+}
+
+pub trait Warp3 {
+    fn warp(s: F2) -> F3;
+    fn pdf(s: F3) -> F;
+}
 
 
 pub struct UniformDisk;
@@ -23,32 +30,27 @@ impl Warp2 for UniformDisk {
             A2(F::cos(t), F::sin(t)) * r
         }
     }
+
+    #[inline(always)] fn pdf(_: F2) -> F { F::INV_PI }
 }
-
-impl Pdf<F2> for UniformDisk
-{ #[inline(always)] fn pdf(_: F2) -> F { F::INV_PI } }
-
 
 impl Warp3 for CosineHemisphere {
     #[inline(always)] fn warp(s: F2) -> F3 {
         let p = UniformDisk::warp(s);
         A3::a2(p, F::sqrt(1. - p.dot(p)))
     }
+
+    #[inline(always)] fn pdf(s: F3) -> F { s[Z] * F::INV_PI }
 }
-
-impl Pdf<F3> for CosineHemisphere
-{ #[inline(always)] fn pdf(s: F3) -> F { s[Z] * F::INV_PI } }
-
 
 impl Warp3 for UniformCylinder {
     #[inline(always)] fn warp(s: F2) -> F3 {
         let t = F::TWO_PI * s[Y];
         A3(F::cos(t), F::sin(t), 2. * s[X] - 1.)
     }
-}
 
-impl Pdf<F3> for UniformCylinder
-{ #[inline(always)] fn pdf(_: F3) -> F { F::INV_4PI } }
+    #[inline(always)] fn pdf(_: F3) -> F { F::INV_4PI }
+}
 
 
 impl Warp3 for UniformSphere {
@@ -57,10 +59,9 @@ impl Warp3 for UniformSphere {
         let r = F::sqrt(1. - v[Z].sq());
         A3(r * v[X], r * v[Y], v[Z])
     }
-}
 
-impl Pdf<F3> for UniformSphere
-{ #[inline(always)] fn pdf(_: F3) -> F { F::INV_4PI } }
+    #[inline(always)] fn pdf(_: F3) -> F { F::INV_4PI }
+}
 
 
 impl Warp3 for UniformHemisphere {
@@ -68,7 +69,6 @@ impl Warp3 for UniformHemisphere {
         let v = UniformSphere::warp(s);
         A3(v[X], v[Y], v[Z].abs())
     }
-}
 
-impl Pdf<F3> for UniformHemisphere
-{ #[inline(always)] fn pdf(_: F3) -> F { F::INV_2PI } }
+    #[inline(always)] fn pdf(_: F3) -> F { F::INV_2PI }
+}

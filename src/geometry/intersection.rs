@@ -2,14 +2,14 @@ use std::ops::{Mul, Div};
 
 use super::*;
 use crate::bsdf::*;
+use crate::light::*;
 use crate::shape::*;
 
 
 pub type ShapeRef<'a> = (&'a Shape, I);
+static SHAPE_REF_PH: ShapeRef = (&SHAPE_PH, 0);
 
-impl<'a> Zero for ShapeRef<'a>
-{ const ZERO: Self = (&Shape::ZERO, 0); }
-
+#[derive(Clone, Copy)]
 pub struct Its<'a> {
     pub p: P,
     pub n: N,
@@ -17,6 +17,8 @@ pub struct Its<'a> {
     pub t: F,
     pub shape: ShapeRef<'a>,
 }
+pub static ITS_PH: Its = Its { p: P::ZERO, n: N::ZERO, uv: F2::ZERO, t: 0.,
+                               shape: SHAPE_REF_PH };
 
 impl<'a> Its<'a> {
     #[inline(always)]
@@ -24,7 +26,7 @@ impl<'a> Its<'a> {
     { Self { p, n, uv, t, shape } }
 
     #[inline(always)] pub fn new(p: P, n: N, uv: F2, t: F) -> Self
-    { Self::its(p, n, uv, t, ShapeRef::ZERO) }
+    { Self::its(p, n, uv, t, SHAPE_REF_PH) }
 
     #[inline(always)] pub fn for_shape(mut self, s: &'a Shape) -> Self
     { self.shape = (s, self.shape.1); self }
@@ -36,6 +38,9 @@ impl<'a> Its<'a> {
     { self.shape.0.hit_info(self) }
 
     #[inline(always)] pub fn to_world(&self) -> T { T::from_frame(*self.n) }
+
+    #[inline(always)] pub fn le(&self, ray: &R) -> Color
+    { self.shape.0.eval(ray, Some(self.uv)) }
 
     #[inline(always)] pub fn bsdf(&self) -> &Bsdf { &self.shape.0.bsdf }
 }
