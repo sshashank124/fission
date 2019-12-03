@@ -1,0 +1,45 @@
+integrator:
+  tracer:
+    type: direct_ems
+
+  sampler:
+    type: sobol
+    samples_per_pixel: 256
+
+scene:
+  camera:
+    type: perspective
+    fov: 40
+    resolution: [512, 512]
+
+    transforms:
+      - look_at:
+          origin: [5, 5, 3]
+          target: [0, 0, 0]
+          up: [0, 0, 1]
+
+  elements:
+    - type: sphere
+      center: [0, 0, 2]
+      radius: .5
+      bsdf:
+        type: diffuse
+        albedo:
+          type: constant
+          color: [1, 1, 1]
+      emission:
+        type: constant
+        color: [0, 16, 0]
+
+    - type: mesh
+      obj: obj/plane.obj
+      bsdf:
+        type: diffuse
+        albedo:
+          type: constant
+          color: [1, 1, 1]
+      transforms:
+        - scale: [10, 1, 10]
+        - rotate:
+            axis: [1, 0, 0]
+            angle: 90

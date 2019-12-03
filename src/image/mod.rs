@@ -39,7 +39,7 @@ unsafe impl Send for Block { }
 impl Block {
     #[inline(always)] pub fn put(&mut self, pos: F2, color: Color) {
         let img = unsafe { &mut *self.img };
-        let pos = pos.map(F::floori);
+        let pos = pos.map(F::floori).zip(self.pos + self.dims - 1, Num::min);
         let loc = img.flat_pos(pos);
         img.data[loc] += color;
         img.weights[loc] += 1.;

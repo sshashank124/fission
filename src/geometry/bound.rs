@@ -21,7 +21,7 @@ impl B {
     { self[0] <= t && t <= self[1] }
 
     #[inline(always)] pub fn degen(self) -> bool { self[0] > self[1] }
-    #[inline(always)] pub fn center(self) -> F { self.dot(F2::HALF) }
+    #[inline(always)] pub fn center(self) -> F { self.0.mean() }
     #[inline(always)] pub fn extent(self) -> F { self[1] - self[0] }
 }
 

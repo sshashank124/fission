@@ -44,6 +44,9 @@ pub trait Num: Copy + PartialOrd + PartialEq
 
     #[inline(always)]
     fn clamp_unit(v: Self) -> Self { Num::clamp(v, Self::ZERO, Self::ONE) }
+
+    #[inline(always)]
+    fn clamp_one(v: Self) -> Self { Num::clamp(v, -Self::ONE, Self::ONE) }
 }
 
 impl Zero for I { const ZERO: Self = 0; }
@@ -107,6 +110,9 @@ pub trait Float: Num + Half + Two + Inv {
 
     #[inline(always)]
     fn approx_zero(a: Self) -> bool { Self::approx_eq(a, Self::ZERO) }
+
+    #[inline(always)]
+    fn approx_one(a: Self) -> bool { Self::approx_eq(a, Self::ONE) }
 }
 
 impl Half for F { const HALF: Self = 0.5; }

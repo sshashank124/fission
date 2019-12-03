@@ -13,8 +13,8 @@ pub struct R {
 impl R {
     #[inline(always)] pub fn r(o: P, d: V, t: F) -> R { R { o, d, t } }
 
-    #[inline(always)]
-    pub fn unbounded(o: P, d: V) -> R { R::r(o, d, F::POS_INF) }
+    #[inline(always)] pub fn unbounded(o: P, d: V) -> R
+    { R::r(o, d.unit(), F::POS_INF) }
 
     #[inline(always)] pub fn unit(o: P, d: V) -> R
     { R::r(o, d.unit(), d.norm() - F::EPSILON) }

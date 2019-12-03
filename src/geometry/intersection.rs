@@ -39,10 +39,16 @@ impl<'a> Its<'a> {
 
     #[inline(always)] pub fn to_world(&self) -> T { T::from_frame(*self.n) }
 
-    #[inline(always)] pub fn le(&self, ray: &R) -> Color
-    { self.shape.0.eval(ray, Some(self.uv)) }
-
     #[inline(always)] pub fn bsdf(&self) -> &Bsdf { &self.shape.0.bsdf }
+
+    #[inline(always)] pub fn le(&self, ray: R) -> Color
+    { self.shape.0.eval(&ray.clipped(self.t), Some(self.uv)) }
+
+    #[inline(always)] pub fn lb(&self, wi: V, wo: V) -> Color
+    { self.bsdf().eval(wi, wo, self.uv) }
+
+    #[inline(always)] pub fn sample_lb(&self, wi: V, s: F2) -> (Color, V)
+    { self.bsdf().sample(wi, self.uv, s) }
 }
 
 impl<'a> Mul<Its<'a>> for T { type Output = Its<'a>;

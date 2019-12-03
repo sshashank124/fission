@@ -23,7 +23,7 @@ impl Trace for AmbientOcclusion {
             Some(its) => {
                 let f = its.to_world();
                 Color::gray((0..self.samples).filter(|_| {
-                    let wi = V(CosineHemisphere::warp(sampler.next_2d()));
+                    let wi = V(CosineHemisphere::warp(sampler.next_2d(), ()));
                     !scene.intersects(R::r(its.p, f * wi, self.ray_len))
                 }).count() as F / self.samples as F)
             }

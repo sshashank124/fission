@@ -43,7 +43,7 @@ impl Intersectable for Sphere {
     }
 
     #[inline(always)] fn sample_surface(&self, s: F2) -> Its {
-        let d = V(UniformSphere::warp(s));
+        let d = V(UniformSphere::warp(s, ()));
         Its::new(self.c + d * self.r, N::v(d), Sphere::cartesian2uv(*d), 0.)
     }
 

@@ -1,10 +1,10 @@
 integrator:
   tracer:
-    type: direct
+    type: direct_mats
 
   sampler:
     type: sobol
-    samples_per_pixel: 32
+    samples_per_pixel: 256
 
 scene:
   camera:
@@ -45,22 +45,36 @@ scene:
       center: [3.75, 0, 0]
       radius: .9
       emission:
-        type: checkerboard
-        color_1: [1.23457, 0, 0]
-        color_2: [0, 0, 1.23457]
-        scale: [0.1, 0.05]
+        type: constant
+        color: [1.23457, 1.23457, 1.23457]
 
     - type: mesh
       obj: obj/veach/plate1.obj
+      bsdf:
+        type: microfacet
+        kd: [.0175, .0225, .0325]
+        alpha: .005
 
     - type: mesh
       obj: obj/veach/plate2.obj
+      bsdf:
+        type: microfacet
+        kd: [.0175, .0225, .0325]
+        alpha: .02
 
     - type: mesh
       obj: obj/veach/plate3.obj
+      bsdf:
+        type: microfacet
+        kd: [.0175, .0225, .0325]
+        alpha: .05
 
     - type: mesh
       obj: obj/veach/plate4.obj
+      bsdf:
+        type: microfacet
+        kd: [.0175, .0225, .0325]
+        alpha: .1
 
     - type: mesh
       obj: obj/veach/floor.obj

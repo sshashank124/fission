@@ -3,33 +3,28 @@ use super::*;
 
 pub struct Perspective {
     fov_scale: F,
-    lens_radius: F,
-    focal_distance: F,
+    lens_r: F,
+    fd: F,
 }
 
 impl Perspective {
     #[inline(always)]
     pub fn new(fov: F, lr: Option<F>, fd: Option<F>) -> Self {
-        Self {
-            fov_scale: F::tand(fov / 2.),
-            lens_radius: lr.unwrap_or(0.),
-            focal_distance: fd.unwrap_or(0.),
-        }
+        let fov_scale = F::tand(fov / 2.);
+        let lens_r = lr.unwrap_or(0.);
+        let fd = fd.unwrap_or(0.);
+        Self { fov_scale, lens_r, fd }
     }
 }
 
 impl CameraModel for Perspective {
-    #[inline(always)]
-    fn ray_at(&self, point: F2, sampler: &mut Sampler) -> R {
-        let scaled_point = point * self.fov_scale;
-        let dir = V::a2(scaled_point, 1.).unit();
-
-        let ray = R::unbounded(P::ZERO, dir);
-        if F::approx_zero(self.lens_radius) { ray }
+    #[inline(always)] fn ray_at(&self, point: F2, sampler: &mut Sampler) -> R {
+        let ray = R::unbounded(P::ZERO, V::a2(point * self.fov_scale, 1.));
+        if F::approx_zero(self.lens_r) { ray }
         else {
-            let focus_point = ray.at(self.focal_distance / ray.d[Z]);
-            let o = P::a2(UniformDisk::warp(sampler.next_2d())
-                          * self.lens_radius, 0.);
+            let focus_point = ray.at(self.fd / ray.d[Z]);
+            let o = P::a2(UniformDisk::warp(sampler.next_2d(), ())
+                          * self.lens_r, 0.);
             R::unbounded(o, focus_point - o)
         }
     }

@@ -3,7 +3,7 @@ use std::ops::Deref;
 use crate::aggregate::BVH;
 use crate::camera::Camera;
 use crate::geometry::*;
-use crate::light::Light;
+use crate::light::*;
 use crate::shape::*;
 
 
@@ -21,6 +21,9 @@ impl Scene {
 
     #[inline(always)] pub fn random_light(&self, s: F) -> &Light
     { &self.lights[F::discrete(s, self.lights.len() as I) as usize] }
+
+    #[inline(always)] pub fn l_bg(&self, ray: &R) -> Color
+    { self.lights.iter().map(|light| light.eval(ray, None)).sum() }
 }
 
 impl Deref for Scene { type Target = BVH<Arc<Shape>>;

@@ -17,8 +17,7 @@ impl<A> A2<A> {
     #[inline(always)] pub fn rep(a: A) -> A2<A> where A: Copy
     { A2(a, a) }
 
-    #[inline(always)]
-    pub fn map<B, G>(self, f: G) -> A2<B> where G: Fn(A) -> B
+    #[inline(always)] pub fn map<B, G>(self, f: G) -> A2<B> where G: Fn(A) -> B
     { A2(f(self.0), f(self.1)) }
 
     #[inline(always)]
@@ -28,6 +27,8 @@ impl<A> A2<A> {
     #[inline(always)]
     pub fn reduce<B, G>(self, f: G) -> B where G: Fn(A, A) -> B
     { f(self.0, self.1) }
+
+    #[inline(always)] pub fn rev(self) -> A2<A> { A2(self.1, self.0) }
 }
 
 macro_rules! index {
@@ -86,6 +87,8 @@ impl<A> A2<A> {
         self.zip(b, Mul::mul).reduce(Add::add)
     }
 }
+
+impl F2 { #[inline(always)] pub fn mean(self) -> F { self.dot(F2::HALF) } }
 
 macro_rules! cw_binary_assign_op {
     ($trait:ident, $op:ident) => {

@@ -19,6 +19,7 @@ impl Zero for Color { const ZERO: Self = Self(A3::ZERO); }
 impl One for Color { const ONE: Self = Self(A3::ONE); }
 
 op!(Add::add, *Color -> *Color -> Color);
+op!(Add::add, *Color ->      F -> Color);
 op!(Mul::mul, *Color -> *Color -> Color);
 op!(Mul::mul, *Color ->      F -> Color);
 op!(Div::div, *Color ->      F -> Color);

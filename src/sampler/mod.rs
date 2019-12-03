@@ -43,6 +43,17 @@ impl Sampler {
     #[inline(always)]
     pub fn clone_seeded(&self, seed: BlockSeed) -> Self
     { Self::new(self.sampler_type.clone_for_block(seed), self.spp) }
+
+    #[inline(always)]
+    pub fn split_reuse_1d<A, FN1, FN2>(s: F, p: F, f1: FN1, f2: FN2) -> A
+        where FN1: Fn(F) -> A, FN2: Fn(F) -> A
+    { if s < p { f1(s / p) } else { f2((s - p) / (1. - p)) } }
+
+    #[inline(always)]
+    pub fn split_reuse_2d<A, FN1, FN2>(s: F2, p: F, f1: FN1, f2: FN2) -> A
+        where FN1: Fn(F2) -> A, FN2: Fn(F2) -> A
+    { if s[0] < p { f1(A2(s[0] / p, s[1])) }
+      else { f2(A2((s[0] - p) / (1. - p), s[1])) } }
 }
 
 impl Deref for Sampler { type Target = SamplerType;

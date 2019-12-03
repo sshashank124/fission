@@ -49,7 +49,8 @@ fn load_tracer(config: &Yaml) -> Res<Tracer> {
             let s = io(&config["samples"]);
             AmbientOcclusion::new(s, rl).into()
         },
-        "direct" => Direct::new().into(),
+        "direct_ems" => DirectEms::new().into(),
+        "direct_mats" => DirectMats::new().into(),
         "normals" => Normals::new().into(),
         "silhouette" => Silhouette::new().into(),
         _ => return Err("unknown tracer type".into()),
@@ -161,6 +162,13 @@ fn load_bsdf(config: &Yaml) -> Res<Bsdf> {
             let albedo = load_texture(&config["albedo"])
                              .with_msg("failed to parse texture")?;
             Diffuse::new(albedo).into()
+        },
+        "microfacet" => {
+            let kd = Color(f3(&config["kd"])
+                        .with_msg("failed to parse color")?);
+            let alpha = fo(&config["alpha"]);
+            let ior = f2o(&config["ior"]).with_msg("failed to parse ior")?;
+            Microfacet::new(kd, alpha, ior).into()
         },
         "mirror" => Mirror::new().into(),
         _ => return Err("unknown bsdf type".into()),
