@@ -1,10 +1,10 @@
 integrator:
   tracer:
-    type: direct_mats
+    type: direct
 
   sampler:
     type: sobol
-    samples_per_pixel: 256
+    samples_per_pixel: 128
 
 scene:
   camera:

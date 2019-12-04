@@ -49,8 +49,7 @@ fn load_tracer(config: &Yaml) -> Res<Tracer> {
             let s = io(&config["samples"]);
             AmbientOcclusion::new(s, rl).into()
         },
-        "direct_ems" => DirectEms::new().into(),
-        "direct_mats" => DirectMats::new().into(),
+        "direct" => Direct::new().into(),
         "normals" => Normals::new().into(),
         "silhouette" => Silhouette::new().into(),
         _ => return Err("unknown tracer type".into()),
@@ -114,7 +113,7 @@ fn load_element(config: &Yaml) -> Res<Vec<Element>> {
                                                         to_world)?.into(),
                                     bsdf, emission));
             if emitter {
-                items.push(Element::Light(Light::new(shape.clone().into())));
+                items.push(Element::Light(shape.clone().into()));
             }
             items.push(Element::Shape(shape));
         },
@@ -125,23 +124,21 @@ fn load_element(config: &Yaml) -> Res<Vec<Element>> {
             let shape = Arc::new(Shape::new(
                                  Sphere::new(c, r).into(), bsdf, emission));
             if emitter {
-                items.push(Element::Light(Light::new(shape.clone().into())));
+                items.push(Element::Light(shape.clone().into()));
             }
             items.push(Element::Shape(shape));
         },
         "infinitelight" => {
             let intensity = load_texture(&config["intensity"])
                                 .with_msg("failed to parse intensity")?;
-            let light = Light::new(Infinite::new(intensity).into());
-            items.push(Element::Light(light));
+            items.push(Element::Light(Infinite::new(intensity).into()));
         },
         "pointlight" => {
             let power = Color(f3(&config["power"])
                             .with_msg("failed to parse light power")?);
             let pos = P(f3(&config["position"])
                           .with_msg("failed to parse light position")?);
-            let light = Light::new(Point::new(power, pos).into());
-            items.push(Element::Light(light));
+            items.push(Element::Light(Point::new(power, pos).into()));
         },
         _ => return Err("unknown element type".into()),
     };

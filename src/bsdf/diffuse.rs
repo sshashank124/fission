@@ -15,11 +15,9 @@ impl Bxdf for Diffuse {
     { if Frame::ct(*wi) <= 0. || Frame::ct(*wo) <= 0. { Color::BLACK }
       else { self.albedo.eval(uv) * F::INV_PI } }
 
-    #[inline(always)] fn sample(&self, wi: V, uv: F2, s: F2) -> (Color, V)
-    { (self.albedo.eval(uv), self.sample_dir(wi, s)) }
-
-    #[inline(always)] fn sample_dir(&self, _: V, s: F2) -> V
-    { V(CosineHemisphere::warp(s, ())) }
+    #[inline(always)] fn sample(&self, wi: V, uv: F2, s: F2) -> (Color, V, F)
+    { let wo = V(CosineHemisphere::warp(s, ()));
+      (self.albedo.eval(uv), wo, self.pdf(wi, wo)) }
 
     #[inline(always)] fn pdf(&self, _: V, wo: V) -> F
     { CosineHemisphere::pdf(*wo, ()) }

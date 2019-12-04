@@ -1,9 +1,7 @@
 Emissive Surfaces / Area Lights
 
-QMC Integrators
+Dielectric BSDF
 
-Mirror BSDF
-
-Additional BSDFs (Microfacet, Fresnel, Specular, Glossy)
+Recursive Path Tracer
 
 Participating Media

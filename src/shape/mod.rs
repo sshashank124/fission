@@ -1,4 +1,3 @@
-mod emitter;
 mod mesh;
 mod sphere;
 
@@ -10,7 +9,6 @@ use crate::bsdf::*;
 use crate::geometry::*;
 use crate::texture::*;
 
-pub use emitter::*;
 pub use mesh::*;
 pub use sphere::*;
 

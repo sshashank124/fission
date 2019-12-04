@@ -12,16 +12,8 @@ pub use mirror::Mirror;
 
 pub trait Bxdf {
     fn eval(&self, wi: V, wo: V, uv: F2) -> Color;
-    fn sample_dir(&self, wi: V, s: F2) -> V;
+    fn sample(&self, wi: V, uv: F2, s: F2) -> (Color, V, F);
     fn pdf(&self, wi: V, wo: V) -> F;
-
-    #[inline(always)] fn sample(&self, wi: V, uv: F2, s: F2) -> (Color, V) {
-        let wo = self.sample_dir(wi, s);
-        let p = self.pdf(wi, wo);
-        (if p <= 0. { Color::BLACK } else {
-            self.eval(wi, wo, uv) / p * Frame::ct(*wo)
-        }, wo)
-    }
 }
 
 pub enum Bsdf {
@@ -39,19 +31,11 @@ impl Bxdf for Bsdf {
         }
     }
 
-    #[inline(always)] fn sample(&self, wi: V, uv: F2, s: F2) -> (Color, V) {
+    #[inline(always)] fn sample(&self, wi: V, uv: F2, s: F2) -> (Color, V, F) {
         match self {
             Self::Diffuse(f) => f.sample(wi, uv, s),
             Self::Microfacet(f) => f.sample(wi, uv, s),
             Self::Mirror(f) => f.sample(wi, uv, s),
-        }
-    }
-
-    #[inline(always)] fn sample_dir(&self, wi: V, s: F2) -> V {
-        match self {
-            Self::Diffuse(f) => f.sample_dir(wi, s),
-            Self::Microfacet(f) => f.sample_dir(wi, s),
-            Self::Mirror(f) => f.sample_dir(wi, s),
         }
     }
 

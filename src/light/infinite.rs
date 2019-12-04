@@ -18,10 +18,10 @@ impl Lighting for Infinite {
         self.intensity.eval(uv * A2(F::INV_PI, F::INV_2PI))
     }
 
-    #[inline(always)] fn sample(&self, its: &Its, s: F2) -> (Color, R) {
+    #[inline(always)] fn sample(&self, its: &Its, s: F2) -> (Color, R, F) {
         let theta_phi = s * A2(F::PI, F::TWO_PI);
-        let ray = R::r(its.p, V(spherical2cartesian(theta_phi)), F::POS_INF);
-        (self.intensity.eval(s), ray)
+        let sray = R::r(its.p, V(spherical2cartesian(theta_phi)), F::POS_INF);
+        (self.intensity.eval(s), sray, self.pdf(its, &sray))
     }
 
     #[inline(always)] fn pdf(&self, its: &Its, sray: &R) -> F

@@ -29,7 +29,7 @@ impl Intersectable for Mesh {
     #[inline(always)] fn hit_info<'a>(&'a self, i: Its<'a>) -> Its<'a>
     { self.0.elements[i.shape.1 as usize].hit_info(i) }
 
-    #[inline(always)] fn sample_surface(&self, s: F2) -> Its
+    #[inline(always)] fn sample_surface(&self, _s: F2) -> Its
     { unimplemented!() }
 
     // TODO: inefficient

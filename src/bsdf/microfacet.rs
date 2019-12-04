@@ -51,7 +51,7 @@ impl Microfacet {
 impl Bxdf for Microfacet {
     #[inline(always)] fn eval(&self, wi: V, wo: V, _: F2) -> Color {
         let cti = Frame::ct(*wi); let cto = Frame::ct(*wo);
-        if cti <= 0. || cto <= 0. { return Color::BLACK; }
+        if cti <= 0. || cto <= 0. { return Color::BLACK }
         let wh = N::v(wi + wo);
         let beck = self.beckmann(wh);
         let fr = Self::fresnel(wh.dot(wi), self.ior.rev());
@@ -60,18 +60,21 @@ impl Bxdf for Microfacet {
         self.kd * F::INV_PI + (self.ks * beck * fr * g * 0.25) / (cti * cto)
     }
 
-    #[inline(always)] fn sample_dir(&self, wi: V, s: F2) -> V {
-        Sampler::split_reuse_2d(s, self.ks, |s| {
+    #[inline(always)] fn sample(&self, wi: V, uv: F2, s: F2) -> (Color, V, F) {
+        let wo = Sampler::split_reuse_2d(s, self.ks, |s| {
             let n = V(BeckmannHemisphere::warp(s, self.alpha));
             n * 2. * n.dot(wi) - wi
-        }, |s| V(CosineHemisphere::warp(s, ())))
+        }, |s| V(CosineHemisphere::warp(s, ())));
+        let p = self.pdf(wi, wo);
+        (if p <= 0. { Color::BLACK } else {
+            self.eval(wi, wo, uv) / p * Frame::ct(*wo)
+        }, wo, p)
     }
 
     #[inline(always)] fn pdf(&self, wi: V, wo: V) -> F {
-        if Frame::ct(*wo) <= 0. { return 0. }
         let wh = N::v(wi + wo);
         let dp = CosineHemisphere::pdf(*wo, ());
         let sp = self.beckmann(wh) * Frame::ct(**wh) * 0.25 / wh.dot(wo);
-        LinearInterp::interp(A2(dp, sp), self.ks)
+        LinearScale::interp(A2(dp, sp), self.ks)
     }
 }

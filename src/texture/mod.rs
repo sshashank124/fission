@@ -22,8 +22,8 @@ pub enum Tex<A> where A: Copy
                        + Mul<F, Output=A> {
     Checkerboard(Checkerboard<A>),
     Constant(Constant<A>),
-    LinearGradient(Gradient<A, LinearInterp>),
-    SmoothGradient(Gradient<A, SmoothInterp>),
+    LinearGradient(Gradient<A, LinearScale>),
+    SmoothGradient(Gradient<A, SmoothScale>),
     RandomGrid(RandomGrid<A>),
 }
 
@@ -53,17 +53,17 @@ impl<A> From<Constant<A>> for Tex<A> where A: Copy
                                             + Mul<F, Output=A>
 { #[inline(always)] fn from(t: Constant<A>) -> Self { Self::Constant(t) } }
 
-impl<A> From<Gradient<A, LinearInterp>> for Tex<A> where A: Copy
+impl<A> From<Gradient<A, LinearScale>> for Tex<A> where A: Copy
                                                           + Add<Output=A>
                                                           + Mul<F, Output=A> {
-    #[inline(always)] fn from(t: Gradient<A, LinearInterp>) -> Self
+    #[inline(always)] fn from(t: Gradient<A, LinearScale>) -> Self
     { Self::LinearGradient(t) }
 }
 
-impl<A> From<Gradient<A, SmoothInterp>> for Tex<A> where A: Copy
+impl<A> From<Gradient<A, SmoothScale>> for Tex<A> where A: Copy
                                                           + Add<Output=A>
                                                           + Mul<F, Output=A> {
-    #[inline(always)] fn from(t: Gradient<A, SmoothInterp>) -> Self
+    #[inline(always)] fn from(t: Gradient<A, SmoothScale>) -> Self
     { Self::SmoothGradient(t) }
 }
 

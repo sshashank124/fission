@@ -99,7 +99,7 @@ impl Intersectable for Triangle {
         its
     }
 
-    #[inline(always)] fn sample_surface(&self, s: F2) -> Its
+    #[inline(always)] fn sample_surface(&self, _s: F2) -> Its
     { unimplemented!() }
 
     #[inline(always)] fn surface_area(&self) -> F

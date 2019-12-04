@@ -83,12 +83,16 @@ impl<A> Half for A2<A> where A: Half {
 impl<A> A2<A> {
     #[inline(always)]
     pub fn dot<B, C>(self, b: A2<B>) -> C where A: Mul<B, Output=C>,
-                                                C: Add<C, Output=C> {
-        self.zip(b, Mul::mul).reduce(Add::add)
-    }
-}
+                                                C: Add<C, Output=C>
+    { self.zip(b, Mul::mul).reduce(Add::add) }
 
-impl F2 { #[inline(always)] pub fn mean(self) -> F { self.dot(F2::HALF) } }
+    #[inline(always)] pub fn sum(self) -> A where A: Add<A, Output=A>
+    { self.reduce(Add::add) }
+
+    #[inline(always)] pub fn mean<B>(self) -> B where A: Mul<F, Output=B>,
+                                                      B: Add<B, Output=B>
+    { self.dot(F2::HALF) }
+}
 
 macro_rules! cw_binary_assign_op {
     ($trait:ident, $op:ident) => {

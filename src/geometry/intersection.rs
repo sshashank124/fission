@@ -39,15 +39,26 @@ impl<'a> Its<'a> {
 
     #[inline(always)] pub fn to_world(&self) -> T { T::from_frame(*self.n) }
 
-    #[inline(always)] pub fn bsdf(&self) -> &Bsdf { &self.shape.0.bsdf }
+    #[inline(always)] pub fn shape(&self) -> &Shape { &self.shape.0 }
 
     #[inline(always)] pub fn le(&self, ray: R) -> Color
-    { self.shape.0.eval(&ray.clipped(self.t), Some(self.uv)) }
+    { self.shape().eval(&ray.clipped(self.t), Some(self.uv)) }
+
+    #[inline(always)] pub fn lpdf(&self, ray: R) -> F
+    { self.shape().pdf(self, &ray.clipped(self.t)) }
+
+    #[inline(always)] pub fn has_emission(&self) -> bool
+    { self.shape().emission.is_some() }
+
+    #[inline(always)] pub fn bsdf(&self) -> &Bsdf { &self.shape().bsdf }
 
     #[inline(always)] pub fn lb(&self, wi: V, wo: V) -> Color
     { self.bsdf().eval(wi, wo, self.uv) }
 
-    #[inline(always)] pub fn sample_lb(&self, wi: V, s: F2) -> (Color, V)
+    #[inline(always)] pub fn bpdf(&self, wi: V, wo: V) -> F
+    { self.bsdf().pdf(wi, wo) }
+
+    #[inline(always)] pub fn sample_lb(&self, wi: V, s: F2) -> (Color, V, F)
     { self.bsdf().sample(wi, self.uv, s) }
 }
 

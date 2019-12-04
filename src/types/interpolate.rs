@@ -3,21 +3,26 @@ use std::ops::{Add, Mul};
 use super::*;
 
 
-pub trait Interpolate<A> { fn interp(a: A2<A>, t: F) -> A; }
+pub struct LinearScale;
+pub struct PowerScale;
+pub struct SmoothScale;
 
 
-pub struct LinearInterp;
-pub struct SmoothInterp;
+pub trait Interp<A> { fn interp(a: A2<A>, t: F) -> A; }
+
+impl<A> Interp<A> for LinearScale where A: Add<Output=A> + Mul<F, Output=A>
+{ #[inline(always)] fn interp(a: A2<A>, t: F) -> A { a.dot(A2(1. - t, t)) } }
+
+impl<A> Interp<A> for SmoothScale where A: Add<Output=A> + Mul<F, Output=A>
+{ #[inline(always)] fn interp(a: A2<A>, t: F) -> A
+  { LinearScale::interp(a, t.sq() * (3. - 2. * t)) } }
 
 
-impl<A> Interpolate<A> for LinearInterp where A: Add<Output=A>
-                                               + Mul<F, Output=A> {
-    #[inline(always)] fn interp(a: A2<A>, t: F) -> A
-    { a.dot(A2(1. - t, t)) }
-}
+pub trait Balance { fn balance(a: F2) -> F; }
 
-impl<A> Interpolate<A> for SmoothInterp where A: Add<Output=A>
-                                               + Mul<F, Output=A> {
-    #[inline(always)] fn interp(a: A2<A>, t: F) -> A
-    { LinearInterp::interp(a, t.sq() * (3. - 2. * t)) }
-}
+impl Balance for LinearScale
+{ #[inline(always)] fn balance(a: F2) -> F { a[0] / a.sum() } }
+
+impl Balance for PowerScale
+{ #[inline(always)] fn balance(a: F2) -> F
+  { LinearScale::balance(a.map(F::sq)) } }
