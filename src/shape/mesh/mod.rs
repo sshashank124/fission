@@ -5,37 +5,44 @@ use super::*;
 pub use triangle::*;
 
 
-pub struct Mesh(BVH<Triangle>);
+pub struct Mesh {
+    tris: BVH<Triangle>,
+    dpdf: DiscretePDF,
+}
 
 impl Mesh {
-    #[inline(always)] pub fn new(triangles: Vec<Triangle>) -> Self
-    { Self(BVH::new(triangles)) }
+    pub fn new(triangles: Vec<Triangle>) -> Self {
+        let tris = BVH::new(triangles);
+        let dpdf = DiscretePDF::new(tris.elements.iter(),
+                                    Triangle::surface_area);
+        Self { tris, dpdf }
+    }
 }
 
 impl Intersectable for Mesh {
-    #[inline(always)] fn bbox(&self) -> BBox { self.0.bbox() }
+    #[inline(always)] fn bbox(&self) -> BBox { self.tris.bbox() }
 
     #[inline(always)] fn intersects(&self, ray: R) -> bool
-    { self.0.intersects(ray) }
+    { self.tris.intersects(ray) }
 
     #[inline(always)] fn intersect(&self, ray: R) -> Option<Its> {
-        self.0.fold(ray.d.map(Num::is_pos), (ray, None),
-                    |(r, _), node| node.bbox.intersects(*r),
-                    |acc, i, s| Either::Right(intersect_update(acc, (i, s)))).1
+        self.tris.fold(ray.d.map(Num::is_pos), (ray, None),
+                  |(r, _), node| node.bbox.intersects(*r),
+                  |acc, i, s| Either::Right(intersect_update(acc, (i, s)))).1
     }
 
     #[inline(always)] fn hit_info<'a>(&'a self, i: Its<'a>) -> Its<'a>
-    { self.0.elements[i.shape.1 as usize].hit_info(i) }
+    { self.tris.elements[i.shape.1 as usize].hit_info(i) }
 
-    #[inline(always)] fn sample_surface(&self, _s: F2) -> Its
-    { unimplemented!() }
+    #[inline(always)] fn sample_surface(&self, mut s: F2) -> Its {
+        let idx = self.dpdf.sample(&mut s[0]);
+        self.tris.elements[idx].sample_surface(s)
+    }
 
-    // TODO: inefficient
-    #[inline(always)] fn surface_area(&self) -> F
-    { self.0.elements.iter().map(Intersectable::surface_area).sum() }
+    #[inline(always)] fn surface_area(&self) -> F { self.dpdf.total() }
 
     #[inline(always)] fn intersection_cost(&self) -> F
-    { self.0.intersection_cost() }
+    { self.tris.intersection_cost() }
 }
 
 type Acc<'a> = (R, Option<Its<'a>>);

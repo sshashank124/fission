@@ -9,16 +9,13 @@ pub struct Triangle {
     pub mesh_data: Arc<MeshData>,
 }
 
-pub struct Face(I, I, I);
+pub struct Face(pub I, pub I, pub I);
 
 pub struct MeshData {
     pub p:  Vec<P>,
     pub n:  Vec<N>,
     pub uv: Vec<F2>,
 }
-
-impl Face
-{ #[inline(always)] pub fn new(a: I, b: I, c: I) -> Face { Face(a, b, c) } }
 
 impl MeshData {
     #[inline(always)]
@@ -54,7 +51,20 @@ impl Triangle {
     #[inline(always)] fn ab(&self) -> V { self.b() - self.a() }
     #[inline(always)] fn ac(&self) -> V { self.c() - self.a() }
 
-    #[inline(always)] fn n(&self) -> N { N::v(self.ab().cross(self.ac())) }
+    #[inline(always)] fn n(&self) -> V { self.ab().cross(self.ac()) }
+
+    #[inline(always)] fn bary(uv: F2) -> F3
+    { A3(F::ONE - uv[0] - uv[1], uv[0], uv[1]) }
+
+    #[inline(always)] fn eval(&self, uv: F2) -> (P, N, F2) {
+        let bary = Self::bary(uv);
+        let p = self.abc().dot(bary);
+        let n = if self.n.is_empty() { N::v(self.n()) }
+                else { self.abcn().dot(bary) };
+        let uv = if self.uv.is_empty() { F2::ZERO }
+                 else { self.abct().dot(bary) };
+        (p, n, uv)
+    }
 
     #[inline(always)]
     fn intersection_point(&self, ray: R) -> Option<(F, F2)> {
@@ -90,20 +100,17 @@ impl Intersectable for Triangle {
 
     #[inline(always)]
     fn hit_info<'a>(&'a self, mut its: Its<'a>) -> Its<'a> {
-        let bary = A3(F::ONE - its.uv[0] - its.uv[1], its.uv[0], its.uv[1]);
-        its.p = self.abc().dot(bary);
-        its.n = if self.n.is_empty() { self.n() }
-                else { self.abcn().dot(bary) };
-        its.uv = if self.uv.is_empty() { F2::ZERO }
-                 else { self.abct().dot(bary) };
+        let (p, n, uv) = self.eval(its.uv);
+        its.p = p; its.n = n; its.uv = uv;
         its
     }
 
-    #[inline(always)] fn sample_surface(&self, _s: F2) -> Its
-    { unimplemented!() }
+    #[inline(always)] fn sample_surface(&self, s: F2) -> Its {
+        let (p, n, uv) = self.eval(UniformTriangle::warp(s, ()));
+        Its::new(p, n, uv, 0.)
+    }
 
-    #[inline(always)] fn surface_area(&self) -> F
-    { unimplemented!() }
+    #[inline(always)] fn surface_area(&self) -> F { 0.5 * self.n().norm() }
 
     #[inline(always)] fn intersection_cost(&self) -> F { 2. }
 }

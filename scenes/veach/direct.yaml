@@ -20,33 +20,41 @@ scene:
           up: [0, 1, 0]
 
   elements:
-    - type: sphere
-      center: [-3.75, 0, 0]
-      radius: .03333
+    - type: mesh
+      obj: obj/veach/sphere.obj
       emission:
         type: constant
         color: [901.803, 901.803, 901.803]
+      transforms:
+        - scale: [.03, .03, .03]
+        - translate: [-3.75, 0, 0]
 
-    - type: sphere
-      center: [-1.25, 0, 0]
-      radius: .1
+    - type: mesh
+      obj: obj/veach/sphere.obj
       emission:
         type: constant
         color: [100, 100, 100]
+      transforms:
+        - scale: [.1, .1, .1]
+        - translate: [-1.25, 0, 0]
 
-    - type: sphere
-      center: [1.25, 0, 0]
-      radius: .3
+    - type: mesh
+      obj: obj/veach/sphere.obj
       emission:
         type: constant
         color: [11.1111, 11.1111, 11.1111]
+      transforms:
+        - scale: [.3, .3, .3]
+        - translate: [1.25, 0, 0]
 
-    - type: sphere
-      center: [3.75, 0, 0]
-      radius: .9
+    - type: mesh
+      obj: obj/veach/sphere.obj
       emission:
         type: constant
         color: [1.23457, 1.23457, 1.23457]
+      transforms:
+        - scale: [.9, .9, .9]
+        - translate: [3.75, 0, 0]
 
     - type: mesh
       obj: obj/veach/plate1.obj

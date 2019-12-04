@@ -1,6 +1,6 @@
 mod io;
 
-use crate::types::*;
+use crate::core::*;
 
 
 const BLOCK_SIZE: I2 = A2(8, 8);

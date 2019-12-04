@@ -12,6 +12,7 @@ pub trait Warp3<Params> {
 }
 
 
+pub struct UniformTriangle;
 pub struct UniformDisk;
 pub struct CosineHemisphere;
 pub struct UniformCylinder;
@@ -19,6 +20,15 @@ pub struct UniformSphere;
 pub struct UniformHemisphere;
 pub struct BeckmannHemisphere;
 
+
+impl Warp2<()> for UniformTriangle {
+    #[inline(always)] fn warp(s: F2, _: ()) -> F2 {
+        let s0 = F::sqrt(s[0]);
+        A2(1. - s0, s[1] * s0)
+    }
+
+    #[inline(always)] fn pdf(_: F2, _: ()) -> F { 2. }
+}
 
 impl Warp2<()> for UniformDisk {
     #[inline(always)] fn warp(s: F2, _: ()) -> F2 {

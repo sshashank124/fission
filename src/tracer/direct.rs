@@ -29,8 +29,7 @@ impl Trace for Direct {
                 le + Self::if_worth_tracing(lb, bpdf, ||
                     scene.intersect(sray).filter(Its::has_emission).map(|its2|
                         lb * its2.le(sray)
-                           * PowerScale::balance(A2(bpdf, its2.lpdf(sray)))
-                           * Frame::ct(*wi))
+                           * PowerScale::balance(A2(bpdf, its2.lpdf(sray))))
                     .unwrap_or(Color::BLACK))
             }
         }

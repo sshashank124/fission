@@ -9,7 +9,6 @@ use crate::shape::*;
 pub type ShapeRef<'a> = (&'a Shape, I);
 static SHAPE_REF_PH: ShapeRef = (&SHAPE_PH, 0);
 
-#[derive(Clone, Copy)]
 pub struct Its<'a> {
     pub p: P,
     pub n: N,
@@ -17,8 +16,6 @@ pub struct Its<'a> {
     pub t: F,
     pub shape: ShapeRef<'a>,
 }
-pub static ITS_PH: Its = Its { p: P::ZERO, n: N::ZERO, uv: F2::ZERO, t: 0.,
-                               shape: SHAPE_REF_PH };
 
 impl<'a> Its<'a> {
     #[inline(always)]

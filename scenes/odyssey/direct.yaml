@@ -4,52 +4,51 @@ integrator:
 
   sampler:
     type: sobol
-    samples_per_pixel: 64
+    samples_per_pixel: 32
 
 scene:
   camera:
     type: perspective
-    fov: 22.11
+    fov: 22.6
     resolution: [768, 432]
     transforms:
       - look_at:
-          origin: [20., 20., 50.]
-          target: [0., 4., 0.]
-          up:     [0., 1., 0.]
+          origin: [20, 20, 50]
+          target: [0, 4, 0]
+          up:     [0, 1, 0]
 
   elements:
+    # monolith
     - type: mesh
       obj: obj/cube.obj
       bsdf:
         type: diffuse
         albedo:
           type: constant
-          color: [0.2, 0.2, 0.2]
+          color: [.2, .2, .2]
       transforms:
-        - scale: [1., 9., 4.]
+        - translate: [0, .5, 0]
+        - scale: [1, 9, 4]
 
+    # floor
     - type: mesh
       obj: obj/cube.obj
       bsdf:
         type: diffuse
         albedo:
           type: constant
-          color: [0.85, 0.85, 0.85]
+          color: [.85, .85, .85]
       transforms:
-        - translate: [0., -1., 0.]
-        - scale: [25., 1., 18.]
+        - translate: [0, -0.5, 0]
+        - scale: [25, 1, 18]
 
+    # glowing wall
     - type: mesh
       obj: obj/cube.obj
-      bsdf:
-        type: diffuse
-        albedo:
-          type: constant
-          color: [1., 1., 1.]  # TODO [0., 0., 0.] and add emitter [1., 1., 1.]
+      emission:
+        type: constant
+        color: [1, 1, 1]
       transforms:
-        - scale: [1., 10., 18.]
-        - translate: [-12., 0., 0.]
-
-    - type: pointlight
-      power: [1200., 1200., 1200.]
-      position: [-6., 10., 0.]
+        - translate: [0, .5, 0]
+        - scale: [1, 10, 18]
+        - translate: [-12, 0, 0]

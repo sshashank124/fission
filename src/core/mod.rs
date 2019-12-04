@@ -1,21 +1,27 @@
-mod array;
+mod array3;
 mod array2;
 mod color;
 mod dim;
+mod dpdf;
 mod either;
 mod interpolate;
 mod num;
 mod ops;
+mod progress;
 mod tuple;
+mod vec;
 
-pub use array::*;
+pub use array3::*;
 pub use array2::*;
 pub use color::Color;
 pub use dim::*;
+pub use dpdf::*;
 pub use either::*;
 pub use interpolate::*;
 pub use num::*;
+pub use progress::*;
 pub use tuple::*;
+pub use vec::*;
 
 pub type F = f32;
 pub type I = i32;

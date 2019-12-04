@@ -73,7 +73,7 @@ pub static SHAPE_PH: Shape = Shape::new(ShapeType::ZERO, Bsdf::ZERO, None);
 impl Intersectable for ShapeType {
     #[inline(always)] fn bbox(&self) -> BBox {
         match self {
-            Self::None => BBox::ZERO,
+            Self::None => unreachable!(),
             Self::Mesh(s) => s.bbox(),
             Self::Sphere(s) => s.bbox(),
         }
@@ -81,7 +81,7 @@ impl Intersectable for ShapeType {
 
     #[inline(always)] fn intersects(&self, ray: R) -> bool {
         match self {
-            Self::None => false,
+            Self::None => unreachable!(),
             Self::Mesh(s) => s.intersects(ray),
             Self::Sphere(s) => s.intersects(ray),
         }
@@ -89,7 +89,7 @@ impl Intersectable for ShapeType {
 
     #[inline(always)] fn intersect(&self, ray: R) -> Option<Its> {
         match self {
-            Self::None => None,
+            Self::None => unreachable!(),
             Self::Mesh(s) => s.intersect(ray),
             Self::Sphere(s) => s.intersect(ray),
         }
@@ -97,7 +97,7 @@ impl Intersectable for ShapeType {
 
     #[inline(always)] fn hit_info<'a>(&'a self, its: Its<'a>) -> Its<'a> {
         match self {
-            Self::None => its,
+            Self::None => unreachable!(),
             Self::Mesh(s) => s.hit_info(its),
             Self::Sphere(s) => s.hit_info(its),
         }
@@ -105,7 +105,7 @@ impl Intersectable for ShapeType {
 
     #[inline(always)] fn sample_surface(&self, s: F2) -> Its {
         match self {
-            Self::None => ITS_PH,
+            Self::None => unreachable!(),
             Self::Mesh(sh) => sh.sample_surface(s),
             Self::Sphere(sh) => sh.sample_surface(s),
         }
@@ -113,7 +113,7 @@ impl Intersectable for ShapeType {
 
     #[inline(always)] fn surface_area(&self) -> F {
         match self {
-            Self::None => 0.,
+            Self::None => unreachable!(),
             Self::Mesh(s) => s.surface_area(),
             Self::Sphere(s) => s.surface_area(),
         }
@@ -121,7 +121,7 @@ impl Intersectable for ShapeType {
 
     #[inline(always)] fn intersection_cost(&self) -> F {
         match self {
-            Self::None => 0.,
+            Self::None => unreachable!(),
             Self::Mesh(s) => s.intersection_cost(),
             Self::Sphere(s) => s.intersection_cost(),
         }

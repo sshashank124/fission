@@ -1,7 +1,7 @@
 use std::io::{stdout, Write};
 use std::time::Instant;
 
-use crate::types::*;
+use super::*;
 
 
 pub trait ProgressTracker {
@@ -11,14 +11,14 @@ pub trait ProgressTracker {
 }
 
 
-pub struct Progress {
-    msg: &'static str,
+pub struct Progress<'a> {
+    msg: &'a str,
     t: Instant,
     p: ProgressType,
 }
 
-impl Progress {
-    pub fn new(msg: &'static str, n: Option<I>) -> Self {
+impl<'a> Progress<'a> {
+    pub fn new(msg: &'a str, n: Option<I>) -> Self {
         let mut p = Self { msg, t: Instant::now(),
                            p: ProgressType::new(n.unwrap_or(1)) };
         p.update();

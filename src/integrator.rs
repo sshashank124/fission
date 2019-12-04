@@ -1,11 +1,10 @@
 use crate::camera::*;
+use crate::core::*;
 use crate::image::*;
-use crate::progress::*;
 use crate::parallel::*;
 use crate::sampler::*;
 use crate::scene::*;
 use crate::tracer::*;
-use crate::types::*;
 
 
 pub struct Integrator {

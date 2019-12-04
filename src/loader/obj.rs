@@ -102,10 +102,10 @@ impl ObjLoader {
         let v = vertices?;
 
         match v.len() {
-            3 => self.faces.push(Face::new(v[0], v[1], v[2])),
+            3 => self.faces.push(Face(v[0], v[1], v[2])),
             4 => {
-                self.faces.push(Face::new(v[0], v[1], v[2]));
-                self.faces.push(Face::new(v[0], v[2], v[3]));
+                self.faces.push(Face(v[0], v[1], v[2]));
+                self.faces.push(Face(v[0], v[2], v[3]));
             },
             _ => return Err("unexpected number of vertices".into()),
         }

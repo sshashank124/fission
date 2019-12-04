@@ -10,7 +10,7 @@ mod vector3;
 #[allow(dead_code)]
 mod warp;
 
-pub use crate::types::*;
+pub use crate::core::*;
 
 pub use bbox::*;
 pub use bound::*;

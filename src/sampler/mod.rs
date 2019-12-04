@@ -4,8 +4,8 @@ mod sobol;
 
 use std::ops::{Deref, DerefMut};
 
+use crate::core::*;
 use crate::image::Block;
-use crate::types::*;
 
 pub use independent::Independent;
 pub use sobol::Sobol;

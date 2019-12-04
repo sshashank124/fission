@@ -19,7 +19,7 @@ integrator:
 scene:
   camera:
     type: perspective
-    fov: 40.
+    fov: 40
     resolution: [1920, 1080]
     transforms:
       - look_at:
@@ -29,28 +29,28 @@ scene:
 
   elements:
     - type: mesh
-      obj: obj/cube.obj
+      obj: obj/block.obj
       bsdf: *building_bsdf
       transforms:
         - scale: [0.6, 7., 0.4]
         - translate: [20., 0., 20.]
 
     - type: mesh
-      obj: obj/cube.obj
+      obj: obj/block.obj
       bsdf: *building_bsdf
       transforms:
         - scale: [0.3, 8., 0.5]
         - translate: [0., 0., 0.]
 
     - type: mesh
-      obj: obj/cube.obj
+      obj: obj/block.obj
       bsdf: *building_bsdf
       transforms:
         - scale: [0.5, 6., 0.7]
         - translate: [10., 0., 10.]
 
     - type: mesh
-      obj: obj/cube.obj
+      obj: obj/block.obj
       bsdf: *building_bsdf
       transforms:
         - scale: [0.8, 8., 1.2]

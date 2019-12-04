@@ -27,7 +27,7 @@ impl Camera {
     pub fn new(model: CameraType, resolution: I2, to_world: T) -> Self {
         Self {
             from_pixel: T2::scale(A2(2., -2.) / resolution[Y] as F)
-                      * T2::translate(F2::from(resolution) / -2.),
+                      * T2::translate(F2::from(resolution) * -0.5),
             resolution,
             model,
             to_world,

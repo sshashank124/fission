@@ -10,7 +10,7 @@ pub struct Perspective {
 impl Perspective {
     #[inline(always)]
     pub fn new(fov: F, lr: Option<F>, fd: Option<F>) -> Self {
-        let fov_scale = F::tand(fov / 2.);
+        let fov_scale = F::tand(0.5 * fov);
         let lens_r = lr.unwrap_or(0.);
         let fd = fd.unwrap_or(0.);
         Self { fov_scale, lens_r, fd }
