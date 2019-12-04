@@ -17,7 +17,7 @@ impl Microfacet {
     pub fn new(kd: Color, alpha: Option<F>, ior: Option<F2>) -> Self {
         let ks = 1. - kd.reduce(F::max);
         let alpha = alpha.unwrap_or(0.1);
-        let ior = ior.unwrap_or(A2(1.5046, 1.000277));
+        let ior = ior.unwrap_or(A2(1.5046, 1.000_277));
         Self { kd, ks, alpha, ior }
     }
 
@@ -35,7 +35,7 @@ impl Microfacet {
     }
 
     #[inline(always)] fn fresnel(mut cti: F, mut eior: F2) -> F {
-        if eior[0] == eior[1] { return 0. }
+        if eior.reduce(F::approx_eq) { return 0. }
         if cti < 0. { eior = eior.rev(); cti = -cti; };
         let eta: F = eior[0] / eior[1];
         let stt2 = eta.sq() * (1. - cti.sq());

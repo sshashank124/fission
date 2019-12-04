@@ -1,7 +1,5 @@
 mod triangle;
 
-use either::Either;
-
 use super::*;
 
 pub use triangle::*;

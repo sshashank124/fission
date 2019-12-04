@@ -5,11 +5,10 @@ authors = ["Shashank Singh <sshashank124@gmail.com>"]
 edition = "2018"
 
 [dependencies]
-either = "*"
 openexr = "*"
 rand_core = "*"
 rand_pcg = "*"
-rayon = "*"
+scoped_threadpool = "*"
 yaml-rust = "*"
 
 [profile.release]

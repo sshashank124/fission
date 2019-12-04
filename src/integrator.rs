@@ -1,10 +1,7 @@
-use std::io::{stdout, Write};
-use std::time::Instant;
-
-use rayon::iter::{ParallelBridge, ParallelIterator};
-
 use crate::camera::*;
 use crate::image::*;
+use crate::progress::*;
+use crate::parallel::*;
 use crate::sampler::*;
 use crate::scene::*;
 use crate::tracer::*;
@@ -24,12 +21,11 @@ impl Integrator {
     pub fn render(&self) -> Image {
         let mut img = self.scene.camera.new_image();
 
-        let t = Instant::now();
+        let mut progress = Progress::new("RENDERING", Some(self.sampler.spp));
         for i in 0..self.sampler.spp {
-            print!("\rRENDERING ... [{:4}/{:4}]", i + 1, self.sampler.spp);
-            stdout().flush().unwrap();
+            progress.update();
 
-            img.as_block().blocks().par_bridge().for_each(|mut block| {
+            img.as_block().blocks().parallelize().for_each(|mut block| {
                 let mut sampler = self.sampler.clone_seeded((i, &block));
 
                 for pos in block.pixels() {
@@ -45,7 +41,7 @@ impl Integrator {
                 }
             });
         }
-        println!("\rRendering ... DONE ({:?})", t.elapsed());
+        progress.finish();
 
         img
     }

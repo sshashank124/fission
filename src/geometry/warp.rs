@@ -36,8 +36,8 @@ impl Warp2<()> for UniformDisk {
 }
 
 impl Warp3<()> for CosineHemisphere {
-    #[inline(always)] fn warp(s: F2, p: ()) -> F3 {
-        let p = UniformDisk::warp(s, p);
+    #[inline(always)] fn warp(s: F2, _: ()) -> F3 {
+        let p = UniformDisk::warp(s, ());
         A3::a2(p, F::sqrt(1. - p.dot(p)))
     }
 
@@ -55,8 +55,8 @@ impl Warp3<()> for UniformCylinder {
 
 
 impl Warp3<()> for UniformSphere {
-    #[inline(always)] fn warp(s: F2, p: ()) -> F3 {
-        let v = UniformCylinder::warp(s, p);
+    #[inline(always)] fn warp(s: F2, _: ()) -> F3 {
+        let v = UniformCylinder::warp(s, ());
         let r = Frame::st(v);
         A3(r * v[X], r * v[Y], v[Z])
     }
@@ -66,8 +66,8 @@ impl Warp3<()> for UniformSphere {
 
 
 impl Warp3<()> for UniformHemisphere {
-    #[inline(always)] fn warp(s: F2, p: ()) -> F3 {
-        let v = UniformSphere::warp(s, p);
+    #[inline(always)] fn warp(s: F2, _: ()) -> F3 {
+        let v = UniformSphere::warp(s, ());
         A3(v[X], v[Y], v[Z].abs())
     }
 

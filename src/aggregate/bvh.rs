@@ -1,8 +1,6 @@
 use std::collections::HashMap;
 use std::mem;
 
-use either::Either;
-
 use super::*;
 
 
