@@ -1,5 +1,3 @@
-use std::ops::Sub;
-
 use super::*;
 
 use crate::sampler::*;
@@ -33,19 +31,6 @@ impl Microfacet {
         if a >= 1.6 { return 1. }
         (3.535 * a + 2.181 * a.sq()) / (1. + 2.276 * a + 2.577 * a.sq())
     }
-
-    #[inline(always)] fn fresnel(mut cti: F, mut eior: F2) -> F {
-        if eior.reduce(F::approx_eq) { return 0. }
-        if cti < 0. { eior = eior.rev(); cti = -cti; };
-        let eta: F = eior[0] / eior[1];
-        let stt2 = eta.sq() * (1. - cti.sq());
-        if stt2 > 1. { return 1. }
-        let ct = A2(cti, F::sqrt(1. - stt2));
-        let iors = A2(eior, eior.rev());
-        let d = iors.map(|ior| ior.dot(ct));
-        let r = iors.map(|ior| (ior * ct).reduce(Sub::sub)) / d;
-        r.map(F::sq).mean()
-    }
 }
 
 impl Bxdf for Microfacet {
@@ -54,7 +39,7 @@ impl Bxdf for Microfacet {
         if cti <= 0. || cto <= 0. { return Color::BLACK }
         let wh = N::v(wi + wo);
         let beck = self.beckmann(wh);
-        let fr = Self::fresnel(wh.dot(wi), self.ior.rev());
+        let fr = fresnel(wh.dot(wi), self.ior.rev());
         let g = self.smith_beckmann_g1(wi, wh)
               * self.smith_beckmann_g1(wo, wh);
         self.kd * F::INV_PI + (self.ks * beck * fr * g * 0.25) / (cti * cto)

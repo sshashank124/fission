@@ -86,7 +86,7 @@ impl Warp3<()> for UniformHemisphere {
 
 impl Warp3<F> for BeckmannHemisphere {
     #[inline(always)] fn warp(s: F2, alpha: F) -> F3 {
-        let c2t = (1. - alpha.sq() * F::ln(1_f32 - s[0])).inv();
+        let c2t = (1. - alpha.sq() * F::ln(F::ONE - s[0])).inv();
         let phi = F::TWO_PI * s[1];
         let r = F::sqrt(1. - c2t);
         A3(r * F::cos(phi), r * F::sin(phi), F::sqrt(c2t))

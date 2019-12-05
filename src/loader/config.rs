@@ -155,6 +155,10 @@ fn load_bsdf(config: &Yaml) -> Res<Bsdf> {
     if config.is_badvalue() { return Ok(Bsdf::ZERO); }
 
     Ok(match s(&config["type"], "missing bsdf type")? {
+        "dielectric" => {
+            let ior = f2o(&config["ior"]).with_msg("failed to parse ior")?;
+            Dielectric::new(ior).into()
+        },
         "diffuse" => {
             let albedo = load_texture(&config["albedo"])
                              .with_msg("failed to parse texture")?;
@@ -201,7 +205,7 @@ fn load_texture(config: &Yaml) -> Res<Tex<Color>> {
                 _ => Tex::LinearGradient(Gradient::new(val1, val2)),
             }
         },
-        "random_grid" => {
+        "grid" => {
             let val1 = Color(f3(&config["color_1"])
                           .with_msg("failed to parse color 1")?);
             let val2 = Color(f3(&config["color_2"])
@@ -210,10 +214,9 @@ fn load_texture(config: &Yaml) -> Res<Tex<Color>> {
                           .with_msg("failed to parse scale")?;
             let delta = f2o(&config["delta"])
                           .with_msg("failed to parse delta")?;
-            let threshold = fo(&config["threshold"]);
+            let fill = fo(&config["fill"]);
             let padding = fo(&config["padding"]);
-            RandomGrid::new(val1, val2, scale, delta,
-                            threshold, padding).into()
+            Grid::new(val1, val2, scale, delta, fill, padding).into()
         },
         _ => return Err("unknown texture type".into()),
     })

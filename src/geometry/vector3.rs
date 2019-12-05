@@ -32,6 +32,7 @@ impl V {
 
     pub const X: V = V(F3::X);
     pub const Y: V = V(F3::Y);
+    pub const Z: V = V(F3::Z);
 }
 
 op!(Neg::neg, *V);

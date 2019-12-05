@@ -1,7 +1,7 @@
 mod checkerboard;
 mod constant;
 mod gradient;
-mod random_grid;
+mod grid;
 
 use std::ops::{Add, Mul};
 
@@ -10,7 +10,7 @@ use crate::geometry::*;
 pub use checkerboard::Checkerboard;
 pub use constant::Constant;
 pub use gradient::Gradient;
-pub use random_grid::RandomGrid;
+pub use grid::Grid;
 
 
 pub trait Texture<A> {
@@ -24,7 +24,7 @@ pub enum Tex<A> where A: Copy
     Constant(Constant<A>),
     LinearGradient(Gradient<A, LinearScale>),
     SmoothGradient(Gradient<A, SmoothScale>),
-    RandomGrid(RandomGrid<A>),
+    Grid(Grid<A>),
 }
 
 impl<A> Texture<A> for Tex<A> where A: Copy
@@ -36,7 +36,7 @@ impl<A> Texture<A> for Tex<A> where A: Copy
             Self::Constant(t) => t.eval(s),
             Self::LinearGradient(t) => t.eval(s),
             Self::SmoothGradient(t) => t.eval(s),
-            Self::RandomGrid(t) => t.eval(s),
+            Self::Grid(t) => t.eval(s),
         }
     }
 }
@@ -67,10 +67,10 @@ impl<A> From<Gradient<A, SmoothScale>> for Tex<A> where A: Copy
     { Self::SmoothGradient(t) }
 }
 
-impl<A> From<RandomGrid<A>> for Tex<A> where A: Copy
+impl<A> From<Grid<A>> for Tex<A> where A: Copy
                                               + Add<Output=A>
                                               + Mul<F, Output=A>
-{ #[inline(always)] fn from(t: RandomGrid<A>) -> Self { Self::RandomGrid(t) } }
+{ #[inline(always)] fn from(t: Grid<A>) -> Self { Self::Grid(t) } }
 
 impl<A: Copy + Zero> Zero for Tex<A> where A: Add<Output=A> + Mul<F, Output=A>
 { const ZERO: Self = Self::Constant(Constant::ZERO); }

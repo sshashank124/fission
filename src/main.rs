@@ -10,7 +10,6 @@ mod image;
 mod integrator;
 mod light;
 mod loader;
-mod parallel;
 mod sampler;
 mod scene;
 mod shape;
