@@ -1,5 +1,5 @@
 use std::iter::Sum;
-use std::ops::{Add, AddAssign, Mul, Div, DivAssign, Deref};
+use std::ops::{Add, AddAssign, Mul, MulAssign, Div, DivAssign, Deref};
 
 use super::*;
 use crate::op;
@@ -24,6 +24,7 @@ op!(Mul::mul, *Color -> *Color -> Color);
 op!(Mul::mul, *Color ->      F -> Color);
 op!(Div::div, *Color ->      F -> Color);
 op!(AddAssign::add_assign, *mut Color -> *Color -> ());
+op!(MulAssign::mul_assign, *mut Color -> *Color -> ());
 op!(DivAssign::div_assign, *mut Color ->      F -> ());
 
 impl Sum<Color> for Color {

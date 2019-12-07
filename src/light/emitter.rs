@@ -2,9 +2,8 @@ use super::*;
 
 
 impl Lighting for Shape {
-    #[inline(always)] fn eval(&self, _: &R, uv: Option<F2>) -> Color
-    { uv.and_then(|uv| self.emission.as_ref().map(|e| e.eval(uv)))
-        .unwrap_or(Color::BLACK) }
+    #[inline(always)] fn eval(&self, uv: F2) -> Color
+    { self.emission.as_ref().map(|e| e.eval(uv)).unwrap_or(Color::ZERO) }
 
     #[inline(always)] fn sample(&self, its: &Its, s: F2) -> (Color, R, F) {
         if let Some(emission) = &self.emission {
@@ -17,6 +16,9 @@ impl Lighting for Shape {
         } else { unreachable!() }
     }
 
-    #[inline(always)] fn pdf(&self, its: &Its, sray: &R) -> F
-    { self.surface_pdf() * sray.t.sq() / its.n.dot(-sray.d) }
+    #[inline(always)] fn pdf(&self, its: &Its, sray: &R) -> F {
+        let ct = its.n.dot(-sray.d);
+        if ct <= 0. { 0. }
+        else { self.surface_pdf() * sray.t.sq() / ct }
+    }
 }

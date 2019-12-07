@@ -13,11 +13,11 @@ building_emission: &building_emission
 
 integrator:
   tracer:
-    type: direct
+    type: path
 
   sampler:
     type: sobol
-    samples_per_pixel: 128
+    samples_per_pixel: 64
 
 scene:
   camera:

@@ -12,9 +12,12 @@ pub use point::Point;
 
 
 pub trait Lighting {
-    fn eval(&self, ray: &R, uv: Option<F2>) -> Color;
+    fn eval(&self, uv: F2) -> Color;
     fn sample(&self, its: &Its, s: F2) -> (Color, R, F);
     fn pdf(&self, its: &Its, sray: &R) -> F;
+
+    #[inline(always)] fn is_env_light(&self) -> bool { false }
+    #[inline(always)] fn eval_env(&self, _ray: &R) -> Color { Color::ZERO }
 }
 
 pub enum Light {
@@ -24,11 +27,11 @@ pub enum Light {
 }
 
 impl Lighting for Light {
-    #[inline(always)] fn eval(&self, ray: &R, uv: Option<F2>) -> Color {
+    #[inline(always)] fn eval(&self, uv: F2) -> Color {
         match self {
-            Light::Area(l) => l.eval(ray, uv),
-            Light::Infinite(l) => l.eval(ray, uv),
-            Light::Point(l) => l.eval(ray, uv),
+            Light::Area(l) => l.eval(uv),
+            Light::Infinite(l) => l.eval(uv),
+            Light::Point(l) => l.eval(uv),
         }
     }
 
@@ -45,6 +48,22 @@ impl Lighting for Light {
             Light::Area(l) => l.pdf(its, sray),
             Light::Infinite(l) => l.pdf(its, sray),
             Light::Point(l) => l.pdf(its, sray),
+        }
+    }
+
+    #[inline(always)] fn is_env_light(&self) -> bool {
+        match self {
+            Light::Area(l) => l.is_env_light(),
+            Light::Infinite(l) => l.is_env_light(),
+            Light::Point(l) => l.is_env_light(),
+        }
+    }
+
+    #[inline(always)] fn eval_env(&self, ray: &R) -> Color {
+        match self {
+            Light::Area(l) => l.eval_env(ray),
+            Light::Infinite(l) => l.eval_env(ray),
+            Light::Point(l) => l.eval_env(ray),
         }
     }
 }

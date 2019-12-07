@@ -70,8 +70,8 @@ impl<S> BVH<S> where S: Intersectable {
                     BVHNodeType::Leaf(i, n) => {
                         for j in i as usize..(i + n) as usize {
                             acc = match f(acc, j, &self.elements[j]) {
-                                Either::Left(b) => { return b; },
-                                Either::Right(a) => a,
+                                Either::L(b) => { return b; },
+                                Either::R(a) => a,
                             };
                         }
                         idx = if sp == 0 { break }
@@ -219,15 +219,15 @@ impl<S> Intersectable for BVH<S> where S: Intersectable {
         self.fold(ray.d.map(Num::is_pos), false,
                   |_, node| node.bbox.intersects(ray),
                   |_, _, isectable| {
-                      if isectable.intersects(ray) { Either::Left(true) }
-                      else { Either::Right(false) }
+                      if isectable.intersects(ray) { Either::L(true) }
+                      else { Either::R(false) }
                   })
     }
 
     #[inline(always)] fn intersect(&self, ray: R) -> Option<Its> {
         self.fold(ray.d.map(Num::is_pos), (ray, None),
                   |(r, _), node| node.bbox.intersects(*r),
-                  |acc, _, s| Either::Right(intersect_update(acc, s)))
+                  |acc, _, s| Either::R(intersect_update(acc, s)))
             .1.map(Its::with_hit_info)
     }
 

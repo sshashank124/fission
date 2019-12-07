@@ -84,7 +84,7 @@ impl ProgressTracker for CounterProgress {
 
 
 impl ProgressTracker for ProgressType {
-    fn new(n: I) -> Self { BarProgress::new(n).into() }
+    fn new(n: I) -> Self { CounterProgress::new(n).into() }
 
     fn update(&mut self) -> String {
         match self {

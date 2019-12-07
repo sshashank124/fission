@@ -28,7 +28,7 @@ impl Intersectable for Mesh {
     #[inline(always)] fn intersect(&self, ray: R) -> Option<Its> {
         self.tris.fold(ray.d.map(Num::is_pos), (ray, None),
                   |(r, _), node| node.bbox.intersects(*r),
-                  |acc, i, s| Either::Right(intersect_update(acc, (i, s)))).1
+                  |acc, i, s| Either::R(intersect_update(acc, (i, s)))).1
     }
 
     #[inline(always)] fn hit_info<'a>(&'a self, i: Its<'a>) -> Its<'a>

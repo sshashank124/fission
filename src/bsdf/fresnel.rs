@@ -1,17 +1,19 @@
-use std::ops::{Div, Sub};
+use std::ops::Div;
 
 use crate::core::*;
 
 
-#[inline(always)] pub fn fresnel(mut cti: F, mut ior: F2) -> F {
-    if ior.reduce(F::approx_eq) { return 0. }
-    if cti < 0. { ior = ior.rev(); cti = -cti; };
-    let eta = ior.reduce(Div::div);
-    let stt2 = eta.sq() * (1. - cti.sq());
-    if stt2 > 1. { return 1. }
-    let ct = A2(cti, F::sqrt(1. - stt2));
-    let iors = A2(ior, ior.rev());
-    let d = iors.map(|i| i.dot(ct));
-    let r = iors.map(|i| (i * ct).reduce(Sub::sub)) / d;
-    r.map(F::sq).mean()
+#[inline(always)] pub fn eta(ior: Option<F2>) -> F
+{ ior.unwrap_or(A2(1.000_277, 1.5046)).reduce(Div::div) }
+
+// (fresnel coefficient, cos theta out, eta)
+#[inline(always)] pub fn fresnel(cti: F, eta: F) -> (F, F, F) {
+    let (s, f) = if cti > 0. { (eta, -1.) } else { (eta.inv(), 1.) };
+    let ctt2 = 1. - s.sq() * (1. - cti.sq());
+    if ctt2 <= 0. { return (1., 0., 1.) }
+    let cti = F::abs(cti);
+    let ctt = F::sqrt(ctt2);
+    let r = A2((cti - s * ctt) / (cti + s * ctt),
+               (s * cti - ctt) / (s * cti + ctt));
+    (r.map(F::sq).mean(), ctt * f, s)
 }

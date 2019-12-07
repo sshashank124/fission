@@ -18,7 +18,10 @@ impl<A> Interp<A> for SmoothScale where A: Add<Output=A> + Mul<F, Output=A>
   { LinearScale::interp(a, t.sq() * (3. - 2. * t)) } }
 
 
-pub trait Balance { fn balance(a: F2) -> F; }
+pub trait Balance {
+    fn balance(a: F2) -> F;
+    #[inline(always)] fn balance2(a: F, b: F) -> F { Self::balance(A2(a, b)) }
+}
 
 impl Balance for LinearScale
 { #[inline(always)] fn balance(a: F2) -> F { a[0] / a.sum() } }

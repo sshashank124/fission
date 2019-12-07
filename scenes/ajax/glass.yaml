@@ -4,7 +4,7 @@ integrator:
 
   sampler:
     type: sobol
-    samples_per_pixel: 128
+    samples_per_pixel: 64
 
 scene:
   camera:
@@ -22,9 +22,7 @@ scene:
     - type: mesh
       obj: obj/ajax.obj
       bsdf:
-        type: microfacet
-        kd: [.3, .3, .5]
-        alpha: .005
+        type: dielectric
 
     - type: mesh
       obj: obj/plane.obj

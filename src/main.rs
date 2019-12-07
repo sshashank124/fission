@@ -1,4 +1,5 @@
 #![feature(test)]
+#![feature(try_trait)]
 #![allow(clippy::suspicious_arithmetic_impl)]
 
 mod aggregate;

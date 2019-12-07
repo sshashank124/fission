@@ -1,8 +1,10 @@
 mod ao;
 mod direct;
 mod normals;
+mod path;
 mod silhouette;
 
+use crate::bsdf::*;
 use crate::geometry::*;
 use crate::light::*;
 use crate::sampler::*;
@@ -12,21 +14,18 @@ use crate::shape::*;
 pub use ao::AmbientOcclusion;
 pub use direct::Direct;
 pub use normals::Normals;
+pub use path::Path;
 pub use silhouette::Silhouette;
 
 
-pub trait Trace {
-    fn trace(&self, scene: &Scene, sampler: &mut Sampler, ray: R) -> Color;
-
-    #[inline(always)] fn if_worth_tracing<FN>(l: Color, pdf: F, f: FN) -> Color
-        where FN: Fn() -> Color
-    { if l != Color::BLACK && pdf > 0. { f() } else { Color::BLACK } }
-}
+pub trait Trace
+{ fn trace(&self, scene: &Scene, sampler: &mut Sampler, ray: R) -> Color; }
 
 pub enum Tracer {
     AO(AmbientOcclusion),
     Direct(Direct),
     Normals(Normals),
+    Path(Path),
     Silhouette(Silhouette),
 }
 
@@ -36,6 +35,7 @@ impl Trace for Tracer {
             Self::AO(t) => t.trace(scene, sampler, ray),
             Self::Direct(t) => t.trace(scene, sampler, ray),
             Self::Normals(t) => t.trace(scene, sampler, ray),
+            Self::Path(t) => t.trace(scene, sampler, ray),
             Self::Silhouette(t) => t.trace(scene, sampler, ray),
         }
     }
@@ -49,6 +49,9 @@ impl From<Direct> for Tracer
 
 impl From<Normals> for Tracer
 { #[inline(always)] fn from(t: Normals) -> Self { Self::Normals(t) } }
+
+impl From<Path> for Tracer
+{ #[inline(always)] fn from(t: Path) -> Self { Self::Path(t) } }
 
 impl From<Silhouette> for Tracer
 { #[inline(always)] fn from(t: Silhouette) -> Self { Self::Silhouette(t) } }

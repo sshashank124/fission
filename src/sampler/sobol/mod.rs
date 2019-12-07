@@ -1,14 +1,4 @@
-#[allow(clippy::all)]
-mod sobol;
-#[allow(clippy::all)]
-mod vdc;
-#[allow(clippy::all)]
-mod vdc_inv;
-
 use super::*;
-use sobol::*;
-use vdc::*;
-use vdc_inv::*;
 
 
 pub struct Sobol {
@@ -50,6 +40,20 @@ impl Sobol {
     }
 }
 
+
+const SOBOL_NDIM: u32 = 1024;
+const SOBOL_SIZE: u32 = 52;
+const SOBOL_MATRIX_LEN: usize = (SOBOL_NDIM * SOBOL_SIZE) as usize;
+#[allow(clippy::all)]
+const SOBOL_MATRIX: [u32; SOBOL_MATRIX_LEN] = include!("sobol.data");
+
+#[allow(clippy::all)]
+const VDC_MATRIX: [[u64; 50]; 25] = include!("vdc.data");
+
+#[allow(clippy::all)]
+const VDC_INV_MATRIX: [[u64; 52]; 26] = include!("vdc_inv.data");
+
+
 impl Sample for Sobol {
     #[inline(always)]
     fn clone_for_block(&self, block_seed: BlockSeed) -> Self {
@@ -74,8 +78,8 @@ impl Sample for Sobol {
     #[inline(always)]
     fn next_1d(&mut self) -> F {
         if self.dim >= SOBOL_NDIM {
-            eprintln!("Sobol Sampler: dimension overflow, using rng");
-            return self.rng();
+            // eprintln!("Sobol: dim overflow at idx: {}", self.cache.i);
+            return self.rng()
         }
 
         let mut f = sample_float(self.sample_index(), self.dim);
@@ -119,12 +123,12 @@ impl SampleIndexMemo {
         let m2 = m << 1;
         let mut cache = Self {
             d: 0, i: idx << m2,
-            vdc_inv: VDC_INV_SOBOL_MATRIX[(m - 1) as usize],
+            vdc_inv: &VDC_INV_MATRIX[(m - 1) as usize],
         };
         let mut c = 0;
         while idx != 0 {
             if (idx & 1) == 1 {
-                cache.d ^= VDC_SOBOL_MATRIX[(m - 1) as usize][c];
+                cache.d ^= VDC_MATRIX[(m - 1) as usize][c];
             }
             idx >>= 1; c += 1;
         }

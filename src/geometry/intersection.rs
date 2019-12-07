@@ -36,10 +36,15 @@ impl<'a> Its<'a> {
 
     #[inline(always)] pub fn to_world(&self) -> T { T::from_frame(*self.n) }
 
+    #[inline(always)] pub fn spawn_ray(&self, d: V) -> R
+    { R::unbounded(self.p, d) }
+
     #[inline(always)] pub fn shape(&self) -> &Shape { &self.shape.0 }
 
-    #[inline(always)] pub fn le(&self, ray: R) -> Color
-    { self.shape().eval(&ray.clipped(self.t), Some(self.uv)) }
+    #[inline(always)] pub fn le(&self, ray: R) -> Color {
+        if self.n.dot(ray.d) >= 0. { Color::BLACK }
+        else { self.shape().eval(self.uv) }
+    }
 
     #[inline(always)] pub fn lpdf(&self, ray: R) -> F
     { self.shape().pdf(self, &ray.clipped(self.t)) }
@@ -55,7 +60,8 @@ impl<'a> Its<'a> {
     #[inline(always)] pub fn bpdf(&self, wi: V, wo: V) -> F
     { self.bsdf().pdf(wi, wo) }
 
-    #[inline(always)] pub fn sample_lb(&self, wi: V, s: F2) -> (Color, V, F)
+    #[inline(always)]
+    pub fn sample_lb(&self, wi: V, s: F2) -> (Color, V, F, bool)
     { self.bsdf().sample(wi, self.uv, s) }
 }
 

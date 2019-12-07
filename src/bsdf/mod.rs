@@ -15,9 +15,15 @@ pub use mirror::Mirror;
 
 
 pub trait Bxdf {
+    // BSDF * cos(theta)
     fn eval(&self, wi: V, wo: V, uv: F2) -> Color;
-    fn sample(&self, wi: V, uv: F2, s: F2) -> (Color, V, F);
+
+    // (color, wo, pdf, specular)
+    fn sample(&self, wi: V, uv: F2, s: F2) -> (Color, V, F, bool);
+
     fn pdf(&self, wi: V, wo: V) -> F;
+
+    fn is_delta(&self) -> bool;
 }
 
 pub enum Bsdf {
@@ -37,7 +43,8 @@ impl Bxdf for Bsdf {
         }
     }
 
-    #[inline(always)] fn sample(&self, wi: V, uv: F2, s: F2) -> (Color, V, F) {
+    #[inline(always)]
+    fn sample(&self, wi: V, uv: F2, s: F2) -> (Color, V, F, bool) {
         match self {
             Self::Dielectric(f) => f.sample(wi, uv, s),
             Self::Diffuse(f) => f.sample(wi, uv, s),
@@ -52,6 +59,15 @@ impl Bxdf for Bsdf {
             Self::Diffuse(f) => f.pdf(wi, wo),
             Self::Microfacet(f) => f.pdf(wi, wo),
             Self::Mirror(f) => f.pdf(wi, wo),
+        }
+    }
+
+    #[inline(always)] fn is_delta(&self) -> bool {
+        match self {
+            Self::Dielectric(f) => f.is_delta(),
+            Self::Diffuse(f) => f.is_delta(),
+            Self::Microfacet(f) => f.is_delta(),
+            Self::Mirror(f) => f.is_delta(),
         }
     }
 }

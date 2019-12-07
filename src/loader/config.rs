@@ -51,6 +51,11 @@ fn load_tracer(config: &Yaml) -> Res<Tracer> {
         },
         "direct" => Direct::new().into(),
         "normals" => Normals::new().into(),
+        "path" => {
+            let depth = i2o(&config["depth"])?;
+            let rrt = fo(&config["rr_throughput"]);
+            Path::new(depth, rrt).into()
+        },
         "silhouette" => Silhouette::new().into(),
         _ => return Err("unknown tracer type".into()),
     })
@@ -307,6 +312,18 @@ fn f2o(vec: &Yaml) -> Res<Option<F2>> {
             if v.len() != 2 { return Err("malformed 2d vector".into()); }
             Ok(Some(A2(f(&v[0], "malformed X value")?,
                        f(&v[1], "malformed Y value")?)))
+        }
+    }
+}
+
+#[inline(always)]
+fn i2o(vec: &Yaml) -> Res<Option<I2>> {
+    match vo(vec) {
+        None => Ok(None),
+        Some(v) => {
+            if v.len() != 2 { return Err("malformed 2d vector".into()); }
+            Ok(Some(A2(i(&v[0], "malformed X value")?,
+                       i(&v[1], "malformed Y value")?)))
         }
     }
 }

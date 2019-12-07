@@ -27,8 +27,6 @@ impl<A> A2<A> {
     #[inline(always)]
     pub fn reduce<B, G>(self, f: G) -> B where G: Fn(A, A) -> B
     { f(self.0, self.1) }
-
-    #[inline(always)] pub fn rev(self) -> A2<A> { A2(self.1, self.0) }
 }
 
 macro_rules! index {
@@ -89,9 +87,9 @@ impl<A> A2<A> {
     #[inline(always)] pub fn sum(self) -> A where A: Add<A, Output=A>
     { self.reduce(Add::add) }
 
-    #[inline(always)] pub fn mean<B>(self) -> B where A: Mul<F, Output=B>,
-                                                      B: Add<B, Output=B>
-    { self.dot(F2::HALF) }
+    #[inline(always)] pub fn mean(self) -> A where A: Add<A, Output=A>,
+                                                   A: Mul<F, Output=A>
+    { self.sum() * 0.5 }
 }
 
 macro_rules! cw_binary_assign_op {

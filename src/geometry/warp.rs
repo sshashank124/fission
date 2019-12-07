@@ -23,8 +23,10 @@ pub struct BeckmannHemisphere;
 
 impl Warp2<()> for UniformTriangle {
     #[inline(always)] fn warp(s: F2, _: ()) -> F2 {
-        let s0 = F::sqrt(s[0]);
-        A2(1. - s0, s[1] * s0)
+        let t = s * 0.5;
+        let o = t[1] - t[0];
+        if F::is_pos(o) { A2(t[0], t[1] + o) }
+        else { A2(t[0] - o, t[1]) }
     }
 
     #[inline(always)] fn pdf(_: F2, _: ()) -> F { 2. }

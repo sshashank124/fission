@@ -12,8 +12,7 @@ impl Point {
 }
 
 impl Lighting for Point {
-    #[inline(always)] fn eval(&self, _: &R, _: Option<F2>) -> Color
-    { Color::BLACK }
+    #[inline(always)] fn eval(&self, _: F2) -> Color { Color::BLACK }
 
     #[inline(always)] fn sample(&self, its: &Its, _: F2) -> (Color, R, F)
     { let sray = R::p2(its.p, self.pos);

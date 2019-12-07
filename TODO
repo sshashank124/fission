@@ -1,5 +1,5 @@
-Recursive Path Tracer
-
 Participating Media
 
 Textured BSDFs (eventually abstracted out)
+
+Light sampling distribution (by power?)

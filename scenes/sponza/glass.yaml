@@ -1,10 +1,10 @@
 integrator:
   tracer:
-    type: direct
+    type: path
 
   sampler:
     type: sobol
-    samples_per_pixel: 32
+    samples_per_pixel: 16
 
 scene:
   camera:
@@ -22,10 +22,10 @@ scene:
     - type: mesh
       obj: obj/sponza.obj
       bsdf:
-        type: diffuse
-        albedo:
-          type: constant
-          color: [.8, .8, .8]
+        type: dielectric
+      emission:
+        type: constant
+        color: [.1, .1, .1]
 
     - type: pointlight
       power: [500, 250, 250]

@@ -1,0 +1,64 @@
+integrator:
+  tracer:
+    type: path
+
+  sampler:
+    type: sobol
+    samples_per_pixel: 32
+
+scene:
+  camera:
+    type: perspective
+    fov: 20.84
+    resolution: [800, 600]
+    lens_radius: .1
+    focal_distance: 6.
+
+    transforms:
+      - scale: [-1, 1, 1]
+      - look_at:
+          origin: [0, 0.919769, 5.41159]
+          target: [0, 0.893051, 4.41198]
+          up: [0, 1, 0]
+
+  elements:
+    - type: mesh
+      obj: obj/cbox/walls.obj
+      bsdf:
+        type: microfacet
+        kd: [.725, .71, .68]
+        alpha: .005
+
+    - type: mesh
+      obj: obj/cbox/rightwall.obj
+      bsdf:
+        type: diffuse
+        albedo:
+          type: constant
+          color: [.161, .133, .427]
+
+    - type: mesh
+      obj: obj/cbox/leftwall.obj
+      bsdf:
+        type: diffuse
+        albedo:
+          type: constant
+          color: [.63, .065, .05]
+
+    - type: sphere
+      center: [-.4214, .3321, -.28]
+      radius: .3263
+      bsdf:
+        type: dielectric
+
+    - type: sphere
+      center: [.4458, .3321, .3767]
+      radius: .3263
+      bsdf:
+        type: mirror
+
+    - type: mesh
+      obj: obj/cbox/light.obj
+      emission:
+        type: constant
+        color: [15, 15, 15]
