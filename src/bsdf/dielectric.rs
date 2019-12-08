@@ -5,10 +5,8 @@ pub struct Dielectric {
     eta: F,
 }
 
-impl Dielectric {
-    #[inline(always)] pub fn new(ior: Option<F2>) -> Self
-    { Self { eta: eta(ior) } }
-}
+impl Dielectric
+{ pub fn new(ior: Option<F2>) -> Self { Self { eta: eta(ior) } } }
 
 impl Bxdf for Dielectric {
     #[inline(always)] fn eval(&self, _: V, _: V, _: F2) -> Color
@@ -24,6 +22,5 @@ impl Bxdf for Dielectric {
     }
 
     #[inline(always)] fn pdf(&self, _: V, _: V) -> F { 0. }
-
     #[inline(always)] fn is_delta(&self) -> bool { true }
 }

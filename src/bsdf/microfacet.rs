@@ -11,7 +11,6 @@ pub struct Microfacet {
 }
 
 impl Microfacet {
-    #[inline(always)]
     pub fn new(kd: Color, alpha: Option<F>, ior: Option<F2>) -> Self {
         let ks = 1. - kd.reduce(F::max);
         let alpha = alpha.unwrap_or(0.1);

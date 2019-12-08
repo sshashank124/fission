@@ -3,7 +3,7 @@ use std::ops::Div;
 use crate::core::*;
 
 
-#[inline(always)] pub fn eta(ior: Option<F2>) -> F
+pub fn eta(ior: Option<F2>) -> F
 { ior.unwrap_or(A2(1.000_277, 1.5046)).reduce(Div::div) }
 
 // (fresnel coefficient, cos theta out, eta)

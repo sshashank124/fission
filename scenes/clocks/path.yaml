@@ -1,6 +1,7 @@
 integrator:
   tracer:
     type: path
+    depth: [30, 50]
 
   sampler:
     type: sobol

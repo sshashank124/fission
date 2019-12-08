@@ -3,7 +3,7 @@ use super::*;
 
 pub struct Normals;
 
-impl Normals { #[inline(always)] pub fn new() -> Self { Self { } } }
+impl Normals { pub fn new() -> Self { Self } }
 
 impl Trace for Normals {
     #[inline(always)]

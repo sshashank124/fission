@@ -18,14 +18,8 @@ pub struct MeshData {
 }
 
 impl MeshData {
-    #[inline(always)]
-    pub fn new() -> MeshData {
-        MeshData {
-            p:  Vec::new(),
-            n:  Vec::new(),
-            uv: Vec::new(),
-        }
-    }
+    pub fn new() -> MeshData
+    { MeshData { p: Vec::new(), n: Vec::new(), uv: Vec::new() } }
 }
 
 impl Triangle {
@@ -88,8 +82,7 @@ impl Triangle {
 }
 
 impl Intersectable for Triangle {
-    #[inline(always)] fn bbox(&self) -> BBox
-    { self.abc().fold(BBox::ZERO, BitOr::bitor) }
+    fn bbox(&self) -> BBox { self.abc().fold(BBox::ZERO, BitOr::bitor) }
 
     #[inline(always)] fn intersects(&self, ray: R) -> bool
     { self.intersection_point(ray).is_some() }
@@ -112,7 +105,7 @@ impl Intersectable for Triangle {
 
     #[inline(always)] fn surface_area(&self) -> F { 0.5 * self.n().norm() }
 
-    #[inline(always)] fn intersection_cost(&self) -> F { 2. }
+    fn intersection_cost(&self) -> F { 2. }
 }
 
 impl Deref for Triangle { type Target = Arc<MeshData>;

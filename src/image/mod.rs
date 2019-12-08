@@ -12,13 +12,11 @@ pub struct Image {
 }
 
 impl Image {
-    #[inline(always)] pub fn new(dims: I2) -> Self {
+    pub fn new(dims: I2) -> Self {
         let len = (dims[X] * dims[Y]) as usize;
-        Self {
-            dims,
-            data: vec![Color::BLACK; len],
-            weights: vec![0.; len],
-        }
+        let data = vec![Color::BLACK; len];
+        let weights = vec![0.; len];
+        Self { dims, data, weights }
     }
 
     #[inline(always)] pub fn as_block(&mut self) -> Block
@@ -45,7 +43,8 @@ impl Block {
         img.weights[loc] += 1.;
     }
 
-    #[inline(always)] pub fn blocks(&mut self) -> BlockIter<'_> {
+    #[inline(always)]
+    pub fn blocks(&mut self) -> impl Iterator<Item=Block> + '_ {
         let dims = BLOCK_SIZE;
         BlockIter {
             pos: I2::ZERO,
@@ -55,7 +54,7 @@ impl Block {
         }
     }
 
-    #[inline(always)] pub fn pixels(&self) -> PixelIter
+    #[inline(always)] pub fn pixels(&self) -> impl Iterator<Item=I2>
     { PixelIter { block_pos: self.pos, block_dims: self.dims, pos: I2::ZERO } }
 }
 

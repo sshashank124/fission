@@ -4,7 +4,7 @@ use super::*;
 pub struct Direct;
 
 impl Direct {
-    #[inline(always)] pub fn new() -> Self { Self }
+    pub fn new() -> Self { Self }
 
     #[inline(always)]
     pub fn li<'a>(scene: &'a Scene, sampler: &mut Sampler, its: &Its, ray: &R)

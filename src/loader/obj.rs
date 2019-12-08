@@ -31,7 +31,6 @@ struct Vertex {
 }
 
 impl ObjLoader {
-    #[inline(always)]
     fn new(to_world: T) -> ObjLoader {
         ObjLoader {
             tmp_data: MeshData::new(),
@@ -42,7 +41,7 @@ impl ObjLoader {
         }
     }
 
-    fn load<B>(mut self, mut buf: B) -> Res<Mesh> where B: BufRead {
+    fn load(mut self, mut buf: impl BufRead) -> Res<Mesh> {
         let mut line = String::with_capacity(120);
         while buf.read_line(&mut line).with_msg("Error reading line")? > 0 {
             let mut tokens = line[..].split_whitespace();
@@ -66,30 +65,26 @@ impl ObjLoader {
         Ok(Mesh::new(triangles))
     }
 
-    #[inline(always)]
-    fn add_point<'a, It>(&mut self, tokens: &mut It) -> Res<()>
-            where It: Iterator<Item=&'a str> {
+    fn add_point<'a>(&mut self, tokens: &mut impl Iterator<Item=&'a str>)
+            -> Res<()> {
         self.tmp_data.p.push(self.to_world * P(parse_f3(tokens)?));
         Ok(())
     }
 
-    #[inline(always)]
-    fn add_uv<'a, It>(&mut self, tokens: &mut It) -> Res<()>
-            where It: Iterator<Item=&'a str> {
+    fn add_uv<'a>(&mut self, tokens: &mut impl Iterator<Item=&'a str>)
+            -> Res<()> {
         self.tmp_data.uv.push(parse_f2(tokens)?);
         Ok(())
     }
 
-    #[inline(always)]
-    fn add_normal<'a, It>(&mut self, tokens: &mut It) -> Res<()>
-            where It: Iterator<Item=&'a str> {
+    fn add_normal<'a>(&mut self, tokens: &mut impl Iterator<Item=&'a str>)
+            -> Res<()> {
         self.tmp_data.n.push(self.to_world * N::a3(parse_f3(tokens)?));
         Ok(())
     }
 
-    #[inline(always)]
-    fn add_face<'a, It>(&mut self, tokens: &mut It) -> Res<()>
-            where It: Iterator<Item=&'a str> {
+    fn add_face<'a>(&mut self, tokens: &mut impl Iterator<Item=&'a str>)
+            -> Res<()> {
         let vertices: Result<Vec<I>, _> = tokens.map(|st| {
             match self.parse_vertex(st) {
                 Ok(v) => match self.vertex_map.get(&v) {
@@ -112,7 +107,6 @@ impl ObjLoader {
         Ok(())
     }
     
-    #[inline(always)]
     fn add_vertex(&mut self, v: Vertex) -> I {
         self.obj_data.p.push(self.tmp_data.p[v.p as usize]);
         if v.t != -1 { self.obj_data.uv.push(self.tmp_data.uv[v.t as usize]); }
@@ -122,7 +116,6 @@ impl ObjLoader {
         n
     }
 
-    #[inline(always)]
     fn parse_vertex(&mut self, token: &str) -> Res<Vertex> {
         let mut tokens = token.split('/');
         Ok(Vertex {
@@ -134,57 +127,18 @@ impl ObjLoader {
     }
 }
 
-#[inline(always)]
-fn parse_index<'a, It>(tokens: &mut It, n: usize) -> Res<I>
-        where It: Iterator<Item=&'a str> {
-    parse(tokens).map(|i: I| if i > 0 { i - 1 } else { i + n as I })
-}
+fn parse_index<'a>(tkns: &mut impl Iterator<Item=&'a str>, n: usize) -> Res<I>
+{ parse(tkns).map(|i: I| if i > 0 { i - 1 } else { i + n as I }) }
 
-#[inline(always)]
-fn parse_f3<'a, It>(tokens: &mut It) -> Res<F3>
-        where It: Iterator<Item=&'a str> {
-    Ok(A3(parse(tokens)?, parse(tokens)?, parse(tokens)?))
-}
+fn parse_f3<'a>(tokens: &mut impl Iterator<Item=&'a str>) -> Res<F3>
+{ Ok(A3(parse(tokens)?, parse(tokens)?, parse(tokens)?)) }
 
-#[inline(always)]
-fn parse_f2<'a, It>(tokens: &mut It) -> Res<F2>
-        where It: Iterator<Item=&'a str> {
-    Ok(A2(parse(tokens)?, parse(tokens)?))
-}
+fn parse_f2<'a>(tokens: &mut impl Iterator<Item=&'a str>) -> Res<F2>
+{ Ok(A2(parse(tokens)?, parse(tokens)?)) }
 
-#[inline(always)]
-fn parse<'a, S, It>(tokens: &mut It) -> Res<S>
-        where It: Iterator<Item=&'a str>,
-              S: FromStr,
+fn parse<'a, S>(tokens: &mut impl Iterator<Item=&'a str>) -> Res<S>
+        where S: FromStr,
               <S as FromStr>::Err: Display {
     tokens.next().ok_or("missing scalar")?
           .parse::<S>().with_msg("malformed scalar")
-}
-
-
-#[cfg(test)]
-mod benches {
-    extern crate test;
-
-    use super::*;
-    use test::Bencher;
-
-    macro_rules! bench_obj {
-        ($name: ident, $file: expr) => {
-            #[bench]
-            fn $name(b: &mut Bencher) {
-                b.iter(|| {
-                    load_from_file($file, T::ONE);
-                });
-            }
-        }
-    }
-
-    bench_obj!(plane, "obj/plane.obj");
-    bench_obj!(disk, "obj/disk.obj");
-    bench_obj!(teapot, "obj/teapot.obj");
-    bench_obj!(sphere, "obj/sphere.obj");
-    bench_obj!(camelhead, "obj/camelhead.obj");
-    bench_obj!(sponza, "obj/sponza.obj");
-    bench_obj!(ajax, "obj/ajax.obj");
 }

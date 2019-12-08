@@ -32,11 +32,11 @@ impl R {
 }
 
 impl Mul<R> for T { type Output = R;
-    #[inline(always)]
-    fn mul(self, R{o, d, t}: R) -> R { R::r(self * o, self * d, t) }
+    #[inline(always)] fn mul(self, R{o, d, t}: R) -> R
+    { R::r(self * o, self * d, t) }
 }
 
 impl Div<R> for T { type Output = R;
-    #[inline(always)]
-    fn div(self, R{o, d, t}: R) -> R { R::r(self / o, self / d, t) }
+    #[inline(always)] fn div(self, R{o, d, t}: R) -> R
+    { R::r(self / o, self / d, t) }
 }

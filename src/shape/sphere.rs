@@ -7,7 +7,7 @@ pub struct Sphere {
 }
 
 impl Sphere {
-    #[inline(always)] pub fn new(c: P, r: F) -> Self { Self { c, r } }
+    pub fn new(c: P, r: F) -> Self { Self { c, r } }
 
     #[inline(always)] pub fn intersection_point(&self, ray: R) -> Option<F> {
         let d = ray.o - self.c;
@@ -26,7 +26,7 @@ impl Sphere {
 }
 
 impl Intersectable for Sphere {
-    #[inline(always)] fn bbox(&self) -> BBox
+    fn bbox(&self) -> BBox
     { BBox::ZERO | (self.c - self.r) | (self.c + self.r) }
 
     #[inline(always)] fn intersects(&self, ray: R) -> bool
@@ -49,5 +49,5 @@ impl Intersectable for Sphere {
 
     #[inline(always)] fn surface_area(&self) -> F { F::FOUR_PI * self.r.sq() }
 
-    #[inline(always)] fn intersection_cost(&self) -> F { 2. }
+    fn intersection_cost(&self) -> F { 2. }
 }

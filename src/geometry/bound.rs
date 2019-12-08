@@ -21,8 +21,9 @@ impl B {
     { self[0] <= t && t <= self[1] }
 
     #[inline(always)] pub fn degen(self) -> bool { self[0] > self[1] }
-    #[inline(always)] pub fn center(self) -> F { self.0.mean() }
-    #[inline(always)] pub fn extent(self) -> F { self[1] - self[0] }
+
+    pub fn center(self) -> F { self.mean() }
+    pub fn extent(self) -> F { self[1] - self[0] }
 }
 
 op!(Add::add, *B -> *B -> B);
@@ -38,8 +39,7 @@ impl Div<F> for B { type Output = B;
 }
 
 impl BitOr for B { type Output = B;
-    #[inline(always)]
-    fn bitor(self, b: B) -> B
+    #[inline(always)] fn bitor(self, b: B) -> B
     { B::b(F::min(self[0], b[0]), F::max(self[1], b[1])) }
 }
 
@@ -48,8 +48,7 @@ impl BitOr<F> for B { type Output = B;
 }
 
 impl BitAnd for B { type Output = B;
-    #[inline(always)]
-    fn bitand(self, b: B) -> B
+    #[inline(always)] fn bitand(self, b: B) -> B
     { B::b(F::max(self[0], b[0]), F::min(self[1], b[1])) }
 }
 

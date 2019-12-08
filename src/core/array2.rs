@@ -17,15 +17,14 @@ impl<A> A2<A> {
     #[inline(always)] pub fn rep(a: A) -> A2<A> where A: Copy
     { A2(a, a) }
 
-    #[inline(always)] pub fn map<B, G>(self, f: G) -> A2<B> where G: Fn(A) -> B
+    #[inline(always)] pub fn map<B>(self, f: impl Fn(A) -> B) -> A2<B>
     { A2(f(self.0), f(self.1)) }
 
     #[inline(always)]
-    pub fn zip<B, C, G>(self, b: A2<B>, f: G) -> A2<C> where G: Fn(A, B) -> C
+    pub fn zip<B, C>(self, b: A2<B>, f: impl Fn(A, B) -> C) -> A2<C>
     { A2(f(self.0, b.0), f(self.1, b.1)) }
 
-    #[inline(always)]
-    pub fn reduce<B, G>(self, f: G) -> B where G: Fn(A, A) -> B
+    #[inline(always)] pub fn reduce<B>(self, f: impl Fn(A, A) -> B) -> B
     { f(self.0, self.1) }
 }
 
@@ -131,4 +130,4 @@ scalar_binary_assign_op!(A2, MulAssign, mul_assign);
 scalar_binary_assign_op!(A2, DivAssign, div_assign);
 
 impl From<I2> for F2
-{ #[inline(always)] fn from(a: I2) -> F2 { A2(a.0 as F, a.1 as F) } }
+{ #[inline(always)] fn from(a: I2) -> F2 { a.map(|i| i as F) } }

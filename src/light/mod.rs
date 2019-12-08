@@ -16,7 +16,7 @@ pub trait Lighting {
     fn sample(&self, its: &Its, s: F2) -> (Color, R, F);
     fn pdf(&self, its: &Its, sray: &R) -> F;
 
-    #[inline(always)] fn is_env_light(&self) -> bool { false }
+    fn is_env_light(&self) -> bool { false }
     #[inline(always)] fn eval_env(&self, _ray: &R) -> Color { Color::ZERO }
 }
 
@@ -51,7 +51,7 @@ impl Lighting for Light {
         }
     }
 
-    #[inline(always)] fn is_env_light(&self) -> bool {
+    fn is_env_light(&self) -> bool {
         match self {
             Light::Area(l) => l.is_env_light(),
             Light::Infinite(l) => l.is_env_light(),
@@ -69,10 +69,10 @@ impl Lighting for Light {
 }
 
 impl From<Arc<Shape>> for Light
-{ #[inline(always)] fn from(s: Arc<Shape>) -> Self { Self::Area(s) } }
+{ fn from(s: Arc<Shape>) -> Self { Self::Area(s) } }
 
 impl From<Infinite> for Light
-{ #[inline(always)] fn from(s: Infinite) -> Self { Self::Infinite(s) } }
+{ fn from(s: Infinite) -> Self { Self::Infinite(s) } }
 
 impl From<Point> for Light
-{ #[inline(always)] fn from(s: Point) -> Self { Self::Point(s) } }
+{ fn from(s: Point) -> Self { Self::Point(s) } }

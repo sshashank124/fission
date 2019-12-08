@@ -10,7 +10,7 @@ impl Independent {
     #[inline(always)] fn from_seed(seed: u64) -> Self
     { Self(Prng::seed_from_u64(seed)) }
 
-    #[inline(always)] pub fn new() -> Self { Self::from_seed(0) }
+    pub fn new() -> Self { Self::from_seed(0) }
 }
 
 impl Sample for Independent {

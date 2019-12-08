@@ -15,10 +15,10 @@ impl RotScale3 {
     #[inline(always)] pub fn from_cols(c1: F3, c2: F3, c3: F3) -> Self
     { Self::new(c1, c2, c3).t() }
 
-    #[inline(always)] pub fn scale(s: F3) -> Self
+    pub fn scale(s: F3) -> Self
     { Self::new(F3::X * s, F3::Y * s, F3::Z * s) }
 
-    #[inline(always)] pub fn rotate(axis: F3, theta: F) -> Self {
+    pub fn rotate(axis: F3, theta: F) -> Self {
         let V(A3(x, y, z)) = V(axis).unit();
         let ct = theta.cosd(); let cc = 1. - ct; let st = theta.sind();
         Self::new(A3(ct+x.sq()*cc, x*y*cc-z*st, x*z*cc+y*st),
@@ -34,7 +34,7 @@ impl RotScale3 {
         Self::from_cols(*dx, *dy, *v)
     }
 
-    #[inline(always)] pub fn look_at(dir: V, up: V) -> Self {
+    pub fn look_at(dir: V, up: V) -> Self {
         let dir = dir.unit();
         let right = (up.unit().cross(dir)).unit();
         let up = (dir.cross(right)).unit();

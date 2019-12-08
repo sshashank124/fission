@@ -15,9 +15,8 @@ pub struct Scene {
 }
 
 impl Scene {
-    #[inline(always)] pub fn new(shapes: Vec<Arc<Shape>>,
-                                 lights: Vec<Light>,
-                                 camera: Camera) -> Self {
+    pub fn new(shapes: Vec<Arc<Shape>>, lights: Vec<Light>,
+               camera: Camera) -> Self {
         let shapes = BVH::new(shapes);
         let lights = lights.into_iter().map(Arc::new).collect::<Vec<_>>();
         let env = lights.iter().find(|light| light.is_env_light())

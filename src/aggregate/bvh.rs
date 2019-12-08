@@ -50,10 +50,9 @@ impl<S> BVH<S> where S: Intersectable {
     }
 
     #[inline(always)]
-    pub fn fold<'a, A, P, F>(&'a self, trav_order: A3<bool>,
-                             mut acc: A, pred: P, f: F) -> A
-            where P: Fn(&mut A, &BVHNode) -> bool,
-                  F: Fn(A, usize, &'a S) -> Either<A, A> {
+    pub fn fold<'a, A>(&'a self, trav_order: A3<bool>, mut acc: A,
+                       pred: impl Fn(&mut A, &BVHNode) -> bool,
+                       f: impl Fn(A, usize, &'a S) -> Either<A, A>) -> A {
         let mut idx = 0;
         let mut stack = [0; 32];
         let mut sp = 0;
@@ -106,10 +105,7 @@ struct BuildInfo {
     isect_cost: F,
 }
 
-impl BuildNode {
-    #[inline(always)] fn size(&self) -> I
-    { self.sizel + self.sizer + 1 }
-}
+impl BuildNode { fn size(&self) -> I { self.sizel + self.sizer + 1 } }
 
 fn flatten_tree(tree: &BuildNode, nodes: &mut Vec<BVHNode>, mut offset: I) {
     offset += 1;
@@ -212,7 +208,7 @@ fn build(build_infos: &mut [BuildInfo],
 }
 
 impl<S> Intersectable for BVH<S> where S: Intersectable {
-    #[inline(always)] fn bbox(&self) -> BBox
+    fn bbox(&self) -> BBox
     { self.elements.iter().fold(BBox::ZERO, |bbox, e| bbox | e.bbox()) }
 
     #[inline(always)] fn intersects(&self, ray: R) -> bool {
@@ -231,27 +227,23 @@ impl<S> Intersectable for BVH<S> where S: Intersectable {
             .1.map(Its::with_hit_info)
     }
 
-    #[inline(always)] fn hit_info(&self, _: Its) -> Its { unreachable!() }
+    fn hit_info(&self, _: Its) -> Its { unreachable!() }
+    fn sample_surface(&self, _: F2) -> Its { unreachable!() }
+    fn surface_area(&self) -> F { unreachable!() }
 
-    #[inline(always)] fn sample_surface(&self, _: F2) -> Its
-    { unreachable!() }
-
-    #[inline(always)] fn surface_area(&self) -> F { unreachable!() }
-
-    #[inline(always)] fn intersection_cost(&self) -> F
+    fn intersection_cost(&self) -> F
     { 2. * ((self.nodes.len() as F).log2() * BBox::ZERO.intersection_cost()
             + self.elements[0].intersection_cost()) }
 }
 
 type Acc<'a> = (R, Option<Its<'a>>);
 #[inline(always)]
-pub fn intersect_update<'a, S>((ray, acc): Acc<'a>, s: &'a S) -> Acc<'a>
-    where S: Intersectable
+pub fn intersect_update<'a>((ray, acc): Acc<'a>, s: &'a impl Intersectable)
+    -> Acc<'a>
 { s.intersect(ray).map(|it| (ray.clipped(it.t), Some(it)))
                   .unwrap_or_else(|| (ray, acc)) }
 
-#[inline(always)] pub fn partition<E, FN>(items: &mut [E], pred: FN) -> I
-        where FN: Fn(&E) -> bool {
+pub fn partition<E>(items: &mut [E], pred: impl Fn(&E) -> bool) -> I {
     let mut pivot = 0;
     let mut it = items.iter_mut();
     'main: while let Some(i) = it.next() {

@@ -44,33 +44,30 @@ impl<A> Texture<A> for Tex<A> where A: Copy
 impl<A> From<Checkerboard<A>> for Tex<A> where A: Copy
                                                 + Add<Output=A>
                                                 + Mul<F, Output=A> {
-    #[inline(always)] fn from(t: Checkerboard<A>) -> Self
-    { Self::Checkerboard(t) }
+    fn from(t: Checkerboard<A>) -> Self { Self::Checkerboard(t) }
 }
 
 impl<A> From<Constant<A>> for Tex<A> where A: Copy
                                             + Add<Output=A>
                                             + Mul<F, Output=A>
-{ #[inline(always)] fn from(t: Constant<A>) -> Self { Self::Constant(t) } }
+{ fn from(t: Constant<A>) -> Self { Self::Constant(t) } }
 
 impl<A> From<Gradient<A, LinearScale>> for Tex<A> where A: Copy
                                                           + Add<Output=A>
                                                           + Mul<F, Output=A> {
-    #[inline(always)] fn from(t: Gradient<A, LinearScale>) -> Self
-    { Self::LinearGradient(t) }
+    fn from(t: Gradient<A, LinearScale>) -> Self { Self::LinearGradient(t) }
 }
 
 impl<A> From<Gradient<A, SmoothScale>> for Tex<A> where A: Copy
                                                           + Add<Output=A>
                                                           + Mul<F, Output=A> {
-    #[inline(always)] fn from(t: Gradient<A, SmoothScale>) -> Self
-    { Self::SmoothGradient(t) }
+    fn from(t: Gradient<A, SmoothScale>) -> Self { Self::SmoothGradient(t) }
 }
 
 impl<A> From<Grid<A>> for Tex<A> where A: Copy
                                               + Add<Output=A>
                                               + Mul<F, Output=A>
-{ #[inline(always)] fn from(t: Grid<A>) -> Self { Self::Grid(t) } }
+{ fn from(t: Grid<A>) -> Self { Self::Grid(t) } }
 
 impl<A: Copy + Zero> Zero for Tex<A> where A: Add<Output=A> + Mul<F, Output=A>
 { const ZERO: Self = Self::Constant(Constant::ZERO); }

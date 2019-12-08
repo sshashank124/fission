@@ -53,8 +53,8 @@ fn load_tracer(config: &Yaml) -> Res<Tracer> {
         "normals" => Normals::new().into(),
         "path" => {
             let depth = i2o(&config["depth"])?;
-            let rrt = fo(&config["rr_throughput"]);
-            Path::new(depth, rrt).into()
+            let rr_tp = fo(&config["rr_throughput"]);
+            Path::new(depth, rr_tp).into()
         },
         "silhouette" => Silhouette::new().into(),
         _ => return Err("unknown tracer type".into()),
@@ -295,7 +295,6 @@ fn load_transform((ttype, config): (&Yaml, &Yaml)) -> Res<T> {
     })
 }
 
-#[inline(always)]
 fn f3(vec: &Yaml) -> Res<F3> {
     let v = v(vec, "expected 3d vector")?;
     if v.len() != 3 { return Err("malformed 3d vector".into()); }
@@ -304,7 +303,6 @@ fn f3(vec: &Yaml) -> Res<F3> {
           f(&v[2], "malformed Z value")?))
 }
 
-#[inline(always)]
 fn f2o(vec: &Yaml) -> Res<Option<F2>> {
     match vo(vec) {
         None => Ok(None),
@@ -316,7 +314,6 @@ fn f2o(vec: &Yaml) -> Res<Option<F2>> {
     }
 }
 
-#[inline(always)]
 fn i2o(vec: &Yaml) -> Res<Option<I2>> {
     match vo(vec) {
         None => Ok(None),
@@ -328,24 +325,18 @@ fn i2o(vec: &Yaml) -> Res<Option<I2>> {
     }
 }
 
-#[inline(always)] fn f(f: &Yaml, msg: &str) -> Res<F>
-{ fo(f).ok_or_else(|| msg.into()) }
+fn f(f: &Yaml, msg: &str) -> Res<F> { fo(f).ok_or_else(|| msg.into()) }
+fn i(i: &Yaml, msg: &str) -> Res<I> { io(i).ok_or_else(|| msg.into()) }
 
-#[inline(always)] fn i(i: &Yaml, msg: &str) -> Res<I>
-{ io(i).ok_or_else(|| msg.into()) }
-
-#[inline(always)] fn s<'a>(s: &'a Yaml, msg: &str) -> Res<&'a str>
+fn s<'a>(s: &'a Yaml, msg: &str) -> Res<&'a str>
 { so(s).ok_or_else(|| msg.into()) }
 
-#[inline(always)] fn v<'a>(v: &'a Yaml, msg: &str) -> Res<&'a Vec<Yaml>>
+fn v<'a>(v: &'a Yaml, msg: &str) -> Res<&'a Vec<Yaml>>
 { vo(v).ok_or_else(|| msg.into()) }
 
-#[inline(always)] fn fo(f: &Yaml) -> Option<F>
+fn fo(f: &Yaml) -> Option<F>
 { f.as_f64().map(|f| f as F).or_else(|| io(f).map(|i| i as F)) }
 
-#[inline(always)] fn io(i: &Yaml) -> Option<I> { i.as_i64().map(|i| i as I) }
-
-#[inline(always)] fn so(s: &Yaml) -> Option<&'_ str> { s.as_str() }
-
-#[inline(always)] fn vo<'a>(v: &'a Yaml) -> Option<&'a Vec<Yaml>>
-{ v.as_vec() }
+fn io(i: &Yaml) -> Option<I> { i.as_i64().map(|i| i as I) }
+fn so(s: &Yaml) -> Option<&'_ str> { s.as_str() }
+fn vo<'a>(v: &'a Yaml) -> Option<&'a Vec<Yaml>> { v.as_vec() }

@@ -21,8 +21,6 @@ impl Integrator {
 
         let mut progress = Progress::new("RENDERING", Some(self.sampler.spp));
         for i in 0..self.sampler.spp {
-            progress.update();
-
             img.as_block().blocks().parallelize().for_each(|mut block| {
                 let mut sampler = self.sampler.clone_seeded((i, &block));
 
@@ -34,10 +32,10 @@ impl Integrator {
                     let color = self.tracer.trace(&self.scene,
                                                   &mut sampler,
                                                   ray);
-
                     block.put(pos, color);
                 }
             });
+            progress.update();
         }
         progress.finish();
 

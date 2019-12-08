@@ -17,7 +17,7 @@ struct SampleIndexMemo {
 }
 
 impl Sobol {
-    #[inline(always)] pub fn new() -> Self {
+    pub fn new() -> Self {
         Self {
             dim: 0, m: 0, cache: SampleIndexMemo::default(),
             block_pos: I2::ZERO, pixel_pos: I2::ZERO,
@@ -115,8 +115,7 @@ fn sample_sobol(mut idx: u64, dim: u32) -> u32 {
 }
 
 impl SampleIndexMemo {
-    #[inline(always)] fn default() -> Self
-    { Self { d: 0, i: 0, vdc_inv: &[] } }
+    fn default() -> Self { Self { d: 0, i: 0, vdc_inv: &[] } }
 
     #[inline(always)]
     fn new(mut idx: u64, m: u32) -> Self {
@@ -127,9 +126,7 @@ impl SampleIndexMemo {
         };
         let mut c = 0;
         while idx != 0 {
-            if (idx & 1) == 1 {
-                cache.d ^= VDC_MATRIX[(m - 1) as usize][c];
-            }
+            if (idx & 1) == 1 { cache.d ^= VDC_MATRIX[(m - 1) as usize][c]; }
             idx >>= 1; c += 1;
         }
         cache

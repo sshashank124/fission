@@ -48,15 +48,17 @@ pub struct BarProgress {
     w: usize,
     scale: F,
 }
+const SUB_BOX: [char; 8] = [' ', '▏', '▎', '▍', '▌', '▋', '▊', '▉'];
 
 impl ProgressTracker for BarProgress {
     fn new(n: I) -> Self { Self { i: 0, w: 50, scale: 50. / n as F } }
 
     fn update(&mut self) -> String {
-        let p = F::floori(self.i as F * self.scale);
-        let s = format!("{:<width$}", "#".repeat(p as usize), width = self.w);
+        let pf = self.i as F * self.scale;
         self.i += 1;
-        s
+        let p = F::floor(pf) as usize;
+        let dp = F::floor(pf.fract() * SUB_BOX.len() as F) as usize;
+        format!("{}{:<cw$}", "█".repeat(p), SUB_BOX[dp], cw = self.w - p)
     }
 
     fn finish(self) -> String { " ".repeat(self.w) }
@@ -74,9 +76,8 @@ impl ProgressTracker for CounterProgress {
     { Self { i: 0, n, w: F::log10(n as F).ceili() as usize } }
 
     fn update(&mut self) -> String {
-        let s = format!("{:width$}/{:width$}", self.i, self.n, width = self.w);
         self.i += 1;
-        s
+        format!("{:width$}/{:width$}", self.i - 1, self.n, width = self.w)
     }
 
     fn finish(self) -> String { " ".repeat(self.w) }
@@ -84,7 +85,7 @@ impl ProgressTracker for CounterProgress {
 
 
 impl ProgressTracker for ProgressType {
-    fn new(n: I) -> Self { CounterProgress::new(n).into() }
+    fn new(n: I) -> Self { BarProgress::new(n).into() }
 
     fn update(&mut self) -> String {
         match self {

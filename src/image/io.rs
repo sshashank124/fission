@@ -6,14 +6,15 @@ use openexr::{frame_buffer::{FrameBuffer, PixelStruct},
               PixelType::{self, FLOAT}};
 
 use super::*;
+use crate::loader::*;
 
 
 impl Image {
-    pub fn save_exr(&self, filename: &str) -> Result<(), String> {
+    pub fn save_exr(&self, filename: &str) -> Res<()> {
         let data = self.data.iter().zip(self.weights.iter())
-                            .map(|(value, weight)| {
-                                 if *weight > 0. { *value / *weight }
-                                 else { *value }}).collect::<Vec<_>>();
+            .map(|(&c, &w)| (c / if w > 0. { w } else { 1. })
+                                .map(|f| f as f32))
+            .collect::<Vec<_>>();
 
         let mut f = File::create(filename).map_err(|e| e.to_string())?;
         let mut of = self.prepare_file_for_writing(&mut f)?;
@@ -36,7 +37,7 @@ impl Image {
     }
 }
 
-unsafe impl PixelStruct for Color {
+unsafe impl PixelStruct for A3<f32> {
     fn channel_count() -> usize { 3 }
     fn channel(i: usize) -> (PixelType, usize) { (FLOAT, 4 * i) }
 }

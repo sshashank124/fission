@@ -7,7 +7,7 @@ pub struct Point {
 }
 
 impl Point {
-    #[inline(always)] pub fn new(power: Color, pos: P) -> Self
+    pub fn new(power: Color, pos: P) -> Self
     { Self { intensity: power * F::INV_4PI, pos } }
 }
 

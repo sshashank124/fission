@@ -3,7 +3,7 @@ use super::*;
 
 pub struct Silhouette;
 
-impl Silhouette { #[inline(always)] pub fn new() -> Self { Self { } } }
+impl Silhouette { pub fn new() -> Self { Self } }
 
 impl Trace for Silhouette {
     #[inline(always)]

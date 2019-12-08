@@ -36,7 +36,6 @@ pub enum SamplerType {
 }
 
 impl Sampler {
-    #[inline(always)]
     pub fn new(sampler_type: SamplerType, spp: I) -> Self
     { Self { sampler_type, spp } }
 
@@ -44,9 +43,9 @@ impl Sampler {
     pub fn clone_seeded(&self, seed: BlockSeed) -> Self
     { Self::new(self.sampler_type.clone_for_block(seed), self.spp) }
 
-    #[inline(always)]
-    pub fn split_reuse_2d<A, FN1, FN2>(s: F2, p: F, f1: FN1, f2: FN2) -> A
-        where FN1: Fn(F2) -> A, FN2: Fn(F2) -> A
+    #[inline(always)] pub fn split_reuse_2d<A>(s: F2, p: F,
+                                               f1: impl Fn(F2) -> A,
+                                               f2: impl Fn(F2) -> A) -> A
     { if s[0] < p { f1(A2(s[0] / p, s[1])) }
       else { f2(A2((s[0] - p) / (1. - p), s[1])) } }
 }
@@ -104,7 +103,7 @@ impl Sample for SamplerType {
 }
 
 impl From<Independent> for SamplerType
-{ #[inline(always)] fn from(s: Independent) -> Self { Self::Independent(s) } }
+{ fn from(s: Independent) -> Self { Self::Independent(s) } }
 
 impl From<Sobol> for SamplerType
-{ #[inline(always)] fn from(s: Sobol) -> Self { Self::Sobol(s) } }
+{ fn from(s: Sobol) -> Self { Self::Sobol(s) } }

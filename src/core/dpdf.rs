@@ -9,12 +9,11 @@ pub struct DiscretePDF {
 }
 
 impl DiscretePDF {
-    pub fn new<C, FN>(iter: C, p: FN) -> Self where C: IntoIterator,
-                                                    FN: Fn(C::Item) -> F {
+    pub fn new<C: IntoIterator>(iter: C, p: impl Fn(C::Item) -> F) -> Self {
         let mut cdf = iter::once(0.)
-                            .chain(iter.into_iter().map(p)
-                                       .scan(0., |c, a| { *c += a; Some(*c) }))
-                                       .collect::<Vec<_>>();
+                           .chain(iter.into_iter().map(p)
+                                      .scan(0., |c, a| { *c += a; Some(*c) }))
+                                      .collect::<Vec<_>>();
         let total = *cdf.last().unwrap();
         cdf.iter_mut().for_each(|p| *p /= total);
         Self { cdf, total }

@@ -42,16 +42,16 @@ impl Trace for Tracer {
 }
 
 impl From<AmbientOcclusion> for Tracer
-{ #[inline(always)] fn from(t: AmbientOcclusion) -> Self { Self::AO(t) } }
+{ fn from(t: AmbientOcclusion) -> Self { Self::AO(t) } }
 
 impl From<Direct> for Tracer
-{ #[inline(always)] fn from(t: Direct) -> Self { Self::Direct(t) } }
+{ fn from(t: Direct) -> Self { Self::Direct(t) } }
 
 impl From<Normals> for Tracer
-{ #[inline(always)] fn from(t: Normals) -> Self { Self::Normals(t) } }
+{ fn from(t: Normals) -> Self { Self::Normals(t) } }
 
 impl From<Path> for Tracer
-{ #[inline(always)] fn from(t: Path) -> Self { Self::Path(t) } }
+{ fn from(t: Path) -> Self { Self::Path(t) } }
 
 impl From<Silhouette> for Tracer
-{ #[inline(always)] fn from(t: Silhouette) -> Self { Self::Silhouette(t) } }
+{ fn from(t: Silhouette) -> Self { Self::Silhouette(t) } }

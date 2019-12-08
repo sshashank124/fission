@@ -11,7 +11,6 @@ pub struct Grid<A> {
 }
 
 impl<A> Grid<A> {
-    #[inline(always)]
     pub fn new(val1: A, val2: A,
                scale: Option<F2>, delta: Option<F2>,
                fill: Option<F>, padding: Option<F>) -> Self

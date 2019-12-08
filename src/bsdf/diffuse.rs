@@ -5,10 +5,8 @@ pub struct Diffuse {
     albedo: Tex<Color>,
 }
 
-impl Diffuse {
-    #[inline(always)] pub const fn new(albedo: Tex<Color>) -> Self
-    { Self { albedo } }
-}
+impl Diffuse
+{ pub const fn new(albedo: Tex<Color>) -> Self { Self { albedo } } }
 
 impl Bxdf for Diffuse {
     #[inline(always)] fn eval(&self, wi: V, wo: V, uv: F2) -> Color {

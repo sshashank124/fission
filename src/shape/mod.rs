@@ -40,13 +40,13 @@ pub enum ShapeType {
 }
 
 impl Shape {
-    #[inline(always)] pub const fn new(shape: ShapeType, bsdf: Bsdf,
-                                       emission: Option<Tex<Color>>) -> Self
+    pub const fn new(shape: ShapeType, bsdf: Bsdf,
+                     emission: Option<Tex<Color>>) -> Self
     { Self { shape, bsdf, emission } }
 }
 
 impl Intersectable for Shape {
-    #[inline(always)] fn bbox(&self) -> BBox { self.shape.bbox() }
+    fn bbox(&self) -> BBox { self.shape.bbox() }
 
     #[inline(always)] fn intersects(&self, ray: R) -> bool
     { self.shape.intersects(ray) }
@@ -64,14 +64,13 @@ impl Intersectable for Shape {
 
     #[inline(always)] fn surface_area(&self) -> F { self.shape.surface_area() }
 
-    #[inline(always)] fn intersection_cost(&self) -> F
-    { self.shape.intersection_cost() }
+    fn intersection_cost(&self) -> F { self.shape.intersection_cost() }
 }
 
 pub static SHAPE_PH: Shape = Shape::new(ShapeType::ZERO, Bsdf::ZERO, None);
 
 impl Intersectable for ShapeType {
-    #[inline(always)] fn bbox(&self) -> BBox {
+    fn bbox(&self) -> BBox {
         match self {
             Self::None => unreachable!(),
             Self::Mesh(s) => s.bbox(),
@@ -119,7 +118,7 @@ impl Intersectable for ShapeType {
         }
     }
 
-    #[inline(always)] fn intersection_cost(&self) -> F {
+    fn intersection_cost(&self) -> F {
         match self {
             Self::None => unreachable!(),
             Self::Mesh(s) => s.intersection_cost(),
@@ -128,16 +127,16 @@ impl Intersectable for ShapeType {
     }
 }
 
-impl From<Mesh> for ShapeType
-{ #[inline(always)] fn from(s: Mesh) -> Self { Self::Mesh(s) } }
+impl From<Mesh> for ShapeType { fn from(s: Mesh) -> Self { Self::Mesh(s) } }
 
 impl From<Sphere> for ShapeType
-{ #[inline(always)] fn from(s: Sphere) -> Self { Self::Sphere(s) } }
+{ fn from(s: Sphere) -> Self { Self::Sphere(s) } }
 
 impl Zero for ShapeType { const ZERO: Self = Self::None; }
 
+
 impl Intersectable for Arc<Shape> {
-    #[inline(always)] fn bbox(&self) -> BBox { Shape::borrow(self).bbox() }
+    fn bbox(&self) -> BBox { Shape::borrow(self).bbox() }
 
     #[inline(always)] fn intersects(&self, ray: R) -> bool
     { Shape::borrow(self).intersects(ray) }
@@ -156,6 +155,6 @@ impl Intersectable for Arc<Shape> {
     #[inline(always)] fn surface_area(&self) -> F
     { Shape::borrow(self).surface_area() }
 
-    #[inline(always)] fn intersection_cost(&self) -> F
+    fn intersection_cost(&self) -> F
     { Shape::borrow(self).intersection_cost() }
 }

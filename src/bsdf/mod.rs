@@ -73,15 +73,15 @@ impl Bxdf for Bsdf {
 }
 
 impl From<Dielectric> for Bsdf
-{ #[inline(always)] fn from(f: Dielectric) -> Self { Self::Dielectric(f) } }
+{ fn from(f: Dielectric) -> Self { Self::Dielectric(f) } }
 
 impl From<Diffuse> for Bsdf
-{ #[inline(always)] fn from(f: Diffuse) -> Self { Self::Diffuse(f) } }
+{ fn from(f: Diffuse) -> Self { Self::Diffuse(f) } }
 
 impl From<Microfacet> for Bsdf
-{ #[inline(always)] fn from(f: Microfacet) -> Self { Self::Microfacet(f) } }
+{ fn from(f: Microfacet) -> Self { Self::Microfacet(f) } }
 
 impl From<Mirror> for Bsdf
-{ #[inline(always)] fn from(f: Mirror) -> Self { Self::Mirror(f) } }
+{ fn from(f: Mirror) -> Self { Self::Mirror(f) } }
 
 impl Zero for Bsdf { const ZERO: Self = Self::Diffuse(Diffuse::ZERO); }

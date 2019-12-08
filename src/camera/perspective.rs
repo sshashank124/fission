@@ -8,7 +8,6 @@ pub struct Perspective {
 }
 
 impl Perspective {
-    #[inline(always)]
     pub fn new(fov: F, lr: Option<F>, fd: Option<F>) -> Self {
         let fov_scale = F::tand(0.5 * fov);
         let lens_r = lr.unwrap_or(0.);
@@ -20,8 +19,7 @@ impl Perspective {
 impl CameraModel for Perspective {
     #[inline(always)] fn ray_at(&self, point: F2, sampler: &mut Sampler) -> R {
         let ray = R::unbounded(P::ZERO, V::a2(point * self.fov_scale, 1.));
-        if F::approx_zero(self.lens_r) { ray }
-        else {
+        if F::approx_zero(self.lens_r) { ray } else {
             let focus_point = ray.at(self.fd / ray.d[Z]);
             let o = P::a2(UniformDisk::warp(sampler.next_2d(), ())
                           * self.lens_r, 0.);

@@ -7,7 +7,6 @@ pub struct Checkerboard<A> {
 }
 
 impl<A> Checkerboard<A> {
-    #[inline(always)]
     pub fn new(val1: A, val2: A, s: Option<F2>, d: Option<F2>) -> Self
     { Self {
           vals: A2(val2, val1),

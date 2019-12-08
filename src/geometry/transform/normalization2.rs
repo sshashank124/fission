@@ -10,14 +10,13 @@ pub struct Norm2 {
 impl One for Norm2 { const ONE: Self = Self::new(F2::ONE, F2::ZERO); }
 
 impl Norm2 {
-    #[inline(always)] const fn new(s: F2, t: F2) -> Self { Self { s, t } }
-    #[inline(always)] pub fn translate(t: F2) -> Self { Self::new(F2::ONE, t) }
-    #[inline(always)] pub fn scale(s: F2) -> Self { Self::new(s, F2::ZERO) }
+    const fn new(s: F2, t: F2) -> Self { Self { s, t } }
+    pub fn translate(t: F2) -> Self { Self::new(F2::ONE, t) }
+    pub fn scale(s: F2) -> Self { Self::new(s, F2::ZERO) }
 }
 
 impl Mul for Norm2 { type Output = Self;
-    #[inline(always)]
-    fn mul(self, o: Self) -> Self
+    #[inline(always)] fn mul(self, o: Self) -> Self
     { Self::new(self.s * o.s, self.s * o.t + self.t) }
 }
 

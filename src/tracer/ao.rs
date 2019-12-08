@@ -7,7 +7,7 @@ pub struct AmbientOcclusion {
 }
 
 impl AmbientOcclusion {
-    #[inline(always)] pub fn new(s: Option<I>, rl: Option<F>) -> Self {
+    pub fn new(s: Option<I>, rl: Option<F>) -> Self {
         Self {
             samples: s.unwrap_or(1),
             ray_len: rl.unwrap_or(F::POS_INF),

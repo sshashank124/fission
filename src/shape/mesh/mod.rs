@@ -20,7 +20,7 @@ impl Mesh {
 }
 
 impl Intersectable for Mesh {
-    #[inline(always)] fn bbox(&self) -> BBox { self.tris.bbox() }
+    fn bbox(&self) -> BBox { self.tris.bbox() }
 
     #[inline(always)] fn intersects(&self, ray: R) -> bool
     { self.tris.intersects(ray) }
@@ -41,13 +41,12 @@ impl Intersectable for Mesh {
 
     #[inline(always)] fn surface_area(&self) -> F { self.dpdf.total() }
 
-    #[inline(always)] fn intersection_cost(&self) -> F
-    { self.tris.intersection_cost() }
+    fn intersection_cost(&self) -> F { self.tris.intersection_cost() }
 }
 
 type Acc<'a> = (R, Option<Its<'a>>);
-#[inline(always)] pub fn intersect_update<'a, S>((ray, acc): Acc<'a>,
-                                                 (i, s): (usize, &'a S))
-    -> Acc<'a> where S: Intersectable
+#[inline(always)]
+pub fn intersect_update<'a>((ray, acc): Acc<'a>,
+                            (i, s): (usize, &'a impl Intersectable)) -> Acc<'a>
 { s.intersect(ray).map(|it| (ray.clipped(it.t), Some(it.for_idx(i))))
                   .unwrap_or_else(|| (ray, acc)) }

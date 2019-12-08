@@ -17,32 +17,29 @@ impl<A> A3<A> {
     #[inline(always)] pub fn rep(a: A) -> A3<A> where A: Copy
     { A3(a, a, a) }
 
-    #[inline(always)] pub fn a2(a2: A2<A>, a: A) -> A3<A> where A: Copy
-    { A3(a2[0], a2[1], a) }
+    #[inline(always)] pub fn a2(a2: A2<A>, a: A) -> A3<A>
+    { let A2(x, y) = a2; A3(x, y, a) }
 
-    #[inline(always)] pub fn map<B, G>(self, f: G) -> A3<B> where G: Fn(A) -> B
+    #[inline(always)] pub fn map<B>(self, f: impl Fn(A) -> B) -> A3<B>
     { A3(f(self.0), f(self.1), f(self.2)) }
 
     #[inline(always)]
-    pub fn zip<B, C, G>(self, b: A3<B>, f: G) -> A3<C> where G: Fn(A, B) -> C
+    pub fn zip<B, C>(self, b: A3<B>, f: impl Fn(A, B) -> C) -> A3<C>
     { A3(f(self.0, b.0), f(self.1, b.1), f(self.2, b.2)) }
 
-    #[inline(always)]
-    pub fn zip3<B, C, D, G>(self, b: A3<B>, c: A3<C>, f: G) -> A3<D>
-    where G: Fn(A, B, C) -> D
+    #[inline(always)] pub fn zip3<B, C, D>(self, b: A3<B>, c: A3<C>,
+                                           f: impl Fn(A, B, C) -> D) -> A3<D>
     { A3(f(self.0, b.0, c.0), f(self.1, b.1, c.1), f(self.2, b.2, c.2)) }
 
-    #[inline(always)] pub fn reduce<G>(self, f: G) -> A where G: Fn(A, A) -> A
+    #[inline(always)] pub fn reduce(self, f: impl Fn(A, A) -> A) -> A
     { f(f(self.0, self.1), self.2) }
 
-    #[inline(always)]
-    pub fn fold<B, G>(self, acc: B, f: G) -> B where G: Fn(B, A) -> B
+    #[inline(always)] pub fn fold<B>(self, acc: B, f: impl Fn(B, A) -> B) -> B
     { f(f(f(acc, self.0), self.1), self.2) }
 }
 
 impl<A> A3<A3<A>> {
-    #[inline(always)]
-    pub fn unzip<B, G>(self, f: G) -> A3<B> where G: Fn(A, A, A) -> B
+    #[inline(always)] pub fn unzip<B>(self, f: impl Fn(A, A, A) -> B) -> A3<B>
     { self.0.zip3(self.1, self.2, f) }
 }
 
@@ -105,13 +102,13 @@ impl<A> A3<A> {
 
 macro_rules! cw_binary_assign_op {
     ($trait:ident, $op:ident) => {
-        impl<A, B> $trait<A3<B>> for A3<A> where A: $trait<B>,
-                                                 B: Copy {
+        impl<A, B> $trait<A3<B>> for A3<A> where A: $trait<B> {
             #[inline(always)]
             fn $op(&mut self, b: A3<B>) {
-                $trait::$op(&mut self[X], b[X]);
-                $trait::$op(&mut self[Y], b[Y]);
-                $trait::$op(&mut self[Z], b[Z]);
+                let A3(bx, by, bz) = b;
+                $trait::$op(&mut self[X], bx);
+                $trait::$op(&mut self[Y], by);
+                $trait::$op(&mut self[Z], bz);
             }
         }
     }
