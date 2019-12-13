@@ -11,13 +11,9 @@ pub use independent::Independent;
 pub use sobol::Sobol;
 
 
-pub type BlockSeed<'a> = (I, &'a Block);  // (sample iteration, pixel)
-
-pub trait RngFloat<FT> { fn next_ft(&mut self) -> FT; }
-
 pub trait Sample {
-    fn clone_for_block(&self, seed: BlockSeed) -> Self;
-    fn prepare_for_pixel(&mut self, pos: I2);
+    fn for_block(&self, i: I, block: &Block) -> Self;
+    fn for_pixel(&self, pos: I2) -> Self;
 
     fn next_1d(&mut self) -> F;
     fn next_2d(&mut self) -> F2;
@@ -26,7 +22,7 @@ pub trait Sample {
 }
 
 pub struct Sampler {
-    sampler_type: SamplerType,
+    sampler: SamplerType,
     pub spp: I,
 }
 
@@ -36,12 +32,14 @@ pub enum SamplerType {
 }
 
 impl Sampler {
-    pub fn new(sampler_type: SamplerType, spp: I) -> Self
-    { Self { sampler_type, spp } }
+    pub fn new(sampler: SamplerType, spp: I) -> Self
+    { Self { sampler, spp } }
 
-    #[inline(always)]
-    pub fn clone_seeded(&self, seed: BlockSeed) -> Self
-    { Self::new(self.sampler_type.clone_for_block(seed), self.spp) }
+    #[inline(always)] pub fn for_block(&self, i: I, block: &Block) -> Self
+    { Self::new(self.sampler.for_block(i, block), self.spp) }
+
+    #[inline(always)] pub fn for_pixel(&self, pos: I2) -> Self
+    { Self::new(self.sampler.for_pixel(pos), self.spp) }
 
     #[inline(always)] pub fn split_reuse_2d<A>(s: F2, p: F,
                                                f1: impl Fn(F2) -> A,
@@ -51,50 +49,45 @@ impl Sampler {
 }
 
 impl Deref for Sampler { type Target = SamplerType;
-    #[inline(always)] fn deref(&self) -> &Self::Target { &self.sampler_type }
+    #[inline(always)] fn deref(&self) -> &Self::Target { &self.sampler }
 }
 
 impl DerefMut for Sampler {
     #[inline(always)] fn deref_mut(&mut self) -> &mut Self::Target
-    { &mut self.sampler_type }
+    { &mut self.sampler }
 }
 
 
 impl Sample for SamplerType {
-    #[inline(always)]
-    fn clone_for_block(&self, seed: BlockSeed) -> Self {
+    #[inline(always)] fn for_block(&self, i: I, block: &Block) -> Self {
         match self {
-            Self::Independent(s) => s.clone_for_block(seed).into(),
-            Self::Sobol(s) => s.clone_for_block(seed).into(),
+            Self::Independent(s) => s.for_block(i, block).into(),
+            Self::Sobol(s) => s.for_block(i, block).into(),
         }
     }
 
-    #[inline(always)]
-    fn prepare_for_pixel(&mut self, pos: I2) {
+    #[inline(always)] fn for_pixel(&self, pos: I2) -> Self {
         match self {
-            Self::Independent(s) => s.prepare_for_pixel(pos),
-            Self::Sobol(s) => s.prepare_for_pixel(pos),
+            Self::Independent(s) => s.for_pixel(pos).into(),
+            Self::Sobol(s) => s.for_pixel(pos).into(),
         }
     }
 
-    #[inline(always)]
-    fn next_1d(&mut self) -> F {
+    #[inline(always)] fn next_1d(&mut self) -> F {
         match self {
             Self::Independent(s) => s.next_1d(),
             Self::Sobol(s) => s.next_1d(),
         }
     }
 
-    #[inline(always)]
-    fn next_2d(&mut self) -> F2 {
+    #[inline(always)] fn next_2d(&mut self) -> F2 {
         match self {
             Self::Independent(s) => s.next_2d(),
             Self::Sobol(s) => s.next_2d(),
         }
     }
 
-    #[inline(always)]
-    fn rng(&mut self) -> F {
+    #[inline(always)] fn rng(&mut self) -> F {
         match self {
             Self::Independent(s) => s.rng(),
             Self::Sobol(s) => s.rng(),

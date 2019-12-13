@@ -20,7 +20,7 @@ impl Sphere {
     }
 
     #[inline(always)] fn cartesian2uv(x: F3) -> F2 {
-        let uv = cartesian2spherical(x);
+        let uv = Frame::cart2spher(x);
         A2(uv[X] * F::INV_PI, 0.5 + uv[Y] * F::INV_2PI)
     }
 }
@@ -44,7 +44,7 @@ impl Intersectable for Sphere {
 
     #[inline(always)] fn sample_surface(&self, s: F2) -> Its {
         let d = V(UniformSphere::warp(s, ()));
-        Its::new(self.c + d * self.r, N::v(d), Sphere::cartesian2uv(*d), 0.)
+        Its::local(self.c + d * self.r, N::v(d), Sphere::cartesian2uv(*d))
     }
 
     #[inline(always)] fn surface_area(&self) -> F { F::FOUR_PI * self.r.sq() }

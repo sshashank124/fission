@@ -1,4 +1,8 @@
-Participating Media
+Homogeneous Participating Media + Path Tracer
+
+Heterogeneous Participating Media + Path Tracer
+
+account for eta in russian roulette
 
 Textured BSDFs (eventually abstracted out)
 

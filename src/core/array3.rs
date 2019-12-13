@@ -95,9 +95,15 @@ impl<A> A3<A> where A: Copy + Zero + One {
 impl<A> A3<A> {
     #[inline(always)]
     pub fn dot<B, C>(self, b: A3<B>) -> C where A: Mul<B, Output=C>,
-                                                C: Add<C, Output=C> {
-        self.zip(b, Mul::mul).reduce(Add::add)
-    }
+                                                C: Add<C, Output=C>
+    { self.zip(b, Mul::mul).reduce(Add::add) }
+
+    #[inline(always)] pub fn sum(self) -> A where A: Add<A, Output=A>
+    { self.reduce(Add::add) }
+
+    #[inline(always)] pub fn mean(self) -> A where A: Add<A, Output=A>,
+                                                   A: Div<F, Output=A>
+    { self.sum() / 3. }
 }
 
 macro_rules! cw_binary_assign_op {

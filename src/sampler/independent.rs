@@ -4,6 +4,7 @@ use super::*;
 use super::rng::*;
 
 
+#[derive(Clone)]
 pub struct Independent(Prng);
 
 impl Independent {
@@ -15,19 +16,15 @@ impl Independent {
 
 impl Sample for Independent {
     #[inline(always)]
-    fn clone_for_block(&self, (i, Block { pos: A2(x, y), .. }): BlockSeed)
-            -> Self {
-        Self::from_seed(((i as u64) << 42) +
-                        ((*y as u64) << 21) +
-                        (*x as u64))
-    }
+    fn for_block(&self, i: I, Block { pos: A2(x, y), .. }: &Block) -> Self
+    { Self::from_seed(((i as u64) << 42) + ((*y as u64) << 21) + (*x as u64)) }
 
-    #[inline(always)] fn prepare_for_pixel(&mut self, _: I2) { }
+    #[inline(always)] fn for_pixel(&self, _: I2) -> Self { self.clone() }
 
-    #[inline(always)] fn next_1d(&mut self) -> F { self.next_ft() }
+    #[inline(always)] fn next_1d(&mut self) -> F { self.next_f() }
 
     #[inline(always)] fn next_2d(&mut self) -> F2
-    { A2(self.next_ft(), self.next_ft()) }
+    { A2(self.next_1d(), self.next_1d()) }
 
     #[inline(always)] fn rng(&mut self) -> F { self.next_1d() }
 }

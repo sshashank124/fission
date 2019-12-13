@@ -79,6 +79,7 @@ pub trait Epsilon: Copy { const EPSILON: Self; }
 pub trait Float: Num + Half + Two + Inv + Epsilon {
     const NEG_INF: Self;
     const POS_INF: Self;
+    const MAX_VAL: Self;
 
     const PI: Self;
     const HALF_PI: Self;
@@ -126,6 +127,7 @@ impl Epsilon for f64 { const EPSILON: Self = 1e-6; }
 impl Float for F {
     const NEG_INF: Self = fmod::NEG_INFINITY;
     const POS_INF: Self = fmod::INFINITY;
+    const MAX_VAL: Self = fmod::MAX;
 
     const PI: Self = fmod::consts::PI;
     const HALF_PI: Self = fmod::consts::FRAC_PI_2;

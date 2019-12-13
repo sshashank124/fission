@@ -2,18 +2,18 @@ pub use rand_core::SeedableRng;
 use rand_core::RngCore;
 use rand_pcg::Pcg64;
 
-use super::*;
-
 
 pub type Prng = Pcg64;
 
+pub trait RngFloat<FT> { fn next_f(&mut self) -> FT; }
+
 impl RngFloat<f32> for Prng {
-    #[inline(always)] fn next_ft(&mut self) -> f32
+    #[inline(always)] fn next_f(&mut self) -> f32
     { u32_to_f32(self.next_u32()) }
 }
 
 impl RngFloat<f64> for Prng {
-    #[inline(always)] fn next_ft(&mut self) -> f64
+    #[inline(always)] fn next_f(&mut self) -> f64
     { u64_to_f64(self.next_u64()) }
 }
 

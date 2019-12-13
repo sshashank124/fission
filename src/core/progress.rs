@@ -7,10 +7,10 @@ use super::*;
 pub trait ProgressTracker {
     fn new(n: I) -> Self;
     fn update(&mut self) -> String;
-    fn finish(self) -> String;
+    fn finish(&mut self) -> String;
 }
 
-
+#[must_use]
 pub struct Progress<'a> {
     msg: &'a str,
     t: Instant,
@@ -29,8 +29,10 @@ impl<'a> Progress<'a> {
         print!("\r{} ... [{}]", self.msg, self.p.update());
         stdout().flush().unwrap();
     }
+}
 
-    pub fn finish(self) {
+impl<'a> Drop for Progress<'a> {
+    fn drop(&mut self) {
         println!("\r{} ... DONE ({:.2?}) {}", self.msg, self.t.elapsed(),
                  self.p.finish());
     }
@@ -61,7 +63,7 @@ impl ProgressTracker for BarProgress {
         format!("{}{:<cw$}", "█".repeat(p), SUB_BOX[dp], cw = self.w - p)
     }
 
-    fn finish(self) -> String { " ".repeat(self.w) }
+    fn finish(&mut self) -> String { " ".repeat(self.w) }
 }
 
 
@@ -80,7 +82,7 @@ impl ProgressTracker for CounterProgress {
         format!("{:width$}/{:width$}", self.i - 1, self.n, width = self.w)
     }
 
-    fn finish(self) -> String { " ".repeat(self.w) }
+    fn finish(&mut self) -> String { " ".repeat(self.w) }
 }
 
 
@@ -94,7 +96,7 @@ impl ProgressTracker for ProgressType {
         }
     }
 
-    fn finish(self) -> String {
+    fn finish(&mut self) -> String {
         match self {
             Self::Bar(p) => p.finish(),
             Self::Counter(p) => p.finish(),

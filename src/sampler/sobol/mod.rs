@@ -10,6 +10,7 @@ pub struct Sobol {
     rng: Independent,
 }
 
+#[derive(Clone)]
 struct SampleIndexMemo {
     d: u64,
     i: u64,
@@ -55,28 +56,27 @@ const VDC_INV_MATRIX: [[u64; 52]; 26] = include!("vdc_inv.data");
 
 
 impl Sample for Sobol {
-    #[inline(always)]
-    fn clone_for_block(&self, block_seed: BlockSeed) -> Self {
-        let (i, Block { pos, dims, .. }) = block_seed;
+    #[inline(always)] fn for_block(&self, i: I, block: &Block) -> Self {
+        let Block { pos, dims, .. } = block;
         let res = ceil_pow2_u32(Num::max(dims[X], dims[Y]) as u32);
         let m = log2_ceil_u32(res);
         let cache = SampleIndexMemo::new(i as u64, m);
         Self {
             dim: 0, m, cache,
             block_pos: *pos, pixel_pos: I2::ZERO,
-            rng: self.rng.clone_for_block(block_seed),
+            rng: self.rng.for_block(i, block),
         }
     }
 
-    #[inline(always)]
-    fn prepare_for_pixel(&mut self, pos: I2) {
-        self.dim = 0;
-        self.pixel_pos = pos;
-        self.rng.prepare_for_pixel(pos);
+    #[inline(always)] fn for_pixel(&self, pos: I2) -> Self {
+        Self {
+            dim: 0, m: self.m, cache: self.cache.clone(),
+            block_pos: self.block_pos, pixel_pos: pos,
+            rng: self.rng.for_pixel(pos),
+        }
     }
 
-    #[inline(always)]
-    fn next_1d(&mut self) -> F {
+    #[inline(always)] fn next_1d(&mut self) -> F {
         if self.dim >= SOBOL_NDIM {
             // eprintln!("Sobol: dim overflow at idx: {}", self.cache.i);
             return self.rng()
@@ -93,8 +93,8 @@ impl Sample for Sobol {
         f
     }
 
-    #[inline(always)]
-    fn next_2d(&mut self) -> F2 { A2(self.next_1d(), self.next_1d()) }
+    #[inline(always)] fn next_2d(&mut self) -> F2
+    { A2(self.next_1d(), self.next_1d()) }
 
     #[inline(always)] fn rng(&mut self) -> F { self.rng.rng() }
 }
