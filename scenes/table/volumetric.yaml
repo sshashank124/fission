@@ -1,7 +1,7 @@
 medium: &medium
   type: homogeneous
-  sa: [0.4, 0.4, 0]
-  ss: [0, 0, 0]
+  sa: [0.2, 0.2, 0]
+  ss: [0.2, 0.2, 0.2]
   g: .2
 
 integrator:
