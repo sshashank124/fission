@@ -13,9 +13,10 @@ impl Infinite
 impl Lighting for Infinite {
     #[inline(always)] fn eval(&self, _: F2) -> Color { Color::ZERO }
 
-    #[inline(always)] fn sample(&self, its: &Its, s: F2) -> (Color, R, F) {
+    #[inline(always)]
+    fn sample<'a>(&'a self, its: &'a Its, s: F2) -> (Color, R<'a>, F) {
         let theta_phi = s * A2(F::PI, F::TWO_PI);
-        let sray = R::r(its.p, V(spherical2cartesian(theta_phi)), F::POS_INF);
+        let sray = its.ray(V(Frame::spher2cart(theta_phi)));
         (self.intensity.eval(s), sray, self.pdf(its, &sray))
     }
 
@@ -25,7 +26,7 @@ impl Lighting for Infinite {
     fn is_env_light(&self) -> bool { true }
 
     #[inline(always)] fn eval_env(&self, ray: &R) -> Color {
-        let uv = cartesian2spherical(A3(ray.d[0], ray.d[2], ray.d[1]));
+        let uv = Frame::cart2spher(A3(ray.d[0], ray.d[2], ray.d[1]));
         self.intensity.eval(uv * A2(F::INV_PI, F::INV_2PI))
     }
 }

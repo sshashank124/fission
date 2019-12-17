@@ -4,6 +4,4 @@ Heterogeneous Participating Media + Path Tracer
 
 account for eta in russian roulette
 
-Textured BSDFs (eventually abstracted out)
-
 Light sampling distribution (by power?)

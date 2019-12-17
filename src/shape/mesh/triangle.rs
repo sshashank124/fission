@@ -100,7 +100,7 @@ impl Intersectable for Triangle {
 
     #[inline(always)] fn sample_surface(&self, s: F2) -> Its {
         let (p, n, uv) = self.eval(UniformTriangle::warp(s, ()));
-        Its::new(p, n, uv, 0.)
+        Its::local(p, n, uv)
     }
 
     #[inline(always)] fn surface_area(&self) -> F { 0.5 * self.n().norm() }

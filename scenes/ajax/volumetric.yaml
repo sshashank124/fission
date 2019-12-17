@@ -1,6 +1,13 @@
+medium: &medium
+  type: homogeneous
+  sa: [0, 0, 0]
+  ss: [.05, .05, .05]
+  g: 0.4
+
 integrator:
   tracer:
-    type: path
+    type: vol_path
+    depth: [500, 500]
 
   sampler:
     type: sobol
@@ -9,14 +16,14 @@ integrator:
 scene:
   camera:
     type: perspective
-    fov: 30
+    fov: 30.
     resolution: [768, 768]
-
+    medium: *medium
     transforms:
       - look_at:
           origin: [-65.6055, 47.5762, 24.3583]
           target: [-64.8161, 47.2211, 23.8576]
-          up: [0.299858, 0.934836, -0.190177]
+          up: [.299858, .934836, -.190177]
 
   elements:
     - type: mesh
@@ -25,15 +32,23 @@ scene:
         type: microfacet
         kd: [.3, .3, .5]
         alpha: .005
+      media:
+        outside: *medium
+        inside: *medium
 
     - type: mesh
       obj: obj/plane.obj
       bsdf:
         type: dummy
       emission:
-        type: checkerboard
-        color_1: [2, 2, 2]
+        type: grid
+        color_1: [10, 10, 10]
         color_2: [0, 0, 0]
         scale: [.025, .025]
+        fill: .8
+        padding: .05
       transforms:
         - scale: [100, 1, 100]
+      media:
+        outside: *medium
+        inside: *medium

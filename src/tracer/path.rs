@@ -16,21 +16,28 @@ impl Path {
 
 impl Trace for Path {
     #[inline(always)]
-    fn trace(&self, scene: &Scene, sampler: &mut Sampler, ray: R) -> Color {
+    fn trace(&self, scene: &Scene, mut sampler: Sampler, ray: R) -> Color {
         let init = (Color::ZERO, Color::ONE, ray, scene.intersect(ray), true);
         if init.3.is_none() { return scene.lenv(&ray) }
 
         match (0..self.depth[1]).try_fold(init,
         |(mut li, mut tp, ray, its, spec), depth| its.map(|its| {
-            let (ld, res) = Direct::li(scene, sampler, &its, &ray);
+            let (ld, res) = Direct::li(scene, &mut sampler, &its, &ray, false);
             li += tp * (ld + if spec { its.le(ray) } else { Color::ZERO });
-            res.map(|(lb, ray, its, spec)| {
-                tp *= lb / if depth <= self.depth[0] { 1. } else {
-                    let q = F::min(tp.reduce(F::max), self.rr_tp);
-                    if sampler.rng() < q { q } else { return Either::L(li) }
-                };
-                Either::R((li, tp, ray, Some(its), spec))
-            }).unwrap_or_else(|| Either::L(li))
+
+            let (ray, its, spec) = match res {
+                None => return Either::L(li),
+                Some((lb, ray, its, spec))
+                    => { tp *= lb; (ray, Some(its), spec) },
+            };
+
+            if depth > self.depth[0] {
+                let q = F::min(tp.reduce(F::max), self.rr_tp);
+                if sampler.rng() < q { return Either::L(li) }
+                tp /= q;
+            };
+
+            Either::R((li, tp, ray, its, spec))
         }).unwrap_or_else(|| Either::L(li))) {
             Either::L(li) | Either::R((li, _, _, _, _)) => li,
         }

@@ -3,10 +3,12 @@ mod direct;
 mod normals;
 mod path;
 mod silhouette;
+mod vol_path;
 
 use crate::bsdf::*;
 use crate::geometry::*;
 use crate::light::*;
+use crate::medium::*;
 use crate::sampler::*;
 use crate::scene::Scene;
 use crate::shape::*;
@@ -16,10 +18,11 @@ pub use direct::Direct;
 pub use normals::Normals;
 pub use path::Path;
 pub use silhouette::Silhouette;
+pub use vol_path::VolPath;
 
 
 pub trait Trace
-{ fn trace(&self, scene: &Scene, sampler: &mut Sampler, ray: R) -> Color; }
+{ fn trace(&self, scene: &Scene, sampler: Sampler, ray: R) -> Color; }
 
 pub enum Tracer {
     AO(AmbientOcclusion),
@@ -27,16 +30,19 @@ pub enum Tracer {
     Normals(Normals),
     Path(Path),
     Silhouette(Silhouette),
+    VolPath(VolPath),
 }
 
 impl Trace for Tracer {
-    fn trace(&self, scene: &Scene, sampler: &mut Sampler, ray: R) -> Color {
+    #[inline(always)]
+    fn trace(&self, scene: &Scene, sampler: Sampler, ray: R) -> Color {
         match self {
             Self::AO(t) => t.trace(scene, sampler, ray),
             Self::Direct(t) => t.trace(scene, sampler, ray),
             Self::Normals(t) => t.trace(scene, sampler, ray),
             Self::Path(t) => t.trace(scene, sampler, ray),
             Self::Silhouette(t) => t.trace(scene, sampler, ray),
+            Self::VolPath(t) => t.trace(scene, sampler, ray),
         }
     }
 }
@@ -55,3 +61,6 @@ impl From<Path> for Tracer
 
 impl From<Silhouette> for Tracer
 { fn from(t: Silhouette) -> Self { Self::Silhouette(t) } }
+
+impl From<VolPath> for Tracer
+{ fn from(t: VolPath) -> Self { Self::VolPath(t) } }

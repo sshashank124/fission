@@ -1,5 +1,6 @@
 use std::fs::File;
 use std::io::Read;
+use std::sync::Arc;
 
 use yaml_rust::{Yaml, YamlLoader};
 
@@ -10,6 +11,7 @@ use crate::geometry::*;
 use crate::integrator::*;
 use crate::light::*;
 use crate::loader::obj;
+use crate::medium::*;
 use crate::sampler::*;
 use crate::scene::*;
 use crate::shape::*;
@@ -57,6 +59,11 @@ fn load_tracer(config: &Yaml) -> Res<Tracer> {
             Path::new(depth, rr_tp).into()
         },
         "silhouette" => Silhouette::new().into(),
+        "vol_path" => {
+            let depth = i2o(&config["depth"])?;
+            let rr_tp = fo(&config["rr_throughput"]);
+            VolPath::new(depth, rr_tp).into()
+        },
         _ => return Err("unknown tracer type".into()),
     })
 }
@@ -112,22 +119,24 @@ fn load_element(config: &Yaml) -> Res<Vec<Element>> {
     let mut items = vec![];
     match s(&config["type"], "missing element type")? {
         "mesh" => {
+            let media = load_medium_interface(&config["media"])?;
             let filename = s(&config["obj"], "malformed filename")?;
             let shape =
                 Arc::new(Shape::new(obj::load_from_file(filename,
                                                         to_world)?.into(),
-                                    bsdf, emission));
+                                    bsdf, media, emission));
             if emitter {
                 items.push(Element::Light(shape.clone().into()));
             }
             items.push(Element::Shape(shape));
         },
         "sphere" => {
+            let media = load_medium_interface(&config["media"])?;
             let c = P(f3(&config["center"])
                         .with_msg("failed to parse sphere center")?);
             let r = f(&config["radius"], "failed to parse sphere radius")?;
-            let shape = Arc::new(Shape::new(
-                                 Sphere::new(c, r).into(), bsdf, emission));
+            let shape = Arc::new(Shape::new(Sphere::new(c, r).into(), bsdf,
+                                            media, emission));
             if emitter {
                 items.push(Element::Light(shape.clone().into()));
             }
@@ -143,7 +152,8 @@ fn load_element(config: &Yaml) -> Res<Vec<Element>> {
                             .with_msg("failed to parse light power")?);
             let pos = P(f3(&config["position"])
                           .with_msg("failed to parse light position")?);
-            items.push(Element::Light(Point::new(power, pos).into()));
+            let medium = load_medium(&config["medium"])?;
+            items.push(Element::Light(Point::new(power, pos, medium).into()));
         },
         _ => return Err("unknown element type".into()),
     };
@@ -151,13 +161,37 @@ fn load_element(config: &Yaml) -> Res<Vec<Element>> {
     Ok(items)
 }
 
+fn load_medium_interface(config: &Yaml) -> Res<MediumInterface> {
+    if config.is_badvalue() { return Ok(MediumInterface::ZERO) }
+    let outside = load_medium(&config["outside"])
+                      .with_msg("failed to load outside medium")?;
+    let inside = load_medium(&config["inside"])
+                     .with_msg("failed to load inside medium")?;
+    Ok(MediumInterface::new(outside, inside))
+}
+
+fn load_medium(config: &Yaml) -> Res<Medium> {
+    if config.is_badvalue() { return Ok(Medium::ZERO) }
+
+    Ok(match s(&config["type"], "missing medium type")? {
+        "homogeneous" => {
+            let sa = color(&config["sa"])?;
+            let ss = color(&config["ss"])?;
+            let g = f(&config["g"], "failed to load g")?;
+            Homogeneous::new(sa, ss, g).into()
+        },
+        "vacuum" => Medium::ZERO,
+        _ => return Err("unknown medium type".into()),
+    })
+}
+
 fn load_emission(config: &Yaml) -> Res<Option<Tex<Color>>> {
     if config.is_badvalue() { Ok(None) }
     else { Ok(Some(load_texture(config)?)) }
 }
 
-fn load_bsdf(config: &Yaml) -> Res<Bsdf> {
-    if config.is_badvalue() { return Ok(Bsdf::ZERO); }
+fn load_bsdf(config: &Yaml) -> Res<BSDF> {
+    if config.is_badvalue() { return Ok(BSDF::ZERO); }
 
     Ok(match s(&config["type"], "missing bsdf type")? {
         "dielectric" => {
@@ -169,9 +203,10 @@ fn load_bsdf(config: &Yaml) -> Res<Bsdf> {
                              .with_msg("failed to parse texture")?;
             Diffuse::new(albedo).into()
         },
+        "dummy" => Diffuse::ZERO.into(),
         "microfacet" => {
             let kd = Color(f3(&config["kd"])
-                        .with_msg("failed to parse color")?);
+                           .with_msg("failed to parse color")?);
             let alpha = fo(&config["alpha"]);
             let ior = f2o(&config["ior"]).with_msg("failed to parse ior")?;
             Microfacet::new(kd, alpha, ior).into()
@@ -234,13 +269,15 @@ fn load_camera(config: &Yaml) -> Res<Camera> {
                  i(&res[1], "malformed height")?);
 
     let to_world = load_transforms(&config["transforms"])?;
+    
+    let medium = load_medium(&config["medium"])?;
 
     let model: CameraType = match s(&config["type"], "missing camera type")? {
         "perspective" => load_perspective_camera(config)?.into(),
         _ => return Err("unknown camera type".into()),
     };
 
-    Ok(Camera::new(model, res, to_world))
+    Ok(Camera::new(model, res, to_world, medium))
 }
 
 fn load_perspective_camera(config: &Yaml) -> Res<Perspective> {
@@ -294,6 +331,9 @@ fn load_transform((ttype, config): (&Yaml, &Yaml)) -> Res<T> {
         _ => return Err("unknown transform type".into()),
     })
 }
+
+fn color(config: &Yaml) -> Res<Color>
+{ Ok(Color(f3(config).with_msg("failed to parse color")?)) }
 
 fn f3(vec: &Yaml) -> Res<F3> {
     let v = v(vec, "expected 3d vector")?;

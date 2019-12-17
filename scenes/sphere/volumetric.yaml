@@ -1,0 +1,63 @@
+medium: &medium
+  type: homogeneous
+  sa: [0, 0, 0]
+  ss: [.01, .01, .01]
+  g: 0
+
+integrator:
+  tracer:
+    type: vol_path
+    depth: [200, 250]
+
+  sampler:
+    type: sobol
+    samples_per_pixel: 32
+
+scene:
+  camera:
+    type: perspective
+    fov: 40
+    resolution: [720, 720]
+    medium: *medium
+    transforms:
+      - look_at:
+          origin: [10, 10, 10]
+          target: [0, 0, 3]
+          up: [0, 0, 1]
+
+  elements:
+    - type: sphere
+      center: [0, 0, 3]
+      radius: 3
+      bsdf:
+        type: diffuse
+        albedo:
+          type: checkerboard
+          color_1: [.8, .8, .8]
+          color_2: [.2, .2, .2]
+          scale: [.1, .1]
+      media:
+        outside: *medium
+        inside: *medium
+
+    - type: mesh
+      obj: obj/plane.obj
+      bsdf:
+        type: diffuse
+        albedo:
+          type: constant
+          color: [.5, .5, .5]
+      transforms:
+        - scale: [10, 1, 10]
+        - rotate:
+            axis: [1, 0, 0]
+            angle: 90
+        - translate: [0, 0, -1]
+      media:
+        outside: *medium
+        inside: *medium
+
+    - type: pointlight
+      power: [4000, 4000, 4000]
+      position: [3, 7, 10]
+      medium: *medium

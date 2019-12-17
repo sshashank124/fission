@@ -3,7 +3,7 @@ mod io;
 use crate::core::*;
 
 
-const BLOCK_SIZE: I2 = A2(8, 8);
+const BLOCK_SIZE: I2 = A2(16, 16);
 
 pub struct Image {
     dims: I2,

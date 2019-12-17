@@ -220,7 +220,8 @@ impl<S> Intersectable for BVH<S> where S: Intersectable {
                   })
     }
 
-    #[inline(always)] fn intersect(&self, ray: R) -> Option<Its> {
+    #[inline(always)]
+    fn intersect<'a>(&'a self, ray: R<'a>) -> Option<Its<'a>> {
         self.fold(ray.d.map(Num::is_pos), (ray, None),
                   |(r, _), node| node.bbox.intersects(*r),
                   |acc, _, s| Either::R(intersect_update(acc, s)))
@@ -236,10 +237,10 @@ impl<S> Intersectable for BVH<S> where S: Intersectable {
             + self.elements[0].intersection_cost()) }
 }
 
-type Acc<'a> = (R, Option<Its<'a>>);
+type Acc<'a> = (R<'a>, Option<Its<'a>>);
 #[inline(always)]
-pub fn intersect_update<'a>((ray, acc): Acc<'a>, s: &'a impl Intersectable)
-    -> Acc<'a>
+pub fn intersect_update<'a>((ray, acc): Acc<'a>,
+                            s: &'a impl Intersectable) -> Acc<'a>
 { s.intersect(ray).map(|it| (ray.clipped(it.t), Some(it)))
                   .unwrap_or_else(|| (ray, acc)) }
 

@@ -53,7 +53,7 @@ impl BXDF for BSDF {
     #[inline(always)]
     fn sample(&self, wi: V, uv: F2, s: F2) -> (Color, V, F, bool) {
         match self {
-            Self::None => (Color::BLACK, V::ZERO, 0., false),
+            Self::None => (Color::BLACK, -wi, 1., false),
             Self::Dielectric(f) => f.sample(wi, uv, s),
             Self::Diffuse(f) => f.sample(wi, uv, s),
             Self::Microfacet(f) => f.sample(wi, uv, s),

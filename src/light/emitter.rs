@@ -5,10 +5,11 @@ impl Lighting for Shape {
     #[inline(always)] fn eval(&self, uv: F2) -> Color
     { self.emission.as_ref().map(|e| e.eval(uv)).unwrap_or(Color::ZERO) }
 
-    #[inline(always)] fn sample(&self, its: &Its, s: F2) -> (Color, R, F) {
+    #[inline(always)]
+    fn sample<'a>(&'a self, its: &'a Its, s: F2) -> (Color, R<'a>, F) {
         if let Some(emission) = &self.emission {
             let surface = self.sample_surface(s);
-            let sray = R::p2(its.p, surface.p);
+            let sray = its.ray_to(surface.p);
             let p = self.pdf(&surface, &sray);
             let color = if p <= 0. { Color::BLACK }
                         else { emission.eval(surface.uv) / p };

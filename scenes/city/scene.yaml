@@ -1,101 +1,281 @@
 building_bsdf: &building_bsdf
+  type: microfacet
+  kd: [.4, .4, .6]
+  alpha: .005
+
+ceiling_bsdf: &ceiling_bsdf
   type: diffuse
   albedo:
     type: constant
-    color: [.1, .1, .1]
+    color: [.01, .01, .01]
 
 building_emission: &building_emission
   type: grid
-  color_1: [.8, .8, .8]
+  color_1: [3, 3, 3]
   color_2: [0, 0, 0]
-  scale: [.05, .002]
-  fill: .1
+  scale: [.05, .0015]
+  padding: .1
+  fill: .05
+
+medium_air: &medium_air
+  type: homogeneous
+  sa: [.01, .01, .01]
+  ss: [.001, .001, .001]
+  g: .5
+
+medium_lightclouds: &medium_lightclouds
+  type: homogeneous
+  sa: [.01, .01, .01]
+  ss: [.05, .05, .05]
+  g: .2
+
+medium_clouds: &medium_clouds
+  type: homogeneous
+  sa: [.02, .02, .02]
+  ss: [.1, .1, .1]
+  g: .2
 
 integrator:
   tracer:
-    type: path
+    type: vol_path
+    depth: [400, 500]
 
   sampler:
     type: sobol
-    samples_per_pixel: 64
+    samples_per_pixel: 512
 
 scene:
   camera:
     type: perspective
-    fov: 40
-    resolution: [1280, 720]
+    fov: 32
+    resolution: [1280, 1440]
+    lens_radius: 1
+    focal_distance: 170
+    medium: *medium_air
     transforms:
       - look_at:
-          origin: [-3, 9, -7]
-          target: [10, 9, 10]
+          origin: [-30, 60, -70]
+          target: [100, 92, 90]
           up:     [0, 1, 0]
 
   elements:
     - type: mesh
-      obj: obj/block.obj
+      obj: obj/city/block.obj
       bsdf: *building_bsdf
       emission: *building_emission
+      media:
+        outside: *medium_air
       transforms:
-        - scale: [.6, 7, .4]
-        - translate: [20, 0, 20]
+        - scale: [8, 100, 6]
+        - translate: [30, -10, 38]
 
     - type: mesh
-      obj: obj/block.obj
+      obj: obj/city/block.obj
       bsdf: *building_bsdf
       emission: *building_emission
+      media:
+        outside: *medium_air
       transforms:
-        - scale: [.3, 8, .5]
-        - translate: [0, 0, 0]
+        - scale: [5, 100, 7]
+        - translate: [100, -20, 100]
 
     - type: mesh
-      obj: obj/block.obj
+      obj: obj/city/block.obj
       bsdf: *building_bsdf
       emission: *building_emission
+      media:
+        outside: *medium_air
       transforms:
-        - scale: [.5, 6, .7]
-        - translate: [10, 0, 10]
+        - scale: [8, 100, 8]
+        - translate: [100, -30, 150]
 
     - type: mesh
-      obj: obj/block.obj
+      obj: obj/city/block.obj
       bsdf: *building_bsdf
       emission: *building_emission
+      media:
+        outside: *medium_air
       transforms:
-        - scale: [.8, 8, 1.2]
-        - translate: [6, 0, 8]
+        - scale: [8, 100, 12]
+        - translate: [120, 0, 170]
 
     - type: mesh
-      obj: obj/block.obj
+      obj: obj/city/block.obj
       bsdf: *building_bsdf
-      # emission: *building_emission
+      emission: *building_emission
+      media:
+        outside: *medium_air
       transforms:
-        - scale: [.8, 8, 1.2]
-        - translate: [8, 0, 8]
+        - scale: [8, 100, 12]
+        - translate: [170, 0, 125]
 
     - type: mesh
-      obj: obj/plane.obj
+      obj: obj/city/block.obj
+      bsdf: *building_bsdf
+      emission: *building_emission
+      media:
+        outside: *medium_air
+      transforms:
+        - scale: [8, 100, 12]
+        - translate: [80, 0, 80]
+
+    - type: mesh
+      obj: obj/city/klcc.obj
+      bsdf: *building_bsdf
+      emission:
+        type: grid
+        color_1: [10, 10, 10]
+        color_2: [0, 0, 0]
+        scale: [.02, .005]
+        padding: .1
+        fill: .05
+      media:
+        outside: *medium_air
+      transforms:
+        - scale: [.25, .25, .25]
+        - rotate:
+            axis: [0, 1, 0]
+            angle: 50
+        - translate: [100, 20, 40]
+
+    - type: sphere
+      center: [84, 132, 59]
+      radius: .4
       bsdf:
-        type: diffuse
-        albedo:
-          type: constant
-          color: [.8, .8, 1]
+        type: dummy
+      emission:
+        type: constant
+        color: [2000, 0, 0]
+      media:
+        outside: *medium_air
+
+    - type: sphere
+      center: [100, 132, 40]
+      radius: .4
+      bsdf:
+        type: dummy
+      emission:
+        type: constant
+        color: [0, 0, 2000]
+      media:
+        outside: *medium_air
+
+    - type: mesh
+      obj: obj/city/plane.obj
+      bsdf:
+        type: dielectric
+        ior: [1, 1]
+      media:
+        outside: *medium_air
+        inside: *medium_lightclouds
       transforms:
         - rotate:
             axis: [0, 1, 0]
             angle: 53
-        - scale: [40, 1, 40]
-        - translate: [0, 5, 0]
+        - scale: [800, 1, 800]
+        - translate: [300, 51, 300]
 
-          # - type: pointlight
-          # power: [3000, 3000, 3000]
-          # position: [0, 15, 10]
-          # 
-          # - type: pointlight
-          # power: [1000, 1000, 1000]
-          # position: [10, 13, 6]
+    - type: mesh
+      obj: obj/city/plane.obj
+      bsdf:
+        type: dielectric
+        ior: [1, 1]
+      media:
+        outside: *medium_lightclouds
+        inside: *medium_clouds
+      transforms:
+        - rotate:
+            axis: [0, 1, 0]
+            angle: 53
+        - scale: [800, 1, 800]
+        - translate: [300, 48, 300]
+
+    - type: mesh
+      obj: obj/city/plane.obj
+      bsdf:
+        type: dummy
+      media:
+        outside: *medium_clouds
+      emission:
+        type: grid
+        color_1: [5, 5, 3]
+        color_2: [0, 0, 0]
+        scale: [.005, .005]
+        fill: .2
+      transforms:
+        - rotate:
+            axis: [0, 1, 0]
+            angle: 53
+        - scale: [800, 1, 800]
+        - translate: [300, 45, 300]
+
+    - type: mesh
+      obj: obj/city/ceiling.obj
+      bsdf: *ceiling_bsdf
+      emission:
+        type: grid
+        color_1: [0, 50, 0]
+        color_2: [0, 0, 0]
+        scale: [.001, .022222]
+        padding: .49
+        fill: 1
+      media:
+        inside: *medium_air
+      transforms:
+        - scale: [800, 1, 36]
+        - translate: [0, 133, 0]
+
+    - type: mesh
+      obj: obj/city/ceiling.obj
+      bsdf: *ceiling_bsdf
+      emission:
+        type: grid
+        color_1: [0, 50, 0]
+        color_2: [0, 0, 0]
+        scale: [.01, .00105]
+        padding: .49
+        fill: 1
+      media:
+        inside: *medium_air
+      transforms:
+        - scale: [80, 1, 764]
+        - translate: [0, 133, 36]
+
+    - type: mesh
+      obj: obj/city/ceiling.obj
+      bsdf: *ceiling_bsdf
+      emission:
+        type: grid
+        color_1: [0, 50, 0]
+        color_2: [0, 0, 0]
+        scale: [.001153, .02963]
+        padding: .49
+        fill: 1
+      media:
+        inside: *medium_air
+      transforms:
+        - scale: [694, 1, 27]
+        - translate: [104, 133, 36]
+
+    - type: mesh
+      obj: obj/city/ceiling.obj
+      bsdf: *ceiling_bsdf
+      emission:
+        type: grid
+        color_1: [0, 50, 0]
+        color_2: [0, 0, 0]
+        scale: [.0011111, .0010855]
+        padding: .49
+        fill: 1
+      media:
+        inside: *medium_air
+      transforms:
+        - scale: [720, 1, 737]
+        - translate: [80, 133, 63]
 
     - type: infinitelight
       intensity:
         type: gradient
         interp: smooth
         color_1: [0, 0, 0]
-        color_2: [0, 0, .03]
+        color_2: [0, 0, .02]

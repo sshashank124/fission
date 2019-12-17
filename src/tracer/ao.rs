@@ -17,14 +17,14 @@ impl AmbientOcclusion {
 
 impl Trace for AmbientOcclusion {
     #[inline(always)]
-    fn trace(&self, scene: &Scene, sampler: &mut Sampler, ray: R) -> Color {
+    fn trace(&self, scene: &Scene, mut sampler: Sampler, ray: R) -> Color {
         match scene.intersect(ray) {
             None => Color::BLACK,
             Some(its) => {
                 let f = its.to_world();
                 Color::gray((0..self.samples).filter(|_| {
                     let wi = V(CosineHemisphere::warp(sampler.next_2d(), ()));
-                    !scene.intersects(R::r(its.p, f * wi, self.ray_len))
+                    !scene.intersects(its.ray_for(f * wi, self.ray_len))
                 }).count() as F / self.samples as F)
             }
         }

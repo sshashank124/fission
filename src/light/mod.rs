@@ -2,7 +2,10 @@ mod emitter;
 mod infinite;
 mod point;
 
+use std::sync::Arc;
+
 use crate::geometry::*;
+use crate::medium::*;
 use crate::shape::*;
 use crate::texture::*;
 
@@ -13,7 +16,7 @@ pub use point::Point;
 
 pub trait Lighting {
     fn eval(&self, uv: F2) -> Color;
-    fn sample(&self, its: &Its, s: F2) -> (Color, R, F);
+    fn sample<'a>(&'a self, its: &'a Its, s: F2) -> (Color, R<'a>, F);
     fn pdf(&self, its: &Its, sray: &R) -> F;
 
     fn is_env_light(&self) -> bool { false }
@@ -35,7 +38,8 @@ impl Lighting for Light {
         }
     }
 
-    #[inline(always)] fn sample(&self, its: &Its, s: F2) -> (Color, R, F) {
+    #[inline(always)]
+    fn sample<'a>(&'a self, its: &'a Its, s: F2) -> (Color, R<'a>, F) {
         match self {
             Light::Area(l) => l.sample(its, s),
             Light::Infinite(l) => l.sample(its, s),

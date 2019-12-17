@@ -2,11 +2,12 @@ mod mesh;
 mod sphere;
 
 use std::borrow::Borrow;
-pub use std::sync::Arc;
+use std::sync::Arc;
 
 use crate::aggregate::*;
 use crate::bsdf::*;
 use crate::geometry::*;
+use crate::medium::*;
 use crate::texture::*;
 
 pub use mesh::*;
@@ -17,7 +18,7 @@ pub trait Intersectable {
     fn bbox(&self) -> BBox;
 
     fn intersects(&self, ray: R) -> bool;
-    fn intersect(&self, ray: R) -> Option<Its>;
+    fn intersect<'a>(&'a self, ray: R<'a>) -> Option<Its<'a>>;
     fn hit_info<'a>(&'a self, its: Its<'a>) -> Its<'a>;
 
     fn sample_surface(&self, s: F2) -> Its;
@@ -28,8 +29,9 @@ pub trait Intersectable {
 }
 
 pub struct Shape {
-    pub shape: ShapeType,
-    pub bsdf: Bsdf,
+    shape: ShapeType,
+    pub bsdf: BSDF,
+    pub medium_interface: MediumInterface,
     pub emission: Option<Tex<Color>>,
 }
 
@@ -40,9 +42,10 @@ pub enum ShapeType {
 }
 
 impl Shape {
-    pub const fn new(shape: ShapeType, bsdf: Bsdf,
+    pub const fn new(shape: ShapeType, bsdf: BSDF,
+                     medium_interface: MediumInterface,
                      emission: Option<Tex<Color>>) -> Self
-    { Self { shape, bsdf, emission } }
+    { Self { shape, bsdf, medium_interface, emission } }
 }
 
 impl Intersectable for Shape {
@@ -51,10 +54,8 @@ impl Intersectable for Shape {
     #[inline(always)] fn intersects(&self, ray: R) -> bool
     { self.shape.intersects(ray) }
 
-    #[inline(always)] fn intersect(&self, ray: R) -> Option<Its> {
-        self.shape.intersect(ray)
-                  .map(|its| its.for_shape(self))
-    }
+    #[inline(always)] fn intersect<'a>(&'a self, ray: R<'a>) -> Option<Its<'a>>
+    { self.shape.intersect(ray).map(|its| its.for_shape(self)) }
 
     #[inline(always)] fn hit_info<'a>(&'a self, its: Its<'a>) -> Its<'a>
     { self.shape.hit_info(its) }
@@ -67,7 +68,8 @@ impl Intersectable for Shape {
     fn intersection_cost(&self) -> F { self.shape.intersection_cost() }
 }
 
-pub static SHAPE_PH: Shape = Shape::new(ShapeType::ZERO, Bsdf::ZERO, None);
+pub static SHAPE_DUMMY: Shape = Shape::new(ShapeType::ZERO, BSDF::ZERO,
+                                           MediumInterface::ZERO, None);
 
 impl Intersectable for ShapeType {
     fn bbox(&self) -> BBox {
@@ -86,7 +88,8 @@ impl Intersectable for ShapeType {
         }
     }
 
-    #[inline(always)] fn intersect(&self, ray: R) -> Option<Its> {
+    #[inline(always)]
+    fn intersect<'a>(&'a self, ray: R<'a>) -> Option<Its<'a>> {
         match self {
             Self::None => unreachable!(),
             Self::Mesh(s) => s.intersect(ray),
@@ -141,10 +144,8 @@ impl Intersectable for Arc<Shape> {
     #[inline(always)] fn intersects(&self, ray: R) -> bool
     { Shape::borrow(self).intersects(ray) }
 
-    #[inline(always)] fn intersect(&self, ray: R) -> Option<Its> {
-        Shape::borrow(self).intersect(ray)
-                           .map(|its| its.for_shape(self))
-    }
+    #[inline(always)] fn intersect<'a>(&'a self, ray: R<'a>) -> Option<Its<'a>>
+    { Shape::borrow(self).intersect(ray).map(|its| its.for_shape(self)) }
 
     #[inline(always)] fn hit_info<'a>(&'a self, its: Its<'a>) -> Its<'a>
     { Shape::borrow(self).hit_info(its) }
