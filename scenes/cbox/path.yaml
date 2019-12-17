@@ -4,7 +4,7 @@ integrator:
     depth: [30, 50]
 
   sampler:
-    type: sobol
+    type: independent
     samples_per_pixel: 64
 
 scene:

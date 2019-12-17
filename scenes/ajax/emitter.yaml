@@ -4,7 +4,7 @@ integrator:
 
   sampler:
     type: sobol
-    samples_per_pixel: 32
+    samples_per_pixel: 128
 
 scene:
   camera:
@@ -31,9 +31,11 @@ scene:
       bsdf:
         type: dummy
       emission:
-        type: checkerboard
-        color_1: [2, 2, 2]
+        type: grid
+        color_1: [1, 1, 1]
         color_2: [0, 0, 0]
         scale: [.025, .025]
+        padding: .2
+        fill: .5
       transforms:
         - scale: [100, 1, 100]
