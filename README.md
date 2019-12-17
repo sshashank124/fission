@@ -2,5 +2,5 @@
 Ray-Tracer
 
 Requirements
- - Cargo Nightly
+ - Rust nightly and Cargo
  - OpenEXR library installed on system
