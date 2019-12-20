@@ -1,6 +1,5 @@
 use super::*;
 
-
 pub struct AmbientOcclusion {
     samples: I,
     ray_len: F,
@@ -8,10 +7,7 @@ pub struct AmbientOcclusion {
 
 impl AmbientOcclusion {
     pub fn new(s: Option<I>, rl: Option<F>) -> Self {
-        Self {
-            samples: s.unwrap_or(1),
-            ray_len: rl.unwrap_or(F::POS_INF),
-        }
+        Self { samples: s.unwrap_or(1), ray_len: rl.unwrap_or(F::POS_INF) }
     }
 }
 

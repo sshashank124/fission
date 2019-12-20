@@ -1,56 +1,67 @@
-use std::ops::{Index, IndexMut};
-use std::ops::{Add, Sub, Mul, Div, Neg};
-use std::ops::{AddAssign, SubAssign, MulAssign, DivAssign};
+use std::ops::{Add, Div, Mul, Neg, Sub};
+use std::ops::{AddAssign, DivAssign, MulAssign, SubAssign};
 use std::ops::{BitAnd, BitOr};
+use std::ops::{Index, IndexMut};
 
-use crate::*;
 use super::*;
-
+use crate::*;
 
 #[derive(Clone, Copy, Debug, Eq, PartialEq)]
 pub struct A2<A>(pub A, pub A);
 
-
 // General Arrays
 
 impl<A> A2<A> {
-    #[inline(always)] pub fn rep(a: A) -> A2<A> where A: Copy
-    { A2(a, a) }
-
-    #[inline(always)] pub fn map<B>(self, f: impl Fn(A) -> B) -> A2<B>
-    { A2(f(self.0), f(self.1)) }
+    #[inline(always)]
+    pub fn rep(a: A) -> A2<A>
+        where A: Copy
+    {
+        A2(a, a)
+    }
 
     #[inline(always)]
-    pub fn zip<B, C>(self, b: A2<B>, f: impl Fn(A, B) -> C) -> A2<C>
-    { A2(f(self.0, b.0), f(self.1, b.1)) }
+    pub fn map<B>(self, f: impl Fn(A) -> B) -> A2<B> {
+        A2(f(self.0), f(self.1))
+    }
 
-    #[inline(always)] pub fn reduce<B>(self, f: impl Fn(A, A) -> B) -> B
-    { f(self.0, self.1) }
+    #[inline(always)]
+    pub fn zip<B, C>(self, b: A2<B>, f: impl Fn(A, B) -> C) -> A2<C> {
+        A2(f(self.0, b.0), f(self.1, b.1))
+    }
+
+    #[inline(always)]
+    pub fn reduce<B>(self, f: impl Fn(A, A) -> B) -> B { f(self.0, self.1) }
 }
 
 macro_rules! index {
     ($type:ident, $v1:tt, $v2:tt) => {
         impl<A> Index<$type> for A2<A> {
             type Output = A;
-            #[inline(always)] #[allow(clippy::match_bool)]
+            #[inline(always)]
+            #[allow(clippy::match_bool)]
             fn index(&self, i: $type) -> &Self::Output {
                 match i {
-                    $v1 => &self.0, $v2 => &self.1,
-                    #[allow(unreachable_patterns)] _ => unreachable!(),
+                    $v1 => &self.0,
+                    $v2 => &self.1,
+                    #[allow(unreachable_patterns)]
+                    _ => unreachable!(),
                 }
             }
         }
 
         impl<A> IndexMut<$type> for A2<A> {
-            #[inline(always)] #[allow(clippy::match_bool)]
+            #[inline(always)]
+            #[allow(clippy::match_bool)]
             fn index_mut(&mut self, i: $type) -> &mut Self::Output {
                 match i {
-                    $v1 => &mut self.0, $v2 => &mut self.1,
-                    #[allow(unreachable_patterns)] _ => unreachable!(),
+                    $v1 => &mut self.0,
+                    $v2 => &mut self.1,
+                    #[allow(unreachable_patterns)]
+                    _ => unreachable!(),
                 }
             }
         }
-    }
+    };
 }
 
 index!(I, 0, 1);
@@ -58,50 +69,64 @@ index!(usize, 0, 1);
 index!(Dim, X, Y);
 index!(bool, false, true);
 
-
-
 // Numeric Arrays
 
 pub type F2 = A2<F>;
 pub type I2 = A2<I>;
 
-impl<A> Zero for A2<A> where A: Zero {
+impl<A> Zero for A2<A> where A: Zero
+{
     const ZERO: Self = A2(A::ZERO, A::ZERO);
 }
 
-impl<A> One for A2<A> where A: One {
+impl<A> One for A2<A> where A: One
+{
     const ONE: Self = A2(A::ONE, A::ONE);
 }
 
-impl<A> Half for A2<A> where A: Half {
+impl<A> Half for A2<A> where A: Half
+{
     const HALF: Self = A2(A::HALF, A::HALF);
 }
 
 impl<A> A2<A> {
     #[inline(always)]
-    pub fn dot<B, C>(self, b: A2<B>) -> C where A: Mul<B, Output=C>,
-                                                C: Add<C, Output=C>
-    { self.zip(b, Mul::mul).reduce(Add::add) }
+    pub fn dot<B, C>(self, b: A2<B>) -> C
+        where A: Mul<B, Output = C>,
+              C: Add<C, Output = C>
+    {
+        self.zip(b, Mul::mul).reduce(Add::add)
+    }
 
-    #[inline(always)] pub fn sum(self) -> A where A: Add<A, Output=A>
-    { self.reduce(Add::add) }
+    #[inline(always)]
+    pub fn sum(self) -> A
+        where A: Add<A, Output = A>
+    {
+        self.reduce(Add::add)
+    }
 
-    #[inline(always)] pub fn mean(self) -> A where A: Add<A, Output=A>,
-                                                   A: Mul<F, Output=A>
-    { self.sum() * 0.5 }
+    #[inline(always)]
+    pub fn mean(self) -> A
+        where A: Add<A, Output = A>,
+              A: Mul<F, Output = A>
+    {
+        self.sum() * 0.5
+    }
 }
 
 macro_rules! cw_binary_assign_op {
     ($trait:ident, $op:ident) => {
-        impl<A, B> $trait<A2<B>> for A2<A> where A: $trait<B>,
-                                                 B: Copy {
+        impl<A, B> $trait<A2<B>> for A2<A>
+            where A: $trait<B>,
+                  B: Copy
+        {
             #[inline(always)]
             fn $op(&mut self, b: A2<B>) {
                 $trait::$op(&mut self[X], b[X]);
                 $trait::$op(&mut self[Y], b[Y]);
             }
         }
-    }
+    };
 }
 
 cw_unary_op!(A2, Neg, neg);
@@ -129,5 +154,7 @@ scalar_binary_assign_op!(A2, SubAssign, sub_assign);
 scalar_binary_assign_op!(A2, MulAssign, mul_assign);
 scalar_binary_assign_op!(A2, DivAssign, div_assign);
 
-impl From<I2> for F2
-{ #[inline(always)] fn from(a: I2) -> F2 { a.map(|i| i as F) } }
+impl From<I2> for F2 {
+    #[inline(always)]
+    fn from(a: I2) -> F2 { a.map(|i| i as F) }
+}

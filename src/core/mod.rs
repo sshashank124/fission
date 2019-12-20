@@ -1,5 +1,5 @@
-mod array3;
 mod array2;
+mod array3;
 mod color;
 mod dim;
 mod dpdf;
@@ -12,8 +12,8 @@ mod progress;
 mod tuple;
 mod vec;
 
-pub use array3::*;
 pub use array2::*;
+pub use array3::*;
 pub use color::Color;
 pub use dim::*;
 pub use dpdf::*;

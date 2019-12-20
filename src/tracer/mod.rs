@@ -17,9 +17,9 @@ pub use normals::Normals;
 pub use path::Path;
 pub use silhouette::Silhouette;
 
-
-pub trait Trace
-{ fn trace(&self, scene: &Scene, sampler: Sampler, ray: R) -> Color; }
+pub trait Trace {
+    fn trace(&self, scene: &Scene, sampler: Sampler, ray: R) -> Color;
+}
 
 pub enum Tracer {
     AO(AmbientOcclusion),
@@ -41,17 +41,22 @@ impl Trace for Tracer {
     }
 }
 
-impl From<AmbientOcclusion> for Tracer
-{ fn from(t: AmbientOcclusion) -> Self { Self::AO(t) } }
+impl From<AmbientOcclusion> for Tracer {
+    fn from(t: AmbientOcclusion) -> Self { Self::AO(t) }
+}
 
-impl From<Direct> for Tracer
-{ fn from(t: Direct) -> Self { Self::Direct(t) } }
+impl From<Direct> for Tracer {
+    fn from(t: Direct) -> Self { Self::Direct(t) }
+}
 
-impl From<Normals> for Tracer
-{ fn from(t: Normals) -> Self { Self::Normals(t) } }
+impl From<Normals> for Tracer {
+    fn from(t: Normals) -> Self { Self::Normals(t) }
+}
 
-impl From<Path> for Tracer
-{ fn from(t: Path) -> Self { Self::Path(t) } }
+impl From<Path> for Tracer {
+    fn from(t: Path) -> Self { Self::Path(t) }
+}
 
-impl From<Silhouette> for Tracer
-{ fn from(t: Silhouette) -> Self { Self::Silhouette(t) } }
+impl From<Silhouette> for Tracer {
+    fn from(t: Silhouette) -> Self { Self::Silhouette(t) }
+}

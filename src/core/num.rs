@@ -1,40 +1,75 @@
-use std::ops::{Add, Sub, Mul, Div, Neg};
-use std::ops::{AddAssign, SubAssign, MulAssign, DivAssign};
+use std::ops::{Add, Div, Mul, Neg, Sub};
+use std::ops::{AddAssign, DivAssign, MulAssign, SubAssign};
 
 use super::*;
 
+#[allow(clippy::declare_interior_mutable_const)]
+pub trait Zero {
+    const ZERO: Self;
+}
 
 #[allow(clippy::declare_interior_mutable_const)]
-pub trait Zero { const ZERO: Self; }
+pub trait One {
+    const ONE: Self;
+}
 
-#[allow(clippy::declare_interior_mutable_const)]
-pub trait One  { const ONE: Self; }
-
-pub trait Num: Copy + PartialOrd + PartialEq
-             + Zero + One
-             + Neg<Output=Self>
-             + Add<Self, Output=Self> + AddAssign<Self>
-             + Sub<Self, Output=Self> + SubAssign<Self>
-             + Mul<Self, Output=Self> + MulAssign<Self>
-             + Div<Self, Output=Self> + DivAssign<Self>
+pub trait Num:
+    Copy
+    + PartialOrd
+    + PartialEq
+    + Zero
+    + One
+    + Neg<Output = Self>
+    + Add<Self, Output = Self>
+    + AddAssign<Self>
+    + Sub<Self, Output = Self>
+    + SubAssign<Self>
+    + Mul<Self, Output = Self>
+    + MulAssign<Self>
+    + Div<Self, Output = Self>
+    + DivAssign<Self>
 {
-    #[inline(always)] fn eq(a: Self, b: Self) -> bool { a == b }
-    #[inline(always)] fn sq(self) -> Self { self * self }
+    #[inline(always)]
+    fn eq(a: Self, b: Self) -> bool { a == b }
+    #[inline(always)]
+    fn sq(self) -> Self { self * self }
 
     #[inline(always)]
-    fn abs(a: Self) -> Self { if a >= Self::ZERO { a } else { -a } }
+    fn abs(a: Self) -> Self {
+        if a >= Self::ZERO {
+            a
+        } else {
+            -a
+        }
+    }
 
     #[inline(always)]
-    fn min(a: Self, b: Self) -> Self { if a < b { a } else { b } }
+    fn min(a: Self, b: Self) -> Self {
+        if a < b {
+            a
+        } else {
+            b
+        }
+    }
 
     #[inline(always)]
-    fn max(a: Self, b: Self) -> Self { if a < b { b } else { a } }
+    fn max(a: Self, b: Self) -> Self {
+        if a < b {
+            b
+        } else {
+            a
+        }
+    }
 
-    #[inline(always)] fn is_pos(a: Self) -> bool { a > Self::ZERO }
-    #[inline(always)] fn is_nonpos(a: Self) -> bool { !Self::is_pos(a) }
+    #[inline(always)]
+    fn is_pos(a: Self) -> bool { a > Self::ZERO }
+    #[inline(always)]
+    fn is_nonpos(a: Self) -> bool { !Self::is_pos(a) }
 
-    #[inline(always)] fn is_neg(a: Self) -> bool { a < Self::ZERO }
-    #[inline(always)] fn is_nonneg(a: Self) -> bool { !Self::is_neg(a) }
+    #[inline(always)]
+    fn is_neg(a: Self) -> bool { a < Self::ZERO }
+    #[inline(always)]
+    fn is_nonneg(a: Self) -> bool { !Self::is_neg(a) }
 
     #[inline(always)]
     fn clamp(v: Self, a: Self, b: Self) -> Self { Num::min(Num::max(v, a), b) }
@@ -49,32 +84,54 @@ pub trait Num: Copy + PartialOrd + PartialEq
     fn clamp_one(v: Self) -> Self { Num::clamp(v, -Self::ONE, Self::ONE) }
 }
 
-impl Zero for I { const ZERO: Self = 0; }
-impl One  for I { const ONE: Self = 1; }
-impl Num  for I { }
+impl Zero for I {
+    const ZERO: Self = 0;
+}
+impl One for I {
+    const ONE: Self = 1;
+}
+impl Num for I {}
 
-impl Zero for F { const ZERO: Self = 0.; }
-impl One  for F { const ONE: Self = 1.; }
-impl Num  for F { }
-
+impl Zero for F {
+    const ZERO: Self = 0.;
+}
+impl One for F {
+    const ONE: Self = 1.;
+}
+impl Num for F {}
 
 pub trait Integer: Num {
     fn mod2(i: Self) -> Self;
 }
 
 impl Integer for I {
-    #[inline(always)] fn mod2(i: Self) -> Self
-    { let r = i % 2; if r < 0 { r + 2 } else { r } }
+    #[inline(always)]
+    fn mod2(i: Self) -> Self {
+        let r = i % 2;
+        if r < 0 {
+            r + 2
+        } else {
+            r
+        }
+    }
 }
 
+pub trait Half: Copy {
+    const HALF: Self;
+}
 
-pub trait Half: Copy { const HALF: Self; }
+pub trait Two: Copy {
+    const TWO: Self;
+}
 
-pub trait Two: Copy { const TWO: Self; }
+pub trait Inv {
+    type Output;
+    fn inv(self) -> Self;
+}
 
-pub trait Inv { type Output; fn inv(self) -> Self; }
-
-pub trait Epsilon: Copy { const EPSILON: Self; }
+pub trait Epsilon: Copy {
+    const EPSILON: Self;
+}
 
 pub trait Float: Num + Half + Two + Inv + Epsilon {
     const NEG_INF: Self;
@@ -116,12 +173,23 @@ pub trait Float: Num + Half + Two + Inv + Epsilon {
     fn approx_one(a: Self) -> bool { Self::approx_eq(a, Self::ONE) }
 }
 
-impl Half for F { const HALF: Self = 0.5; }
-impl Two for F { const TWO: Self = 2.; }
-impl Inv for F
-{ type Output = F; #[inline(always)] fn inv(self) -> F { self.recip() } }
-impl Epsilon for f32 { const EPSILON: Self = 1e-4; }
-impl Epsilon for f64 { const EPSILON: Self = 1e-6; }
+impl Half for F {
+    const HALF: Self = 0.5;
+}
+impl Two for F {
+    const TWO: Self = 2.;
+}
+impl Inv for F {
+    type Output = F;
+    #[inline(always)]
+    fn inv(self) -> F { self.recip() }
+}
+impl Epsilon for f32 {
+    const EPSILON: Self = 1e-4;
+}
+impl Epsilon for f64 {
+    const EPSILON: Self = 1e-6;
+}
 
 impl Float for F {
     const NEG_INF: Self = fmod::NEG_INFINITY;
@@ -138,36 +206,51 @@ impl Float for F {
 
     const FRAC_1_2POW32: Self = 2.328_306_4e-10;
 
-    #[inline(always)] fn ceili(self) -> I { self.ceil() as I }
-    #[inline(always)] fn floori(self) -> I { self.floor() as I }
+    #[inline(always)]
+    fn ceili(self) -> I { self.ceil() as I }
+    #[inline(always)]
+    fn floori(self) -> I { self.floor() as I }
 
-    #[inline(always)] fn exp(f: Self) -> Self { f.exp() }
-    #[inline(always)] fn sqrt(self) -> Self { self.sqrt() }
+    #[inline(always)]
+    fn exp(f: Self) -> Self { f.exp() }
+    #[inline(always)]
+    fn sqrt(self) -> Self { self.sqrt() }
 
-    #[inline(always)] fn sin(self) -> Self { self.sin() }
-    #[inline(always)] fn cos(self) -> Self { self.cos() }
-    #[inline(always)] fn tan(self) -> Self { self.tan() }
-    #[inline(always)] fn sind(self) -> Self { self.to_radians().sin() }
-    #[inline(always)] fn cosd(self) -> Self { self.to_radians().cos() }
-    #[inline(always)] fn tand(self) -> Self { self.to_radians().tan() }
+    #[inline(always)]
+    fn sin(self) -> Self { self.sin() }
+    #[inline(always)]
+    fn cos(self) -> Self { self.cos() }
+    #[inline(always)]
+    fn tan(self) -> Self { self.tan() }
+    #[inline(always)]
+    fn sind(self) -> Self { self.to_radians().sin() }
+    #[inline(always)]
+    fn cosd(self) -> Self { self.to_radians().cos() }
+    #[inline(always)]
+    fn tand(self) -> Self { self.to_radians().tan() }
 
-    #[inline(always)] fn discrete(a: Self, n: I) -> I
-    { Num::min(Self::floori(a * n as Self), n - 1) }
+    #[inline(always)]
+    fn discrete(a: Self, n: I) -> I {
+        Num::min(Self::floori(a * n as Self), n - 1)
+    }
 }
-
 
 #[inline(always)]
 pub fn quad(a: F, b: F, c: F) -> Option<F2> {
     let dis = b * b - 4. * a * c;
-    if dis < 0. { return None; }
+    if dis < 0. {
+        return None
+    }
     let disqrt = dis.sqrt();
     let q = -0.5 * (b + b.signum() * disqrt);
     let t1 = q / a;
     let t2 = c / q;
-    if t1 <= t2 { Some(A2(t1, t2)) }
-    else { Some(A2(t2, t1)) }
+    if t1 <= t2 {
+        Some(A2(t1, t2))
+    } else {
+        Some(A2(t2, t1))
+    }
 }
-
 
 #[inline(always)]
 pub fn ceil_pow2_u32(i: u32) -> u32 {

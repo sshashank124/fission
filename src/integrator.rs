@@ -5,16 +5,16 @@ use crate::sampler::*;
 use crate::scene::*;
 use crate::tracer::*;
 
-
 pub struct Integrator {
-    tracer: Tracer,
+    tracer:  Tracer,
     sampler: Sampler,
-    scene: Scene,
+    scene:   Scene,
 }
 
 impl Integrator {
-    pub fn new(tracer: Tracer, sampler: Sampler, scene: Scene) -> Self
-    { Self { tracer, sampler, scene } }
+    pub fn new(tracer: Tracer, sampler: Sampler, scene: Scene) -> Self {
+        Self { tracer, sampler, scene }
+    }
 
     pub fn render(&self) -> Image {
         let mut img = self.scene.camera.new_image();

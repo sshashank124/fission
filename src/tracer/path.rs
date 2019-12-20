@@ -1,6 +1,5 @@
 use super::*;
 
-
 pub struct Path {
     depth: I2,
     rr_tp: F,
@@ -18,7 +17,9 @@ impl Trace for Path {
     #[inline(always)]
     fn trace(&self, scene: &Scene, mut sampler: Sampler, ray: R) -> Color {
         let init = (Color::ZERO, Color::ONE, ray, scene.intersect(ray), true);
-        if init.3.is_none() { return scene.lenv(&ray) }
+        if init.3.is_none() {
+            return scene.lenv(&ray)
+        }
 
         match (0..self.depth[1]).try_fold(init,
         |(mut li, mut tp, ray, its, spec), depth| its.map(|its| {
