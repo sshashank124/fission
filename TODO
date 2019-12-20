@@ -1,5 +1,7 @@
-Participating Media
-
-Textured BSDFs (eventually abstracted out)
+Image Textures
 
 Light sampling distribution (by power?)
+
+account for eta in RR
+
+Textured BSDFs (eventually abstracted out)

@@ -14,7 +14,7 @@ pub use microfacet::Microfacet;
 pub use mirror::Mirror;
 
 
-pub trait Bxdf {
+pub trait BXDF {
     // BSDF * cos(theta)
     fn eval(&self, wi: V, wo: V, uv: F2) -> Color;
 
@@ -26,14 +26,14 @@ pub trait Bxdf {
     fn is_delta(&self) -> bool;
 }
 
-pub enum Bsdf {
+pub enum BSDF {
     Dielectric(Dielectric),
     Diffuse(Diffuse),
     Microfacet(Microfacet),
     Mirror(Mirror),
 }
 
-impl Bxdf for Bsdf {
+impl BXDF for BSDF {
     #[inline(always)] fn eval(&self, wi: V, wo: V, uv: F2) -> Color {
         match self {
             Self::Dielectric(f) => f.eval(wi, wo, uv),
@@ -72,16 +72,16 @@ impl Bxdf for Bsdf {
     }
 }
 
-impl From<Dielectric> for Bsdf
+impl From<Dielectric> for BSDF
 { fn from(f: Dielectric) -> Self { Self::Dielectric(f) } }
 
-impl From<Diffuse> for Bsdf
+impl From<Diffuse> for BSDF
 { fn from(f: Diffuse) -> Self { Self::Diffuse(f) } }
 
-impl From<Microfacet> for Bsdf
+impl From<Microfacet> for BSDF
 { fn from(f: Microfacet) -> Self { Self::Microfacet(f) } }
 
-impl From<Mirror> for Bsdf
+impl From<Mirror> for BSDF
 { fn from(f: Mirror) -> Self { Self::Mirror(f) } }
 
-impl Zero for Bsdf { const ZERO: Self = Self::Diffuse(Diffuse::ZERO); }
+impl Zero for BSDF { const ZERO: Self = Self::Diffuse(Diffuse::ZERO); }

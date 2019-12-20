@@ -17,7 +17,7 @@ impl AmbientOcclusion {
 
 impl Trace for AmbientOcclusion {
     #[inline(always)]
-    fn trace(&self, scene: &Scene, sampler: &mut Sampler, ray: R) -> Color {
+    fn trace(&self, scene: &Scene, mut sampler: Sampler, ray: R) -> Color {
         match scene.intersect(ray) {
             None => Color::BLACK,
             Some(its) => {

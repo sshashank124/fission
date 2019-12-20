@@ -9,9 +9,9 @@ pub struct V(pub F3);
 
 impl Zero for V { const ZERO: Self = V(F3::ZERO); }
 
-#[inline(always)] pub fn v(x: F, y: F, z: F) -> V { V(A3(x, y, z)) }
-
 impl V {
+    #[inline(always)] pub fn v(x: F, y: F, z: F) -> V { V(A3(x, y, z)) }
+
     #[inline(always)] pub fn a2(a: F2, z: F) -> V { V(A3::a2(a, z)) }
 
     #[inline(always)] pub fn dot(self, v: V) -> F { A3::dot(*self, *v) }
@@ -20,18 +20,15 @@ impl V {
     #[inline(always)] pub fn unit(self) -> V { self / self.norm() }
 
     #[inline(always)]
-    pub fn shiftl(self) -> V { v(self[Y], self[Z], self[X]) }
+    pub fn shiftl(self) -> V { V::v(self[Y], self[Z], self[X]) }
     #[inline(always)]
-    pub fn shiftr(self) -> V { v(self[Z], self[X], self[Y]) }
+    pub fn shiftr(self) -> V { V::v(self[Z], self[X], self[Y]) }
 
     #[inline(always)]
     pub fn cross(self, v: V) -> V {
         V(self.shiftl().zip(*v.shiftr(), Mul::mul) -
           self.shiftr().zip(*v.shiftl(), Mul::mul))
     }
-
-    pub const X: V = V(F3::X);
-    pub const Y: V = V(F3::Y);
 }
 
 op!(Neg::neg, *V);

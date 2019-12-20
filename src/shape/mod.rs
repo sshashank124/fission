@@ -29,7 +29,7 @@ pub trait Intersectable {
 
 pub struct Shape {
     pub shape: ShapeType,
-    pub bsdf: Bsdf,
+    pub bsdf: BSDF,
     pub emission: Option<Tex<Color>>,
 }
 
@@ -40,7 +40,7 @@ pub enum ShapeType {
 }
 
 impl Shape {
-    pub const fn new(shape: ShapeType, bsdf: Bsdf,
+    pub const fn new(shape: ShapeType, bsdf: BSDF,
                      emission: Option<Tex<Color>>) -> Self
     { Self { shape, bsdf, emission } }
 }
@@ -67,7 +67,7 @@ impl Intersectable for Shape {
     fn intersection_cost(&self) -> F { self.shape.intersection_cost() }
 }
 
-pub static SHAPE_PH: Shape = Shape::new(ShapeType::ZERO, Bsdf::ZERO, None);
+pub static SHAPE_PH: Shape = Shape::new(ShapeType::ZERO, BSDF::ZERO, None);
 
 impl Intersectable for ShapeType {
     fn bbox(&self) -> BBox {

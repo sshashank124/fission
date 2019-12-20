@@ -20,7 +20,7 @@ impl Sphere {
     }
 
     #[inline(always)] fn cartesian2uv(x: F3) -> F2 {
-        let uv = cartesian2spherical(x);
+        let uv = Frame::cart2spher(x);
         A2(uv[X] * F::INV_PI, 0.5 + uv[Y] * F::INV_2PI)
     }
 }

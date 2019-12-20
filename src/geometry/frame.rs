@@ -1,19 +1,6 @@
 use super::*;
 
 
-#[inline(always)]
-pub fn cartesian2spherical(v: F3) -> F2 {
-    let y = F::atan2(v[Y], v[X]);
-    let y = if y < 0. { y + F::TWO_PI } else { y };
-    A2(F::acos(v[Z]), y)
-}
-
-#[inline(always)]
-pub fn spherical2cartesian(v: F2) -> F3 {
-    let st = F::sin(v[0]);
-    A3(st * F::cos(v[1]), st * F::sin(v[1]), F::cos(v[0]))
-}
-
 pub struct Frame;
 
 impl Frame {
@@ -27,4 +14,18 @@ impl Frame {
     #[inline(always)] pub fn t2t(v: F3) -> F { Self::s2t(v) / Self::c2t(v) }
 
     #[inline(always)] pub fn reflect(v: V) -> V { V(A3(-v[X], -v[Y], v[Z])) }
+
+    /* Frame transforms */
+    #[inline(always)]
+    pub fn cart2spher(v: F3) -> F2 {
+        let y = F::atan2(v[Y], v[X]);
+        let y = if y < 0. { y + F::TWO_PI } else { y };
+        A2(F::acos(v[Z]), y)
+    }
+
+    #[inline(always)]
+    pub fn spher2cart(v: F2) -> F3 {
+        let st = F::sin(v[0]);
+        A3(st * F::cos(v[1]), st * F::sin(v[1]), F::cos(v[0]))
+    }
 }

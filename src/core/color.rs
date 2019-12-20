@@ -1,12 +1,12 @@
 use std::iter::Sum;
-use std::ops::{Add, AddAssign, Mul, MulAssign, Div, DivAssign, Deref};
+use std::ops::{Add, AddAssign, Mul, MulAssign, Div, DivAssign, Deref, Neg};
 
 use super::*;
 use crate::op;
 
 
 #[derive(Clone, Copy, Debug, PartialEq)]
-pub struct Color(pub A3<F>);
+pub struct Color(pub F3);
 
 impl Color {
     #[inline(always)] pub fn gray(g: F) -> Self { Self(A3::rep(g)) }
@@ -18,6 +18,7 @@ impl Color {
 impl Zero for Color { const ZERO: Self = Self(A3::ZERO); }
 impl One for Color { const ONE: Self = Self(A3::ONE); }
 
+op!(Neg::neg, *Color);
 op!(Add::add, *Color -> *Color -> Color);
 op!(Add::add, *Color ->      F -> Color);
 op!(Mul::mul, *Color -> *Color -> Color);

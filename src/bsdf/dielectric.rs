@@ -8,7 +8,7 @@ pub struct Dielectric {
 impl Dielectric
 { pub fn new(ior: Option<F2>) -> Self { Self { eta: eta(ior) } } }
 
-impl Bxdf for Dielectric {
+impl BXDF for Dielectric {
     #[inline(always)] fn eval(&self, _: V, _: V, _: F2) -> Color
     { Color::ZERO }
 
@@ -16,7 +16,7 @@ impl Bxdf for Dielectric {
     fn sample(&self, wi: V, _: F2, s: F2) -> (Color, V, F, bool) {
         let (fr, ctt, eta) = fresnel(Frame::ct(*wi), self.eta);
         let (wo, p) = if s[0] <= fr { (Frame::reflect(wi), fr) } else {
-            (v(-eta * wi[X], -eta * wi[Y], ctt).unit(), 1. - fr)
+            (V::v(-eta * wi[X], -eta * wi[Y], ctt).unit(), 1. - fr)
         };
         (Color::ONE, wo, p, self.is_delta())
     }

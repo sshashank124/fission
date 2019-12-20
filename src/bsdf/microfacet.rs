@@ -32,7 +32,7 @@ impl Microfacet {
     }
 }
 
-impl Bxdf for Microfacet {
+impl BXDF for Microfacet {
     #[inline(always)] fn eval(&self, wi: V, wo: V, _: F2) -> Color {
         let cti = Frame::ct(*wi); let cto = Frame::ct(*wo);
         if cti <= 0. || cto <= 0. { return Color::BLACK }

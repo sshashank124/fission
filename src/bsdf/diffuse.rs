@@ -8,7 +8,7 @@ pub struct Diffuse {
 impl Diffuse
 { pub const fn new(albedo: Tex<Color>) -> Self { Self { albedo } } }
 
-impl Bxdf for Diffuse {
+impl BXDF for Diffuse {
     #[inline(always)] fn eval(&self, wi: V, wo: V, uv: F2) -> Color {
         let cto = Frame::ct(*wo);
         if Frame::ct(*wi) <= 0. || cto <= 0. { Color::BLACK }

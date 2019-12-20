@@ -27,11 +27,11 @@ impl RotScale3 {
     }
 
     #[inline(always)] pub fn from_frame(v: V) -> Self {
-        let dx0 = V::X.cross(v);
-        let dx1 = V::Y.cross(v);
-        let dx = if dx0.norm2() > dx1.norm2() { dx0 } else { dx1 }.unit();
-        let dy = v.cross(dx).unit();
-        Self::from_cols(*dx, *dy, *v)
+        let v2 = V(if F::abs(v[X]) > F::abs(v[Y]) {
+            A3(-v[Z], 0., v[X]) / F::sqrt(v[X].sq() + v[Z].sq())
+        } else { A3(0., v[Z], -v[Y]) / F::sqrt(v[Y].sq() + v[Z].sq()) });
+        let v3 = v.cross(v2);
+        Self::from_cols(*v2, *v3, *v)
     }
 
     pub fn look_at(dir: V, up: V) -> Self {

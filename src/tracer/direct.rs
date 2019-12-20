@@ -59,10 +59,11 @@ impl Direct {
 
 impl Trace for Direct {
     #[inline(always)]
-    fn trace(&self, scene: &Scene, sampler: &mut Sampler, ray: R) -> Color {
+    fn trace(&self, scene: &Scene, mut sampler: Sampler, ray: R) -> Color {
         match scene.intersect(ray) {
             None => scene.lenv(&ray),
-            Some(its) => its.le(ray) + Self::li(scene, sampler, &its, &ray).0,
+            Some(its) => its.le(ray)
+                       + Self::li(scene, &mut sampler, &its, &ray).0,
         }
     }
 }

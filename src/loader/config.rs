@@ -156,8 +156,8 @@ fn load_emission(config: &Yaml) -> Res<Option<Tex<Color>>> {
     else { Ok(Some(load_texture(config)?)) }
 }
 
-fn load_bsdf(config: &Yaml) -> Res<Bsdf> {
-    if config.is_badvalue() { return Ok(Bsdf::ZERO); }
+fn load_bsdf(config: &Yaml) -> Res<BSDF> {
+    if config.is_badvalue() { return Ok(BSDF::ZERO); }
 
     Ok(match s(&config["type"], "missing bsdf type")? {
         "dielectric" => {

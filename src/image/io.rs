@@ -25,8 +25,8 @@ impl Image {
         of.write_pixels(&fb).map_err(|e| e.to_string())
     }
 
-    fn prepare_file_for_writing<'b>(&self, f: &'b mut File)
-            -> Result<ScanlineOutputFile<'b>, String> {
+    fn prepare_file_for_writing<'a>(&self, f: &'a mut File)
+            -> Result<ScanlineOutputFile<'a>, String> {
         ScanlineOutputFile::new(f, Header::new()
                                           .set_resolution(self.dims[X] as u32,
                                                           self.dims[Y] as u32)

@@ -19,7 +19,7 @@ pub use silhouette::Silhouette;
 
 
 pub trait Trace
-{ fn trace(&self, scene: &Scene, sampler: &mut Sampler, ray: R) -> Color; }
+{ fn trace(&self, scene: &Scene, sampler: Sampler, ray: R) -> Color; }
 
 pub enum Tracer {
     AO(AmbientOcclusion),
@@ -30,7 +30,7 @@ pub enum Tracer {
 }
 
 impl Trace for Tracer {
-    fn trace(&self, scene: &Scene, sampler: &mut Sampler, ray: R) -> Color {
+    fn trace(&self, scene: &Scene, sampler: Sampler, ray: R) -> Color {
         match self {
             Self::AO(t) => t.trace(scene, sampler, ray),
             Self::Direct(t) => t.trace(scene, sampler, ray),

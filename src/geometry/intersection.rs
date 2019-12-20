@@ -52,7 +52,7 @@ impl<'a> Its<'a> {
     #[inline(always)] pub fn has_emission(&self) -> bool
     { self.shape().emission.is_some() }
 
-    #[inline(always)] pub fn bsdf(&self) -> &Bsdf { &self.shape().bsdf }
+    #[inline(always)] pub fn bsdf(&self) -> &BSDF { &self.shape().bsdf }
 
     #[inline(always)] pub fn lb(&self, wi: V, wo: V) -> Color
     { self.bsdf().eval(wi, wo, self.uv) }

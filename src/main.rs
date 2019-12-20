@@ -30,18 +30,19 @@ fn main() -> Res<()> {
     { return Err("Usage: fission <scene_description.yaml>".into()) }
     let config_file = &args[1];
 
-    let load_progress = Progress::new("Loading scene description", None);
-    let integrator = config::load_from_file(config_file)
-                            .with_msg("Failed to load config")?;
-    load_progress.finish();
+    let integrator = {
+        let _ = Progress::new("Loading scene description", None);
+        config::load_from_file(config_file).with_msg("Failed to load config")?
+    };
 
     let image = integrator.render();
 
     let save_path = Path::new(config_file).with_extension("exr");
     let save_name = save_path.to_str().unwrap();
-    let save_progress = Progress::new("Saving rendered image", None);
-    image.save_exr(save_name).with_msg("Saving image failed")?;
-    save_progress.finish();
+    {
+        let _ = Progress::new("Saving rendered image", None);
+        image.save_exr(save_name).with_msg("Saving image failed")?;
+    }
 
     Ok(())
 }

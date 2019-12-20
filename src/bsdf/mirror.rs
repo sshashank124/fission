@@ -5,7 +5,7 @@ pub struct Mirror;
 
 impl Mirror { pub const fn new() -> Self { Self } }
 
-impl Bxdf for Mirror {
+impl BXDF for Mirror {
     #[inline(always)] fn eval(&self, _: V, _: V, _: F2) -> Color
     { Color::ZERO }
 
