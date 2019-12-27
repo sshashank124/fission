@@ -10,6 +10,7 @@ openexr = "*"
 rand_core = "*"
 rand_pcg = "*"
 scoped_threadpool = "*"
+staticvec = "*"
 yaml-rust = "*"
 
 [profile.release]
