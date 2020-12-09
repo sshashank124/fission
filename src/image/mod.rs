@@ -27,6 +27,12 @@ impl Image {
     pub fn flat_pos(&self, pos: I2) -> usize {
         (pos[Y] * self.dims[X] + pos[X]) as usize
     }
+
+    #[inline(always)]
+    pub fn at(&self, pos: I2) -> Color {
+        let idx = self.flat_pos(pos);
+        self.data[idx] / self.weights[idx]
+    }
 }
 
 pub struct Block {

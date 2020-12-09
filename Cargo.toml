@@ -5,8 +5,8 @@ authors = ["Shashank Singh <sshashank124@gmail.com>"]
 edition = "2018"
 
 [dependencies]
+exr = "*"
 num_cpus = "*"
-openexr = "*"
 rand_core = "*"
 rand_pcg = "*"
 scoped_threadpool = "*"

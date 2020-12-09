@@ -154,6 +154,11 @@ scalar_binary_assign_op!(A2, SubAssign, sub_assign);
 scalar_binary_assign_op!(A2, MulAssign, mul_assign);
 scalar_binary_assign_op!(A2, DivAssign, div_assign);
 
+impl<A> From<A2<A>> for (A, A) {
+    #[inline(always)]
+    fn from(a: A2<A>) -> (A, A) { (a.0, a.1) }
+}
+
 impl From<I2> for F2 {
     #[inline(always)]
     fn from(a: I2) -> F2 { a.map(|i| i as F) }
