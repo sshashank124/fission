@@ -1,14 +1,17 @@
+mod intersection;
 mod mesh;
 mod sphere;
 
 use std::borrow::Borrow;
+use std::ops::BitAnd;
 pub use std::sync::Arc;
 
 use crate::aggregate::*;
 use crate::bsdf::*;
-use crate::geometry::*;
+use crate::prelude::*;
 use crate::texture::*;
 
+pub use intersection::*;
 pub use mesh::*;
 pub use sphere::*;
 
@@ -175,4 +178,23 @@ impl Intersectable for Arc<Shape> {
     fn surface_area(&self) -> F { Shape::borrow(self).surface_area() }
 
     fn intersection_cost(&self) -> F { Shape::borrow(self).intersection_cost() }
+}
+
+impl Intersectable for BBox {
+    #[inline(always)]
+    fn intersects(&self, ray: R) -> bool {
+        !((*self - ray.o) / ray.d).fold(ray.range(), BitAnd::bitand).degen()
+    }
+
+    fn bbox(&self) -> BBox { unreachable!() }
+    fn intersect(&self, _: R) -> Option<Its> { unreachable!() }
+    fn hit_info(&self, _: Its) -> Its { unreachable!() }
+    fn sample_surface(&self, _: F2) -> Its { unreachable!() }
+
+    fn surface_area(&self) -> F {
+        let A3(xe, ye, ze) = self.extents();
+        2. * (xe * ye + xe * ze + ye * ze)
+    }
+
+    fn intersection_cost(&self) -> F { 1. }
 }

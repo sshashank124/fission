@@ -1,6 +1,6 @@
 mod bvh;
 
-use crate::geometry::*;
+use crate::prelude::*;
 use crate::shape::*;
 
 pub use bvh::BVH;

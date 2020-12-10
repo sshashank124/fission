@@ -6,7 +6,6 @@ use yaml_rust::{Yaml, YamlLoader};
 use super::*;
 use crate::bsdf::*;
 use crate::camera::*;
-use crate::geometry::*;
 use crate::integrator::*;
 use crate::light::*;
 use crate::loader::obj;

@@ -1,9 +1,7 @@
 use std::ops::{Div, Mul};
 
 use super::*;
-use crate::bsdf::*;
 use crate::light::*;
-use crate::shape::*;
 
 pub type ShapeRef<'a> = (&'a Shape, I);
 static SHAPE_REF_PH: ShapeRef = (&SHAPE_PH, 0);

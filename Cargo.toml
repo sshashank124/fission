@@ -6,6 +6,7 @@ edition = "2018"
 
 [dependencies]
 exr = "*"
+graphite = { path = "graphite" }
 num_cpus = "*"
 rand_core = "*"
 rand_pcg = "*"

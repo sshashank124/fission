@@ -4,8 +4,6 @@
 mod aggregate;
 mod bsdf;
 mod camera;
-mod core;
-mod geometry;
 mod image;
 mod integrator;
 mod light;
@@ -15,12 +13,18 @@ mod scene;
 mod shape;
 mod texture;
 mod tracer;
+mod util;
+
+mod prelude {
+    pub use graphite::*;
+    pub use crate::util::*;
+}
 
 use std::env;
 use std::path::Path;
 
-use crate::core::*;
-use loader::*;
+use loader::config;
+use prelude::*;
 
 fn main() -> Res<()> {
     let args = env::args().collect::<Vec<_>>();

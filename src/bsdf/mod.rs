@@ -4,7 +4,7 @@ mod fresnel;
 mod microfacet;
 mod mirror;
 
-use crate::geometry::*;
+use crate::prelude::*;
 use crate::texture::*;
 use fresnel::*;
 

@@ -208,10 +208,17 @@ fn build(build_infos: &mut [BuildInfo],
               / bbox.surface_area()
         };
 
+
         let mc_idx =
             (1..NUM_BUCKETS - 1).map(|i| (i, buckets.split_at(i as usize)))
                                 .map(|(idx, bb)| (cost_of_split(bb), idx))
-                                .fold((F::POS_INF, 0), tup_cmp_lt)
+                                .fold((F::POS_INF, 0), |(a, b), (c, d)| {
+                                    if a < c {
+                                        (a, b)
+                                    } else {
+                                        (c, d)
+                                    }
+                                })
                                 .1;
 
         partition(build_infos, |build_info| bucket_index(build_info) < mc_idx)

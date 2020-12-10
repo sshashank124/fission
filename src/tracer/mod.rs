@@ -5,8 +5,8 @@ mod path;
 mod silhouette;
 
 use crate::bsdf::*;
-use crate::geometry::*;
 use crate::light::*;
+use crate::prelude::*;
 use crate::sampler::*;
 use crate::scene::Scene;
 use crate::shape::*;

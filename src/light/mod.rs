@@ -2,7 +2,7 @@ mod emitter;
 mod infinite;
 mod point;
 
-use crate::geometry::*;
+use crate::prelude::*;
 use crate::shape::*;
 use crate::texture::*;
 

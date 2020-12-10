@@ -1,7 +1,5 @@
 use super::*;
 
-use crate::texture::*;
-
 pub struct Infinite {
     intensity: Tex<Color>,
 }

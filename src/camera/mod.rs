@@ -1,6 +1,6 @@
 mod perspective;
 
-use crate::geometry::*;
+use crate::prelude::*;
 use crate::image::*;
 use crate::sampler::*;
 

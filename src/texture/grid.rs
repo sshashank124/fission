@@ -41,3 +41,14 @@ impl<A: Copy> Texture<A> for Grid<A> {
         }
     }
 }
+
+#[inline(always)]
+pub fn shuffle_u64(mut h: u64) -> u64 {
+    h = h.wrapping_mul(5_068_423);
+    h = h.wrapping_add(7_619_237);
+    h ^= h.rotate_right(19);
+    h ^= h.rotate_left(29);
+    h ^= h.rotate_right(13);
+    h = h.wrapping_mul(1_958_239);
+    h.wrapping_add(7_608_345)
+}

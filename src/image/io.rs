@@ -1,7 +1,6 @@
 use exr::prelude::rgba_image::*;
 
 use super::*;
-use crate::loader::*;
 
 impl Image {
     pub fn save_exr(&self, filename: &str) -> Res<()> {

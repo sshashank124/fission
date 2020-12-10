@@ -1,6 +1,6 @@
 use std::ops::Div;
 
-use crate::core::*;
+use super::*;
 
 pub fn eta(ior: Option<F2>) -> F {
     ior.unwrap_or(A2(1.000_277, 1.5046)).reduce(Div::div)

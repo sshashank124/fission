@@ -2,8 +2,8 @@ use std::ops::Deref;
 
 use crate::aggregate::BVH;
 use crate::camera::Camera;
-use crate::geometry::*;
 use crate::light::*;
+use crate::prelude::*;
 use crate::shape::*;
 
 pub struct Scene {

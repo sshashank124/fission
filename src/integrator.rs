@@ -1,6 +1,6 @@
 use crate::camera::*;
-use crate::core::*;
 use crate::image::*;
+use crate::prelude::*;
 use crate::sampler::*;
 use crate::scene::*;
 use crate::tracer::*;

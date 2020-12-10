@@ -5,7 +5,7 @@ mod grid;
 
 use std::ops::{Add, Mul};
 
-use crate::geometry::*;
+use crate::prelude::*;
 
 pub use checkerboard::Checkerboard;
 pub use constant::Constant;

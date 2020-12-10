@@ -147,3 +147,11 @@ impl SampleIndexMemo {
         cache
     }
 }
+
+#[inline(always)]
+pub fn ceil_pow2_u32(i: u32) -> u32 {
+    1 << (32 - i.saturating_sub(1).leading_zeros())
+}
+
+#[inline(always)]
+pub fn log2_ceil_u32(i: u32) -> u32 { 31 - i.leading_zeros() }

@@ -6,7 +6,6 @@ use std::str::FromStr;
 use std::sync::Arc;
 
 use super::*;
-use crate::geometry::*;
 use crate::shape::*;
 
 pub fn load_from_file(filename: &str, to_world: T) -> Res<Mesh> {
