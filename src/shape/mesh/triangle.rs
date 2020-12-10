@@ -8,20 +8,6 @@ pub struct Triangle {
     pub mesh_data: Arc<MeshData>,
 }
 
-pub struct Face(pub I, pub I, pub I);
-
-pub struct MeshData {
-    pub p:  Vec<P>,
-    pub n:  Vec<N>,
-    pub uv: Vec<F2>,
-}
-
-impl MeshData {
-    pub fn new() -> MeshData {
-        MeshData { p: Vec::new(), n: Vec::new(), uv: Vec::new() }
-    }
-}
-
 impl Triangle {
     #[inline(always)]
     fn a(&self) -> P { self.p[self.f.0 as usize] }

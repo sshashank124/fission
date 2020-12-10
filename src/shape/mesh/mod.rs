@@ -1,6 +1,7 @@
 mod triangle;
 
 use super::*;
+use objloader::{Face, MeshData};
 
 pub use triangle::*;
 
@@ -10,7 +11,14 @@ pub struct Mesh {
 }
 
 impl Mesh {
-    pub fn new(triangles: Vec<Triangle>) -> Self {
+    pub fn new(mesh_data: MeshData, faces: Vec<Face>) -> Self {
+        let mesh_data = Arc::new(mesh_data);
+        let triangles = faces.into_iter()
+                             .map(|f| Triangle {
+                                 f,
+                                 mesh_data: mesh_data.clone()
+                             })
+                             .collect();
         let tris = BVH::new(triangles);
         let dpdf =
             DiscretePDF::new(tris.elements.iter(), Triangle::surface_area);

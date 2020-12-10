@@ -3,17 +3,18 @@ use std::io::Read;
 
 use yaml_rust::{Yaml, YamlLoader};
 
-use super::*;
 use crate::bsdf::*;
 use crate::camera::*;
 use crate::integrator::*;
 use crate::light::*;
-use crate::loader::obj;
+use crate::prelude::*;
 use crate::sampler::*;
 use crate::scene::*;
 use crate::shape::*;
 use crate::texture::*;
 use crate::tracer::*;
+
+type Res<T> = Result<T, String>;
 
 pub fn load_from_file(filename: &str) -> Res<Integrator> {
     let mut f = File::open(filename).with_msg("Error opening config file")?;
@@ -117,9 +118,10 @@ fn load_element(config: &Yaml) -> Res<Vec<Element>> {
     match s(&config["type"], "missing element type")? {
         "mesh" => {
             let filename = s(&config["obj"], "malformed filename")?;
+            let (mesh_data, faces) =
+                objloader::load_from_file(filename, to_world)?;
             let shape =
-                Arc::new(Shape::new(obj::load_from_file(filename,
-                                                        to_world)?.into(),
+                Arc::new(Shape::new(Mesh::new(mesh_data, faces).into(),
                                     bsdf, emission));
             if emitter {
                 items.push(Element::Light(shape.clone().into()));
@@ -371,3 +373,15 @@ fn fo(f: &Yaml) -> Option<F> {
 fn io(i: &Yaml) -> Option<I> { i.as_i64().map(|i| i as I) }
 fn so(s: &Yaml) -> Option<&'_ str> { s.as_str() }
 fn vo<'a>(v: &'a Yaml) -> Option<&'a Vec<Yaml>> { v.as_vec() }
+
+trait ErrorContext<C> {
+    fn with_msg(self, msg: &str) -> C;
+}
+
+impl<T, E> ErrorContext<Res<T>> for Result<T, E> where E: std::fmt::Display
+{
+    #[inline(always)]
+    fn with_msg(self, msg: &str) -> Res<T> {
+        self.map_err(|e| format!("{}: {}", msg, e))
+    }
+}

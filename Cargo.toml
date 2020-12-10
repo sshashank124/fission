@@ -6,8 +6,9 @@ edition = "2018"
 
 [dependencies]
 exr = "*"
-graphite = { path = "graphite" }
+graphite = { git = "https://github.com/sshashank124/graphite" }
 num_cpus = "*"
+objloader = { git = "https://github.com/sshashank124/objloader" }
 rand_core = "*"
 rand_pcg = "*"
 scoped_threadpool = "*"
@@ -17,3 +18,4 @@ yaml-rust = "*"
 [profile.release]
 opt-level = 3
 panic = "abort"
+lto = true

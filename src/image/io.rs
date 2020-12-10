@@ -1,9 +1,10 @@
-use exr::prelude::rgba_image::*;
+use exr::prelude::rgba_image::{ImageInfo, Pixel, SampleType,
+                               write_options, Vec2};
 
 use super::*;
 
 impl Image {
-    pub fn save_exr(&self, filename: &str) -> Res<()> {
+    pub fn save_exr(&self, filename: &str) -> Result<(), String> {
         let dims: (usize, usize) = self.dims.map(|a| a as usize).into();
         let dims: Vec2<usize> = dims.into();
         ImageInfo::rgb(dims, SampleType::F32)

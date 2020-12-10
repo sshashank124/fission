@@ -4,10 +4,10 @@
 mod aggregate;
 mod bsdf;
 mod camera;
+mod config;
 mod image;
 mod integrator;
 mod light;
-mod loader;
 mod sampler;
 mod scene;
 mod shape;
@@ -23,10 +23,9 @@ mod prelude {
 use std::env;
 use std::path::Path;
 
-use loader::config;
 use prelude::*;
 
-fn main() -> Res<()> {
+fn main() -> Result<(), String> {
     let args = env::args().collect::<Vec<_>>();
     if args.len() != 2 {
         return Err("Usage: fission <scene_description.yaml>".into())
@@ -35,7 +34,8 @@ fn main() -> Res<()> {
 
     let integrator = {
         let _progress = Progress::new("Loading scene description", None);
-        config::load_from_file(config_file).with_msg("Failed to load config")?
+        config::load_from_file(config_file)
+               .map_err(|e| format!("Failed to load config: {}", e))?
     };
 
     let image = integrator.render();
@@ -44,7 +44,8 @@ fn main() -> Res<()> {
     let save_name = save_path.to_str().unwrap();
     {
         let _progress = Progress::new("Saving rendered image", None);
-        image.save_exr(save_name).with_msg("Saving image failed")?;
+        image.save_exr(save_name)
+             .map_err(|e| format!("Saving image failed: {}", e))?;
     }
 
     Ok(())

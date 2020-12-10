@@ -1,6 +1,7 @@
 Physically-Based Renderer in Rust
 
 Uses [graphite](https://github.com/sshashank124/graphite) as the base math, vector and geometry library
+Uses [objloader](https://github.com/sshashank124/objloader) as the Wavefront OBJ-loading library
 
 Features:
 - Tracers (Path, Ambient Occlusion, Direct Illumination, Normals, Silhouette)
@@ -12,5 +13,5 @@ Features:
 - Lights (Point, Area, Infinite)
 - Samplers (Discrete PDF, Independent [PCG64], Sobol LDS)
 - Textures (Constant, Checkerboard, Gradient, Grid)
-- Loaders (YAML scene config, Wavefront OBJ)
+- YAML scene config loader
 - OpenEXR Image output
