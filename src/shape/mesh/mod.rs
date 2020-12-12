@@ -1,7 +1,9 @@
 mod triangle;
 
-use super::*;
 use objloader::{Face, MeshData};
+
+use super::*;
+use crate::util::{DiscretePDF, Either};
 
 pub use triangle::*;
 

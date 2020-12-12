@@ -17,13 +17,12 @@ mod util;
 
 mod prelude {
     pub use graphite::*;
-    pub use crate::util::*;
 }
 
 use std::env;
 use std::path::Path;
 
-use prelude::*;
+use util::Progress;
 
 fn main() -> Result<(), String> {
     let args = env::args().collect::<Vec<_>>();

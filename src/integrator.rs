@@ -5,6 +5,7 @@ use crate::prelude::*;
 use crate::sampler::*;
 use crate::scene::*;
 use crate::tracer::*;
+use crate::util::Progress;
 
 pub struct Integrator {
     tracer:  Tracer,

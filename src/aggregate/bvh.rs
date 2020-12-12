@@ -4,6 +4,7 @@ use std::mem;
 use staticvec::StaticVec;
 
 use super::*;
+use crate::util::Either;
 
 pub struct BVH<S> {
     nodes:        Vec<BVHNode>,

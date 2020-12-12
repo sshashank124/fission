@@ -1,4 +1,5 @@
 use super::*;
+use crate::util::Either;
 
 pub struct Path {
     depth: I2,
