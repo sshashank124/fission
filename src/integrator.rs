@@ -1,3 +1,5 @@
+use rayon::iter::{ParallelBridge, ParallelIterator};
+
 use crate::image::*;
 use crate::prelude::*;
 use crate::sampler::*;
@@ -20,7 +22,7 @@ impl Integrator {
         let mut progress = Progress::new("Rendering ", Some(self.sampler.spp));
 
         for i in 0..self.sampler.spp {
-            img.as_block().blocks().parallelize().for_each(|mut block| {
+            img.as_block().blocks().par_bridge().for_each(|mut block| {
                 let sampler = self.sampler.for_block(i, &block);
 
                 for pos in block.pixels() {

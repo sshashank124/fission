@@ -7,11 +7,10 @@ edition = "2018"
 [dependencies]
 exr = "*"
 graphite = { git = "https://github.com/sshashank124/graphite" }
-num_cpus = "*"
 objloader = { git = "https://github.com/sshashank124/objloader" }
 rand_core = "*"
 rand_pcg = "*"
-scoped_threadpool = "*"
+rayon = "*"
 staticvec = "*"
 yaml-rust = "*"
 
