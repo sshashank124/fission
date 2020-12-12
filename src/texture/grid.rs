@@ -25,9 +25,9 @@ impl<A> Grid<A> {
     }
 }
 
-impl<A: Copy> Texture<A> for Grid<A> {
+impl<A: Copy> Grid<A> {
     #[inline(always)]
-    fn eval(&self, s: F2) -> A {
+    pub fn eval(&self, s: F2) -> A {
         let cell = self.normalize * s;
         let ci = cell.map(F::floori);
         let p = shuffle_u64(((ci[X] as u64) << 20) + ci[Y] as u64);

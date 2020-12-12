@@ -12,12 +12,7 @@ pub use constant::Constant;
 pub use gradient::Gradient;
 pub use grid::Grid;
 
-pub trait Texture<A> {
-    fn eval(&self, s: F2) -> A;
-}
-
 pub enum Tex<A>
-    where A: Copy + Add<Output = A> + Mul<F, Output = A>
 {
     Checkerboard(Checkerboard<A>),
     Constant(Constant<A>),
@@ -26,14 +21,14 @@ pub enum Tex<A>
     Grid(Grid<A>),
 }
 
-impl<A> Texture<A> for Tex<A>
+impl<A> Tex<A>
     where A: Copy + Add<Output = A> + Mul<F, Output = A>
 {
     #[inline(always)]
-    fn eval(&self, s: F2) -> A {
+    pub fn eval(&self, s: F2) -> A {
         match self {
             Self::Checkerboard(t) => t.eval(s),
-            Self::Constant(t) => t.eval(s),
+            Self::Constant(t) => t.eval(),
             Self::LinearGradient(t) => t.eval(s),
             Self::SmoothGradient(t) => t.eval(s),
             Self::Grid(t) => t.eval(s),

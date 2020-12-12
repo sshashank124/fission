@@ -38,11 +38,9 @@ impl Microfacet {
         }
         (3.535 * a + 2.181 * a.sq()) / (1. + 2.276 * a + 2.577 * a.sq())
     }
-}
 
-impl BXDF for Microfacet {
     #[inline(always)]
-    fn eval(&self, wi: V, wo: V, _: F2) -> Color {
+    pub fn eval(&self, wi: V, wo: V) -> Color {
         let cti = Frame::ct(*wi);
         let cto = Frame::ct(*wo);
         if cti <= 0. || cto <= 0. {
@@ -56,7 +54,7 @@ impl BXDF for Microfacet {
     }
 
     #[inline(always)]
-    fn sample(&self, wi: V, uv: F2, s: F2) -> (Color, V, F, bool) {
+    pub fn sample(&self, wi: V, s: F2) -> (Color, V, F, bool) {
         let spec = |s| {
             let n = V(BeckmannHemisphere::warp(s, self.alpha));
             (n * 2. * n.dot(wi) - wi).unit()
@@ -64,14 +62,14 @@ impl BXDF for Microfacet {
         let diffuse = |s| V(CosineHemisphere::warp(s, ()));
         let wo = Sampler::split_reuse_2d(s, self.ks, spec, diffuse);
         let p = self.pdf(wi, wo);
-        (if p <= 0. { Color::BLACK } else { self.eval(wi, wo, uv) / p },
+        (if p <= 0. { Color::BLACK } else { self.eval(wi, wo) / p },
          wo,
          p,
          self.is_delta())
     }
 
     #[inline(always)]
-    fn pdf(&self, wi: V, wo: V) -> F {
+    pub fn pdf(&self, wi: V, wo: V) -> F {
         let wh = N::v(wi + wo);
         let dp = CosineHemisphere::pdf(*wo, ());
         let sp = self.beckmann(wh) * Frame::ct(**wh) * 0.25 / wh.dot(wo);
@@ -79,5 +77,5 @@ impl BXDF for Microfacet {
     }
 
     #[inline(always)]
-    fn is_delta(&self) -> bool { false }
+    pub fn is_delta(&self) -> bool { false }
 }

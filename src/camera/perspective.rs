@@ -13,11 +13,9 @@ impl Perspective {
         let fd = fd.unwrap_or(0.);
         Self { fov_scale, lens_r, fd }
     }
-}
 
-impl CameraModel for Perspective {
     #[inline(always)]
-    fn ray_at(&self, point: F2, sampler: &mut Sampler) -> R {
+    pub fn ray_at(&self, point: F2, sampler: &mut Sampler) -> R {
         let ray = R::unbounded(P::ZERO, V::a2(point * self.fov_scale, 1.));
         if F::approx_zero(self.lens_r) {
             ray

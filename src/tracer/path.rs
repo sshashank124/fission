@@ -11,11 +11,9 @@ impl Path {
         let rr_tp = rr_tp.unwrap_or(1.);
         Self { depth, rr_tp }
     }
-}
 
-impl Trace for Path {
     #[inline(always)]
-    fn trace(&self, scene: &Scene, mut sampler: Sampler, ray: R) -> Color {
+    pub fn trace(&self, scene: &Scene, mut sampler: Sampler, ray: R) -> Color {
         let init = (Color::ZERO, Color::ONE, ray, scene.intersect(ray), true);
         if init.3.is_none() {
             return scene.lenv(&ray)

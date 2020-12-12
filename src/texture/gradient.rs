@@ -13,10 +13,10 @@ impl<A, L> Gradient<A, L> {
     }
 }
 
-impl<A, L> Texture<A> for Gradient<A, L>
+impl<A, L> Gradient<A, L>
     where A: Copy + Add<Output = A> + Mul<F, Output = A>,
           L: Interp<A>
 {
     #[inline(always)]
-    fn eval(&self, s: F2) -> A { L::interp(self.vals, s[0]) }
+    pub fn eval(&self, s: F2) -> A { L::interp(self.vals, s[0]) }
 }

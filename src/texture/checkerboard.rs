@@ -13,9 +13,9 @@ impl<A> Checkerboard<A> {
     }
 }
 
-impl<A: Copy> Texture<A> for Checkerboard<A> {
+impl<A: Copy> Checkerboard<A> {
     #[inline(always)]
-    fn eval(&self, s: F2) -> A {
+    pub fn eval(&self, s: F2) -> A {
         self.vals[(self.t * s).map(F::floori).map(I::mod2).reduce(Num::eq)]
     }
 }

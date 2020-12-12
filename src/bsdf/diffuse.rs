@@ -6,11 +6,9 @@ pub struct Diffuse {
 
 impl Diffuse {
     pub const fn new(albedo: Tex<Color>) -> Self { Self { albedo } }
-}
 
-impl BXDF for Diffuse {
     #[inline(always)]
-    fn eval(&self, wi: V, wo: V, uv: F2) -> Color {
+    pub fn eval(&self, wi: V, wo: V, uv: F2) -> Color {
         let cto = Frame::ct(*wo);
         if Frame::ct(*wi) <= 0. || cto <= 0. {
             Color::BLACK
@@ -20,16 +18,16 @@ impl BXDF for Diffuse {
     }
 
     #[inline(always)]
-    fn sample(&self, wi: V, uv: F2, s: F2) -> (Color, V, F, bool) {
+    pub fn sample(&self, uv: F2, s: F2) -> (Color, V, F, bool) {
         let wo = V(CosineHemisphere::warp(s, ()));
-        (self.albedo.eval(uv), wo, self.pdf(wi, wo), self.is_delta())
+        (self.albedo.eval(uv), wo, self.pdf(wo), self.is_delta())
     }
 
     #[inline(always)]
-    fn pdf(&self, _: V, wo: V) -> F { CosineHemisphere::pdf(*wo, ()) }
+    pub fn pdf(&self, wo: V) -> F { CosineHemisphere::pdf(*wo, ()) }
 
     #[inline(always)]
-    fn is_delta(&self) -> bool { false }
+    pub fn is_delta(&self) -> bool { false }
 }
 
 impl Zero for Diffuse {

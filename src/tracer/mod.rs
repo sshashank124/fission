@@ -4,8 +4,6 @@ mod normals;
 mod path;
 mod silhouette;
 
-use crate::bsdf::*;
-use crate::light::*;
 use crate::prelude::*;
 use crate::sampler::*;
 use crate::scene::Scene;
@@ -17,10 +15,6 @@ pub use normals::Normals;
 pub use path::Path;
 pub use silhouette::Silhouette;
 
-pub trait Trace {
-    fn trace(&self, scene: &Scene, sampler: Sampler, ray: R) -> Color;
-}
-
 pub enum Tracer {
     AO(AmbientOcclusion),
     Direct(Direct),
@@ -29,14 +23,14 @@ pub enum Tracer {
     Silhouette(Silhouette),
 }
 
-impl Trace for Tracer {
-    fn trace(&self, scene: &Scene, sampler: Sampler, ray: R) -> Color {
+impl Tracer {
+    pub fn trace(&self, scene: &Scene, sampler: Sampler, ray: R) -> Color {
         match self {
             Self::AO(t) => t.trace(scene, sampler, ray),
             Self::Direct(t) => t.trace(scene, sampler, ray),
-            Self::Normals(t) => t.trace(scene, sampler, ray),
+            Self::Normals(t) => t.trace(scene, ray),
             Self::Path(t) => t.trace(scene, sampler, ray),
-            Self::Silhouette(t) => t.trace(scene, sampler, ray),
+            Self::Silhouette(t) => t.trace(scene, ray),
         }
     }
 }

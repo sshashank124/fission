@@ -1,7 +1,6 @@
 use std::ops::{Div, Mul};
 
 use super::*;
-use crate::light::*;
 
 pub type ShapeRef<'a> = (&'a Shape, I);
 static SHAPE_REF_PH: ShapeRef = (&SHAPE_PH, 0);

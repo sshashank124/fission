@@ -10,10 +10,6 @@ pub enum CameraType {
     Perspective(Perspective),
 }
 
-pub trait CameraModel {
-    fn ray_at(&self, point: F2, sampler: &mut Sampler) -> R;
-}
-
 pub struct Camera {
     pub resolution: I2,
     model:          CameraType,
@@ -30,17 +26,15 @@ impl Camera {
                to_world }
     }
 
+    #[inline(always)]
+    pub fn ray_at(&self, point: F2, sampler: &mut Sampler) -> R {
+        self.to_world * self.model.ray_at(self.from_pixel * point, sampler)
+    }
+
     pub fn new_image(&self) -> Image { Image::new(self.resolution) }
 }
 
-impl CameraModel for Camera {
-    #[inline(always)]
-    fn ray_at(&self, point: F2, sampler: &mut Sampler) -> R {
-        self.to_world * self.model.ray_at(self.from_pixel * point, sampler)
-    }
-}
-
-impl CameraModel for CameraType {
+impl CameraType {
     #[inline(always)]
     fn ray_at(&self, point: F2, sampler: &mut Sampler) -> R {
         match self {

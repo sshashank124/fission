@@ -1,5 +1,17 @@
 use super::*;
 
+const SOBOL_NDIM: u32 = 1024;
+const SOBOL_SIZE: u32 = 52;
+const SOBOL_MATRIX_LEN: usize = (SOBOL_NDIM * SOBOL_SIZE) as usize;
+#[allow(clippy::all)]
+const SOBOL_MATRIX: [u32; SOBOL_MATRIX_LEN] = include!("sobol.data");
+
+#[allow(clippy::all)]
+const VDC_MATRIX: [[u64; 50]; 25] = include!("vdc.data");
+
+#[allow(clippy::all)]
+const VDC_INV_MATRIX: [[u64; 52]; 26] = include!("vdc_inv.data");
+
 pub struct Sobol {
     dim:       u32,
     m:         u32,
@@ -44,23 +56,9 @@ impl Sobol {
         }
         index
     }
-}
 
-const SOBOL_NDIM: u32 = 1024;
-const SOBOL_SIZE: u32 = 52;
-const SOBOL_MATRIX_LEN: usize = (SOBOL_NDIM * SOBOL_SIZE) as usize;
-#[allow(clippy::all)]
-const SOBOL_MATRIX: [u32; SOBOL_MATRIX_LEN] = include!("sobol.data");
-
-#[allow(clippy::all)]
-const VDC_MATRIX: [[u64; 50]; 25] = include!("vdc.data");
-
-#[allow(clippy::all)]
-const VDC_INV_MATRIX: [[u64; 52]; 26] = include!("vdc_inv.data");
-
-impl Sample for Sobol {
     #[inline(always)]
-    fn for_block(&self, i: I, block: &Block) -> Self {
+    pub fn for_block(&self, i: I, block: &Block) -> Self {
         let Block { pos, dims, .. } = block;
         let res = ceil_pow2_u32(Num::max(dims[X], dims[Y]) as u32);
         let m = log2_ceil_u32(res);
@@ -74,17 +72,17 @@ impl Sample for Sobol {
     }
 
     #[inline(always)]
-    fn for_pixel(&self, pos: I2) -> Self {
+    pub fn for_pixel(&self, pos: I2) -> Self {
         Self { dim:       0,
                m:         self.m,
                cache:     self.cache.clone(),
                block_pos: self.block_pos,
                pixel_pos: pos,
-               rng:       self.rng.for_pixel(pos), }
+               rng:       self.rng.for_pixel(), }
     }
 
     #[inline(always)]
-    fn next_1d(&mut self) -> F {
+    pub fn next_1d(&mut self) -> F {
         if self.dim >= SOBOL_NDIM {
             // eprintln!("Sobol: dim overflow at idx: {}", self.cache.i);
             return self.rng()
@@ -102,10 +100,10 @@ impl Sample for Sobol {
     }
 
     #[inline(always)]
-    fn next_2d(&mut self) -> F2 { A2(self.next_1d(), self.next_1d()) }
+    pub fn next_2d(&mut self) -> F2 { A2(self.next_1d(), self.next_1d()) }
 
     #[inline(always)]
-    fn rng(&mut self) -> F { self.rng.rng() }
+    pub fn rng(&mut self) -> F { self.rng.rng() }
 }
 
 #[inline(always)]

@@ -4,11 +4,9 @@ pub struct Silhouette;
 
 impl Silhouette {
     pub fn new() -> Self { Self }
-}
 
-impl Trace for Silhouette {
     #[inline(always)]
-    fn trace(&self, scene: &Scene, _: Sampler, ray: R) -> Color {
+    pub fn trace(&self, scene: &Scene, ray: R) -> Color {
         if scene.intersects(ray) {
             Color::BLACK
         } else {

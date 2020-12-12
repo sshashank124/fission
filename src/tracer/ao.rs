@@ -9,11 +9,9 @@ impl AmbientOcclusion {
     pub fn new(s: Option<I>, rl: Option<F>) -> Self {
         Self { samples: s.unwrap_or(1), ray_len: rl.unwrap_or(F::POS_INF) }
     }
-}
 
-impl Trace for AmbientOcclusion {
     #[inline(always)]
-    fn trace(&self, scene: &Scene, mut sampler: Sampler, ray: R) -> Color {
+    pub fn trace(&self, scene: &Scene, mut sampler: Sampler, ray: R) -> Color {
         match scene.intersect(ray) {
             None => Color::BLACK,
             Some(its) => {

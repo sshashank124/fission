@@ -13,18 +13,6 @@ pub use diffuse::Diffuse;
 pub use microfacet::Microfacet;
 pub use mirror::Mirror;
 
-pub trait BXDF {
-    // BSDF * cos(theta)
-    fn eval(&self, wi: V, wo: V, uv: F2) -> Color;
-
-    // (color, wo, pdf, specular)
-    fn sample(&self, wi: V, uv: F2, s: F2) -> (Color, V, F, bool);
-
-    fn pdf(&self, wi: V, wo: V) -> F;
-
-    fn is_delta(&self) -> bool;
-}
-
 pub enum BSDF {
     Dielectric(Dielectric),
     Diffuse(Diffuse),
@@ -32,39 +20,39 @@ pub enum BSDF {
     Mirror(Mirror),
 }
 
-impl BXDF for BSDF {
+impl BSDF {
+    // BSDF * cos(theta)
     #[inline(always)]
-    fn eval(&self, wi: V, wo: V, uv: F2) -> Color {
+    pub fn eval(&self, wi: V, wo: V, uv: F2) -> Color {
         match self {
-            Self::Dielectric(f) => f.eval(wi, wo, uv),
             Self::Diffuse(f) => f.eval(wi, wo, uv),
-            Self::Microfacet(f) => f.eval(wi, wo, uv),
-            Self::Mirror(f) => f.eval(wi, wo, uv),
+            Self::Microfacet(f) => f.eval(wi, wo),
+            _ => Color::ZERO,
+        }
+    }
+
+    // (color, wo, pdf, specular)
+    #[inline(always)]
+    pub fn sample(&self, wi: V, uv: F2, s: F2) -> (Color, V, F, bool) {
+        match self {
+            Self::Dielectric(f) => f.sample(wi, s),
+            Self::Diffuse(f) => f.sample(uv, s),
+            Self::Microfacet(f) => f.sample(wi, s),
+            Self::Mirror(f) => f.sample(wi),
         }
     }
 
     #[inline(always)]
-    fn sample(&self, wi: V, uv: F2, s: F2) -> (Color, V, F, bool) {
+    pub fn pdf(&self, wi: V, wo: V) -> F {
         match self {
-            Self::Dielectric(f) => f.sample(wi, uv, s),
-            Self::Diffuse(f) => f.sample(wi, uv, s),
-            Self::Microfacet(f) => f.sample(wi, uv, s),
-            Self::Mirror(f) => f.sample(wi, uv, s),
-        }
-    }
-
-    #[inline(always)]
-    fn pdf(&self, wi: V, wo: V) -> F {
-        match self {
-            Self::Dielectric(f) => f.pdf(wi, wo),
-            Self::Diffuse(f) => f.pdf(wi, wo),
+            Self::Diffuse(f) => f.pdf(wo),
             Self::Microfacet(f) => f.pdf(wi, wo),
-            Self::Mirror(f) => f.pdf(wi, wo),
+            _ => 0.,
         }
     }
 
     #[inline(always)]
-    fn is_delta(&self) -> bool {
+    pub fn is_delta(&self) -> bool {
         match self {
             Self::Dielectric(f) => f.is_delta(),
             Self::Diffuse(f) => f.is_delta(),

@@ -77,11 +77,9 @@ impl Direct {
 
         (ls, its.map(|i| (lb, ray, i, spec)))
     }
-}
 
-impl Trace for Direct {
     #[inline(always)]
-    fn trace(&self, scene: &Scene, mut sampler: Sampler, ray: R) -> Color {
+    pub fn trace(&self, scene: &Scene, mut sampler: Sampler, ray: R) -> Color {
         match scene.intersect(ray) {
             None => scene.lenv(&ray),
             Some(its) => {
