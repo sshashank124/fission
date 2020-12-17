@@ -24,7 +24,7 @@ union UF32 {
     f: f32,
 }
 #[inline(always)]
-pub fn u32_to_f32(i: u32) -> f32 {
+fn u32_to_f32(i: u32) -> f32 {
     let n = UF32 { u: (i >> 9) | 0x3f80_0000 };
     unsafe { n.f - 1. }
 }
@@ -35,7 +35,7 @@ union UF64 {
     f: f64,
 }
 #[inline(always)]
-pub fn u64_to_f64(i: u64) -> f64 {
+fn u64_to_f64(i: u64) -> f64 {
     let n = UF64 { u: (i >> 12) | 0x3ff0_0000_0000_0000 };
     unsafe { n.f - 1. }
 }

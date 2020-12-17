@@ -1,0 +1,32 @@
+integrator:
+  tracer:
+    type: direct
+
+  sampler:
+    type: sobol
+    samples_per_pixel: 32
+
+scene:
+  camera:
+    type: perspective
+    fov: 30
+    resolution: [800, 600]
+
+    transforms:
+      - look_at:
+          origin: [15, 1, 0]
+          target: [-11, 5, 0]
+          up: [0, 1, 0]
+
+  elements:
+    - type: mesh
+      obj: obj/sponza.obj
+      bsdf:
+        type: diffuse
+        albedo:
+          type: constant
+          color: [0.8, 0.8, 0.8]
+
+    - type: pointlight
+      power: [500, 250, 250]
+      position: [-8, 5, 0]

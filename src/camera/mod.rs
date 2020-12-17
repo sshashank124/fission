@@ -6,10 +6,12 @@ use crate::sampler::*;
 
 pub use perspective::Perspective;
 
+#[derive(Debug)]
 pub enum CameraType {
     Perspective(Perspective),
 }
 
+#[derive(Debug)]
 pub struct Camera {
     pub resolution: I2,
     model:          CameraType,

@@ -29,8 +29,8 @@ impl Sampler {
     }
 
     #[inline(always)]
-    pub fn for_pixel(&self, pos: I2) -> Self {
-        Self::new(self.sampler.for_pixel(pos), self.spp)
+    pub fn prepare_for_pixel(&mut self, pos: I2) {
+        self.sampler.prepare_for_pixel(pos)
     }
 
     #[inline(always)]
@@ -68,18 +68,10 @@ impl SamplerType {
     }
 
     #[inline(always)]
-    pub fn for_pixel(&self, pos: I2) -> Self {
+    pub fn prepare_for_pixel(&mut self, pos: I2) {
         match self {
-            Self::Independent(s) => s.for_pixel().into(),
-            Self::Sobol(s) => s.for_pixel(pos).into(),
-        }
-    }
-
-    #[inline(always)]
-    pub fn next_1d(&mut self) -> F {
-        match self {
-            Self::Independent(s) => s.next_1d(),
-            Self::Sobol(s) => s.next_1d(),
+            Self::Sobol(s) => s.prepare_for_pixel(pos),
+            _ => (),
         }
     }
 

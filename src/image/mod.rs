@@ -2,19 +2,19 @@ mod io;
 
 use crate::prelude::*;
 
-const BLOCK_SIZE: I2 = A2(8, 8);
+const BLOCK_SIZE: I2 = A2(16, 16);
 
 pub struct Image {
     dims:    I2,
     data:    Vec<Color>,
-    weights: Vec<F>,
+    weights: Vec<I>,
 }
 
 impl Image {
     pub fn new(dims: I2) -> Self {
         let len = (dims[X] * dims[Y]) as usize;
         let data = vec![Color::BLACK; len];
-        let weights = vec![0.; len];
+        let weights = vec![0; len];
         Self { dims, data, weights }
     }
 
@@ -31,7 +31,12 @@ impl Image {
     #[inline(always)]
     pub fn at(&self, pos: I2) -> Color {
         let idx = self.flat_pos(pos);
-        self.data[idx] / self.weights[idx]
+        let w = self.weights[idx];
+        if w > I::ZERO {
+            self.data[idx] / w as F
+        } else {
+            Color::BLACK
+        }
     }
 }
 
@@ -50,7 +55,7 @@ impl Block {
         let pos = pos.map(F::floori).zip(self.pos + self.dims - 1, Num::min);
         let loc = img.flat_pos(pos);
         img.data[loc] += color;
-        img.weights[loc] += 1.;
+        img.weights[loc] += 1;
     }
 
     #[inline(always)]

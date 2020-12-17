@@ -2,6 +2,7 @@ use super::*;
 
 use crate::sampler::*;
 
+#[derive(Debug)]
 pub struct Microfacet {
     kd:    Color,
     ks:    F,

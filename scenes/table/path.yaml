@@ -5,7 +5,7 @@ integrator:
 
   sampler:
     type: sobol
-    samples_per_pixel: 64
+    samples_per_pixel: 128
 
 scene:
   camera:

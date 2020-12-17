@@ -15,6 +15,7 @@ pub use normals::Normals;
 pub use path::Path;
 pub use silhouette::Silhouette;
 
+#[derive(Debug)]
 pub enum Tracer {
     AO(AmbientOcclusion),
     Direct(Direct),
@@ -24,7 +25,7 @@ pub enum Tracer {
 }
 
 impl Tracer {
-    pub fn trace(&self, scene: &Scene, sampler: Sampler, ray: R) -> Color {
+    pub fn trace(&self, scene: &Scene, sampler: &mut Sampler, ray: R) -> Color {
         match self {
             Self::AO(t) => t.trace(scene, sampler, ray),
             Self::Direct(t) => t.trace(scene, sampler, ray),

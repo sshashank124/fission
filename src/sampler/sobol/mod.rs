@@ -21,7 +21,7 @@ pub struct Sobol {
     rng:       Independent,
 }
 
-#[derive(Clone)]
+#[derive(Clone, Default)]
 struct SampleIndexMemo {
     d:       u64,
     i:       u64,
@@ -60,7 +60,7 @@ impl Sobol {
     #[inline(always)]
     pub fn for_block(&self, i: I, block: &Block) -> Self {
         let Block { pos, dims, .. } = block;
-        let res = ceil_pow2_u32(Num::max(dims[X], dims[Y]) as u32);
+        let res = ceil_pow2_u32(dims.reduce(Num::max) as u32);
         let m = log2_ceil_u32(res);
         let cache = SampleIndexMemo::new(i as u64, m);
         Self { dim: 0,
@@ -72,19 +72,15 @@ impl Sobol {
     }
 
     #[inline(always)]
-    pub fn for_pixel(&self, pos: I2) -> Self {
-        Self { dim:       0,
-               m:         self.m,
-               cache:     self.cache.clone(),
-               block_pos: self.block_pos,
-               pixel_pos: pos,
-               rng:       self.rng.for_pixel(), }
+    pub fn prepare_for_pixel(&mut self, pos: I2) {
+        self.dim = 0;
+        self.pixel_pos = pos;
     }
 
     #[inline(always)]
-    pub fn next_1d(&mut self) -> F {
+    fn next_1d(&mut self) -> F {
         if self.dim >= SOBOL_NDIM {
-            // eprintln!("Sobol: dim overflow at idx: {}", self.cache.i);
+            eprintln!("Sobol: dim overflow at idx: {}", self.cache.i);
             return self.rng()
         }
 
@@ -126,8 +122,6 @@ fn sample_sobol(mut idx: u64, dim: u32) -> u32 {
 }
 
 impl SampleIndexMemo {
-    fn default() -> Self { Self { d: 0, i: 0, vdc_inv: &[] } }
-
     #[inline(always)]
     fn new(mut idx: u64, m: u32) -> Self {
         let m2 = m << 1;

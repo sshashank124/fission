@@ -11,7 +11,7 @@ impl Image {
             .write_pixels_to_file(filename, write_options::high(),
             &|pos: Vec2<usize>| {
                 let pixel = self.at(A2(pos.x() as I, pos.y() as I));
-                Pixel::rgb(pixel[0], pixel[1], pixel[2])
+                Pixel::rgb(pixel[0] as f32, pixel[1] as f32, pixel[2] as f32)
             }).map_err(|e| e.to_string())
     }
 }

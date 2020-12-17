@@ -40,6 +40,11 @@ impl Light {
             _ => Color::ZERO,
         }
     }
+
+    #[inline(always)]
+    pub fn power(&self) -> F {
+        1.
+    }
 }
 
 impl From<Arc<Shape>> for Light {

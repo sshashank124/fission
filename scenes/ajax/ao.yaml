@@ -1,16 +1,16 @@
 integrator:
   tracer:
     type: ambient_occlusion
-    samples: 4
+    ray_length: 10
 
   sampler:
     type: sobol
-    samples_per_pixel: 32
+    samples_per_pixel: 64
 
 scene:
   camera:
     type: perspective
-    fov: 30.
+    fov: 30
     resolution: [768, 768]
 
     transforms:
@@ -26,4 +26,4 @@ scene:
     - type: mesh
       obj: obj/plane.obj
       transforms:
-        - scale: [100., 1., 100.]
+        - scale: [100, 1, 100]

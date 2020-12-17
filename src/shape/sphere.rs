@@ -1,5 +1,6 @@
 use super::*;
 
+#[derive(Debug)]
 pub struct Sphere {
     c: P,
     r: F,

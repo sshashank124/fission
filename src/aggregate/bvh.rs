@@ -6,16 +6,19 @@ use staticvec::StaticVec;
 use super::*;
 use crate::util::Either;
 
+#[derive(Debug)]
 pub struct BVH<S> {
     nodes:        Vec<BVHNode>,
     pub elements: Vec<S>,
 }
 
+#[derive(Debug)]
 pub struct BVHNode {
     pub bbox: BBox,
     node:     BVHNodeType,
 }
 
+#[derive(Debug)]
 pub enum BVHNodeType {
     Leaf(I, I),
     Tree(I, Dim),

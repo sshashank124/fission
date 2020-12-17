@@ -12,6 +12,7 @@ pub use constant::Constant;
 pub use gradient::Gradient;
 pub use grid::Grid;
 
+#[derive(Debug)]
 pub enum Tex<A>
 {
     Checkerboard(Checkerboard<A>),

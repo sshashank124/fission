@@ -18,16 +18,10 @@ impl Independent {
     }
 
     #[inline(always)]
-    pub fn for_pixel(&self) -> Self { self.clone() }
+    pub fn next_2d(&mut self) -> F2 { A2(self.next_f(), self.next_f()) }
 
     #[inline(always)]
-    pub fn next_1d(&mut self) -> F { self.next_f() }
-
-    #[inline(always)]
-    pub fn next_2d(&mut self) -> F2 { A2(self.next_1d(), self.next_1d()) }
-
-    #[inline(always)]
-    pub fn rng(&mut self) -> F { self.next_1d() }
+    pub fn rng(&mut self) -> F { self.next_f() }
 }
 
 impl Deref for Independent {

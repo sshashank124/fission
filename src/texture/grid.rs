@@ -2,6 +2,7 @@ use std::ops::BitAnd;
 
 use super::*;
 
+#[derive(Debug)]
 pub struct Grid<A> {
     vals:      A2<A>,
     normalize: T2,

@@ -20,18 +20,19 @@ impl Integrator {
 
     pub fn render(&self) -> Image {
         let mut img = self.scene.camera.new_image();
-        let mut progress = Progress::new("Rendering ", Some(self.sampler.spp));
+        let mut progress = Progress::new("Rendering", Some(self.sampler.spp));
 
         for i in 0..self.sampler.spp {
             img.as_block().blocks().par_bridge().for_each(|mut block| {
-                let sampler = self.sampler.for_block(i, &block);
+                let mut sampler = self.sampler.for_block(i, &block);
 
                 for pos in block.pixels() {
-                    let mut sampler = sampler.for_pixel(pos);
+                    sampler.prepare_for_pixel(pos);
 
                     let pos = F2::from(pos) + sampler.next_2d();
                     let ray = self.scene.camera.ray_at(pos, &mut sampler);
-                    let color = self.tracer.trace(&self.scene, sampler, ray);
+                    let color = self.tracer.trace(&self.scene, &mut sampler,
+                                                  ray);
 
                     block.put(pos, color);
                 }

@@ -1,5 +1,6 @@
 use super::*;
 
+#[derive(Debug)]
 pub struct Constant<A> {
     val: A,
 }

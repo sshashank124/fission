@@ -1,5 +1,6 @@
 use super::*;
 
+#[derive(Debug)]
 pub struct AmbientOcclusion {
     samples: I,
     ray_len: F,
@@ -11,7 +12,7 @@ impl AmbientOcclusion {
     }
 
     #[inline(always)]
-    pub fn trace(&self, scene: &Scene, mut sampler: Sampler, ray: R) -> Color {
+    pub fn trace(&self, scene: &Scene, sampler: &mut Sampler, ray: R) -> Color {
         match scene.intersect(ray) {
             None => Color::BLACK,
             Some(its) => {

@@ -1,5 +1,6 @@
 use super::*;
 
+#[derive(Debug)]
 pub struct Direct;
 
 impl Direct {
@@ -28,15 +29,14 @@ impl Direct {
               wo: V)
               -> Color {
         if !its.bsdf().is_delta() {
-            let light = scene.random_light(sampler.next_1d());
-            let (le, sray, lpdf) = light.sample(&its, sampler.next_2d());
+            let (le, sray, lpdf) = scene.sample_random_light(&its, sampler.next_2d());
             if le != Color::ZERO && !scene.intersects(sray) {
                 let wi = frame / sray.d;
                 let lb = its.lb(wo, wi);
                 if lb != Color::ZERO {
                     return le
                            * lb
-                           * scene.lights.len() as F
+                           * scene.lights_dpdf.total()
                            * PowerScale::balance2(lpdf, its.bpdf(wo, wi))
                 }
             }
@@ -79,11 +79,11 @@ impl Direct {
     }
 
     #[inline(always)]
-    pub fn trace(&self, scene: &Scene, mut sampler: Sampler, ray: R) -> Color {
+    pub fn trace(&self, scene: &Scene, sampler: &mut Sampler, ray: R) -> Color {
         match scene.intersect(ray) {
             None => scene.lenv(&ray),
             Some(its) => {
-                its.le(ray) + Self::li(scene, &mut sampler, &its, &ray).0
+                its.le(ray) + Self::li(scene, sampler, &its, &ray).0
             }
         }
     }

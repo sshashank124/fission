@@ -2,6 +2,7 @@ use std::marker::PhantomData;
 
 use super::*;
 
+#[derive(Debug)]
 pub struct Gradient<A, L> {
     vals:    A2<A>,
     phantom: PhantomData<L>,

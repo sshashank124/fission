@@ -5,12 +5,14 @@ use crate::camera::Camera;
 use crate::light::*;
 use crate::prelude::*;
 use crate::shape::*;
+use crate::util::DiscretePDF;
 
 pub struct Scene {
-    shapes:     BVH<Arc<Shape>>,
-    pub lights: Vec<Arc<Light>>,
-    env:        Option<Arc<Light>>,
-    pub camera: Camera,
+    shapes:      BVH<Arc<Shape>>,
+    pub camera:  Camera,
+    pub lights:  Vec<Arc<Light>>,
+    pub lights_dpdf: DiscretePDF,
+    env:         Option<Arc<Light>>,
 }
 
 impl Scene {
@@ -19,15 +21,17 @@ impl Scene {
                camera: Camera)
                -> Self {
         let shapes = BVH::new(shapes);
+        let lights_dpdf = DiscretePDF::new(lights.iter(), Light::power);
         let lights = lights.into_iter().map(Arc::new).collect::<Vec<_>>();
         let env =
             lights.iter().find(|light| light.is_env_light()).map(Arc::clone);
-        Self { shapes, lights, env, camera }
+        Self { shapes, camera, lights, lights_dpdf, env }
     }
 
     #[inline(always)]
-    pub fn random_light(&self, s: F) -> &Light {
-        &self.lights[F::discrete(s, self.lights.len() as I) as usize]
+    pub fn sample_random_light(&self, its: &Its, mut s: F2) -> (Color, R, F) {
+        let idx = self.lights_dpdf.sample(&mut s[0]);
+        self.lights[idx].sample(its, s)
     }
 
     #[inline(always)]

@@ -1,5 +1,6 @@
 use super::*;
 
+#[derive(Debug)]
 pub struct Checkerboard<A> {
     vals: A2<A>,
     t:    T2,

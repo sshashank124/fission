@@ -16,8 +16,8 @@ scene:
     transforms:
       - scale: [-1, 1, 1]
       - look_at:
-          origin: [0, 0.919769, 5.41159]
-          target: [0, 0.893051, 4.41198]
+          origin: [0, .919769, 5.41159]
+          target: [0, .893051, 4.41198]
           up: [0, 1, 0]
 
   elements:

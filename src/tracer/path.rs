@@ -1,6 +1,7 @@
 use super::*;
 use crate::util::Either;
 
+#[derive(Debug)]
 pub struct Path {
     depth: I2,
     rr_tp: F,
@@ -14,7 +15,7 @@ impl Path {
     }
 
     #[inline(always)]
-    pub fn trace(&self, scene: &Scene, mut sampler: Sampler, ray: R) -> Color {
+    pub fn trace(&self, scene: &Scene, sampler: &mut Sampler, ray: R) -> Color {
         let init = (Color::ZERO, Color::ONE, ray, scene.intersect(ray), true);
         if init.3.is_none() {
             return scene.lenv(&ray)
@@ -22,7 +23,7 @@ impl Path {
 
         match (0..self.depth[1]).try_fold(init,
         |(mut li, mut tp, ray, its, spec), depth| its.map(|its| {
-            let (ld, res) = Direct::li(scene, &mut sampler, &its, &ray);
+            let (ld, res) = Direct::li(scene, sampler, &its, &ray);
             li += tp * (ld + if spec { its.le(ray) } else { Color::ZERO });
 
             let (ray, its, spec) = match res {
@@ -33,7 +34,7 @@ impl Path {
 
             if depth > self.depth[0] {
                 let q = F::min(tp.reduce(F::max), self.rr_tp);
-                if sampler.rng() < q { return Either::L(li) }
+                if sampler.rng() > q { return Either::L(li) }
                 tp /= q;
             }
 

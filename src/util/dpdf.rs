@@ -1,7 +1,9 @@
 use std::iter;
+use std::ops::Deref;
 
 use super::*;
 
+#[derive(Debug)]
 pub struct DiscretePDF {
     cdf:   Vec<F>,
     total: F,
@@ -34,4 +36,12 @@ impl DiscretePDF {
 
     #[inline(always)]
     pub fn total(&self) -> F { self.total }
+}
+
+impl Deref for DiscretePDF {
+    type Target = Vec<F>;
+    
+    fn deref(&self) -> &Self::Target {
+        &self.cdf
+    }
 }

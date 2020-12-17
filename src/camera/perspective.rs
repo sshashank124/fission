@@ -1,5 +1,6 @@
 use super::*;
 
+#[derive(Debug)]
 pub struct Perspective {
     fov_scale: F,
     lens_r:    F,

@@ -13,6 +13,7 @@ pub use diffuse::Diffuse;
 pub use microfacet::Microfacet;
 pub use mirror::Mirror;
 
+#[derive(Debug)]
 pub enum BSDF {
     Dielectric(Dielectric),
     Diffuse(Diffuse),
@@ -44,11 +45,11 @@ impl BSDF {
 
     #[inline(always)]
     pub fn pdf(&self, wi: V, wo: V) -> F {
-        match self {
+        F::clamp_pos(match self {
             Self::Diffuse(f) => f.pdf(wo),
             Self::Microfacet(f) => f.pdf(wi, wo),
             _ => 0.,
-        }
+        })
     }
 
     #[inline(always)]
