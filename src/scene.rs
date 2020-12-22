@@ -1,5 +1,3 @@
-use std::ops::Deref;
-
 use crate::aggregate::BVH;
 use crate::camera::Camera;
 use crate::light::*;
@@ -28,23 +26,21 @@ impl Scene {
         Self { shapes, camera, lights, lights_dpdf, env }
     }
 
+    #[inline(always)] pub fn intersects(&self, r: R) -> bool
+    { self.shapes.intersects(r) }
+    #[inline(always)] pub fn intersect(&self, r: R) -> Option<Its>
+    { self.shapes.intersect(r) }
+
     #[inline(always)]
     pub fn sample_random_light(&self, its: &Its, mut s: F2) -> (Color, R, F) {
         let idx = self.lights_dpdf.sample(&mut s[0]);
         self.lights[idx].sample(its, s)
     }
 
-    #[inline(always)]
-    pub fn lenv(&self, ray: &R) -> Color {
+    #[inline(always)] pub fn lenv(&self, ray: &R) -> Color {
         self.env
             .as_ref()
             .map(|light| light.eval_env(ray))
-            .unwrap_or(Color::BLACK)
+            .unwrap_or(Color::ZERO)
     }
-}
-
-impl Deref for Scene {
-    type Target = BVH<Arc<Shape>>;
-    #[inline(always)]
-    fn deref(&self) -> &Self::Target { &self.shapes }
 }

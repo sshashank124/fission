@@ -14,9 +14,8 @@ pub struct Integrator {
 }
 
 impl Integrator {
-    pub fn new(tracer: Tracer, sampler: Sampler, scene: Scene) -> Self {
-        Self { tracer, sampler, scene }
-    }
+    pub fn new(tracer: Tracer, sampler: Sampler, scene: Scene) -> Self
+    { Self { tracer, sampler, scene } }
 
     pub fn render(&self) -> Image {
         let mut img = self.scene.camera.new_image();

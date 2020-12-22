@@ -23,8 +23,7 @@ pub enum BSDF {
 
 impl BSDF {
     // BSDF * cos(theta)
-    #[inline(always)]
-    pub fn eval(&self, wi: V, wo: V, uv: F2) -> Color {
+    #[inline(always)] pub fn eval(&self, wi: V, wo: V, uv: F2) -> Color {
         match self {
             Self::Diffuse(f) => f.eval(wi, wo, uv),
             Self::Microfacet(f) => f.eval(wi, wo),
@@ -43,8 +42,7 @@ impl BSDF {
         }
     }
 
-    #[inline(always)]
-    pub fn pdf(&self, wi: V, wo: V) -> F {
+    #[inline(always)] pub fn pdf(&self, wi: V, wo: V) -> F {
         F::clamp_pos(match self {
             Self::Diffuse(f) => f.pdf(wo),
             Self::Microfacet(f) => f.pdf(wi, wo),
@@ -52,8 +50,7 @@ impl BSDF {
         })
     }
 
-    #[inline(always)]
-    pub fn is_delta(&self) -> bool {
+    #[inline(always)] pub fn is_delta(&self) -> bool {
         match self {
             Self::Dielectric(f) => f.is_delta(),
             Self::Diffuse(f) => f.is_delta(),
@@ -63,22 +60,14 @@ impl BSDF {
     }
 }
 
-impl From<Dielectric> for BSDF {
-    fn from(f: Dielectric) -> Self { Self::Dielectric(f) }
-}
+impl From<Dielectric> for BSDF
+{ fn from(f: Dielectric) -> Self { Self::Dielectric(f) } }
 
-impl From<Diffuse> for BSDF {
-    fn from(f: Diffuse) -> Self { Self::Diffuse(f) }
-}
+impl From<Diffuse> for BSDF { fn from(f: Diffuse) -> Self { Self::Diffuse(f) } }
 
-impl From<Microfacet> for BSDF {
-    fn from(f: Microfacet) -> Self { Self::Microfacet(f) }
-}
+impl From<Microfacet> for BSDF
+{ fn from(f: Microfacet) -> Self { Self::Microfacet(f) } }
 
-impl From<Mirror> for BSDF {
-    fn from(f: Mirror) -> Self { Self::Mirror(f) }
-}
+impl From<Mirror> for BSDF { fn from(f: Mirror) -> Self { Self::Mirror(f) } }
 
-impl Zero for BSDF {
-    const ZERO: Self = Self::Diffuse(Diffuse::ZERO);
-}
+impl Zero for BSDF { const ZERO: Self = Self::Diffuse(Diffuse::ZERO); }

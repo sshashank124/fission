@@ -16,3 +16,4 @@ yaml-rust = "*"
 
 [profile.release]
 panic = "abort"
+lto = "thin"

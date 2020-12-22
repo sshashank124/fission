@@ -8,29 +8,22 @@ pub struct Diffuse {
 impl Diffuse {
     pub const fn new(albedo: Tex<Color>) -> Self { Self { albedo } }
 
-    #[inline(always)]
-    pub fn eval(&self, wi: V, wo: V, uv: F2) -> Color {
-        let cto = Frame::ct(*wo);
-        if Frame::ct(*wi) <= 0. || cto <= 0. {
-            Color::BLACK
-        } else {
-            self.albedo.eval(uv) * F::INV_PI * cto
-        }
+    #[inline(always)] pub fn eval(&self, wi: V, wo: V, uv: F2) -> Color {
+        let cto = Frame::ct(wo);
+        if Frame::ct(wi) <= 0. || cto <= 0. { Color::ZERO }
+        else { self.albedo.eval(uv) * F::INV_PI * cto }
     }
 
     #[inline(always)]
     pub fn sample(&self, uv: F2, s: F2) -> (Color, V, F, bool) {
-        let wo = V(CosineHemisphere::warp(s, ()));
+        let wo = V::from(CosineHemisphere::warp(s));
         (self.albedo.eval(uv), wo, self.pdf(wo), self.is_delta())
     }
 
-    #[inline(always)]
-    pub fn pdf(&self, wo: V) -> F { CosineHemisphere::pdf(*wo, ()) }
+    #[inline(always)] pub fn pdf(&self, wo: V) -> F
+    { CosineHemisphere::pdf(wo) }
 
-    #[inline(always)]
-    pub fn is_delta(&self) -> bool { false }
+    #[inline(always)] pub fn is_delta(&self) -> bool { false }
 }
 
-impl Zero for Diffuse {
-    const ZERO: Self = Self::new(Tex::ZERO);
-}
+impl Zero for Diffuse { const ZERO: Self = Self::new(Tex::ZERO); }

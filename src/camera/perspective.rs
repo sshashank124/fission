@@ -17,14 +17,12 @@ impl Perspective {
 
     #[inline(always)]
     pub fn ray_at(&self, point: F2, sampler: &mut Sampler) -> R {
-        let ray = R::unbounded(P::ZERO, V::a2(point * self.fov_scale, 1.));
-        if F::approx_zero(self.lens_r) {
-            ray
-        } else {
+        let d = V::from(F3::a2a(point * self.fov_scale, 1.));
+        let ray = R::unbounded(P::ZERO, d);
+        if F::approx_zero(self.lens_r) { ray } else {
             let focus_point = ray.at(self.fd / ray.d[Z]);
-            let o = P::a2(UniformDisk::warp(sampler.next_2d(), ())
-                          * self.lens_r,
-                          0.);
+            let o = P::from(F3::a2a(UniformDisk::warp(sampler.next_2d())
+                                    * self.lens_r, 0.));
             R::unbounded(o, focus_point - o)
         }
     }

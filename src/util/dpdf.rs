@@ -1,5 +1,4 @@
 use std::iter;
-use std::ops::Deref;
 
 use super::*;
 
@@ -22,8 +21,7 @@ impl DiscretePDF {
         Self { cdf, total }
     }
 
-    #[inline(always)]
-    pub fn sample(&self, s: &mut F) -> usize {
+    #[inline(always)] pub fn sample(&self, s: &mut F) -> usize {
         let idx = Num::clamp(self.cdf.lower_bound(*s) - 1,
                              0,
                              self.cdf.len() as I - 1)
@@ -34,14 +32,5 @@ impl DiscretePDF {
         idx
     }
 
-    #[inline(always)]
-    pub fn total(&self) -> F { self.total }
-}
-
-impl Deref for DiscretePDF {
-    type Target = Vec<F>;
-    
-    fn deref(&self) -> &Self::Target {
-        &self.cdf
-    }
+    #[inline(always)] pub fn total(&self) -> F { self.total }
 }

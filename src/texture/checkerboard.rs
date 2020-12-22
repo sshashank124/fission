@@ -1,6 +1,6 @@
 use super::*;
 
-#[derive(Debug)]
+#[derive(Clone, Copy, Debug)]
 pub struct Checkerboard<A> {
     vals: A2<A>,
     t:    T2,
@@ -15,8 +15,10 @@ impl<A> Checkerboard<A> {
 }
 
 impl<A: Copy> Checkerboard<A> {
-    #[inline(always)]
-    pub fn eval(&self, s: F2) -> A {
-        self.vals[(self.t * s).map(F::floori).map(I::mod2).reduce(Num::eq)]
+    #[inline(always)] pub fn eval(&self, s: F2) -> A {
+        self.vals[(self.t * s).map(|f| {
+            let r = F::floori(f) % 2;
+            if r < 0 { r + 2 } else { r }
+        }).reduce(Num::eq)]
     }
 }

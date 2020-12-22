@@ -6,8 +6,7 @@ pub trait LowerBound<A> {
 
 impl<A> LowerBound<A> for Vec<A> where A: PartialOrd
 {
-    #[inline(always)]
-    fn lower_bound(&self, value: A) -> I {
+    #[inline(always)] fn lower_bound(&self, value: A) -> I {
         let mut l = self.len();
         if l == 0 {
             return 0

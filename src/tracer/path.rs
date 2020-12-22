@@ -33,7 +33,7 @@ impl Path {
             };
 
             if depth > self.depth[0] {
-                let q = F::min(tp.reduce(F::max), self.rr_tp);
+                let q = F::min(tp.max_channel(), self.rr_tp);
                 if sampler.rng() > q { return Either::L(li) }
                 tp /= q;
             }

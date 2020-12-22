@@ -129,8 +129,8 @@ fn load_element(config: &Yaml) -> Res<Vec<Element>> {
             items.push(Element::Shape(shape));
         }
         "sphere" => {
-            let c = P(f3(&config["center"]).with_msg("failed to parse \
-                                                      sphere center")?);
+            let c = P::from(f3(&config["center"]).with_msg("failed to parse \
+                                                            sphere center")?);
             let r = f(&config["radius"], "failed to parse sphere radius")?;
             let shape =
                 Arc::new(Shape::new(Sphere::new(c, r).into(), bsdf, emission));
@@ -145,11 +145,10 @@ fn load_element(config: &Yaml) -> Res<Vec<Element>> {
             items.push(Element::Light(Infinite::new(intensity).into()));
         }
         "pointlight" => {
-            let power =
-                Color(f3(&config["power"]).with_msg("failed to parse light \
-                                                     power")?);
-            let pos = P(f3(&config["position"]).with_msg("failed to parse \
-                                                          light position")?);
+            let power = color(&config["power"])
+                            .with_msg("failed to parse light power")?;
+            let pos = P::from(f3(&config["position"])
+                                .with_msg("failed to parse light position")?);
             items.push(Element::Light(Point::new(power, pos).into()));
         }
         _ => return Err("unknown element type".into()),
@@ -183,8 +182,7 @@ fn load_bsdf(config: &Yaml) -> Res<BSDF> {
             Diffuse::new(albedo).into()
         }
         "microfacet" => {
-            let kd =
-                Color(f3(&config["kd"]).with_msg("failed to parse color")?);
+            let kd = color(&config["kd"]).with_msg("failed to parse color")?;
             let alpha = fo(&config["alpha"]);
             let ior = f2o(&config["ior"]).with_msg("failed to parse ior")?;
             Microfacet::new(kd, alpha, ior).into()
@@ -197,12 +195,10 @@ fn load_bsdf(config: &Yaml) -> Res<BSDF> {
 fn load_texture(config: &Yaml) -> Res<Tex<Color>> {
     Ok(match s(&config["type"], "missing texture type")? {
         "checkerboard" => {
-            let val1 =
-                Color(f3(&config["color_1"]).with_msg("failed to parse \
-                                                       color 1")?);
-            let val2 =
-                Color(f3(&config["color_2"]).with_msg("failed to parse \
-                                                       color 2")?);
+            let val1 = color(&config["color_1"])
+                            .with_msg("failed to parse color 1")?;
+            let val2 = color(&config["color_2"])
+                            .with_msg("failed to parse color 2")?;
             let scale =
                 f2o(&config["scale"]).with_msg("failed to parse scale")?;
             let delta =
@@ -210,17 +206,15 @@ fn load_texture(config: &Yaml) -> Res<Tex<Color>> {
             Checkerboard::new(val1, val2, scale, delta).into()
         }
         "constant" => {
-            let val =
-                Color(f3(&config["color"]).with_msg("failed to parse color")?);
+            let val = color(&config["color"])
+                        .with_msg("failed to parse color")?;
             Constant::new(val).into()
         }
         "gradient" => {
-            let val1 =
-                Color(f3(&config["color_1"]).with_msg("failed to parse \
-                                                       color 1")?);
-            let val2 =
-                Color(f3(&config["color_2"]).with_msg("failed to parse \
-                                                       color 2")?);
+            let val1 = color(&config["color_1"])
+                            .with_msg("failed to parse color 1")?;
+            let val2 = color(&config["color_2"])
+                            .with_msg("failed to parse color 2")?;
             match so(&config["interp"]) {
                 Some("smooth") => {
                     Tex::SmoothGradient(Gradient::new(val1, val2))
@@ -229,12 +223,10 @@ fn load_texture(config: &Yaml) -> Res<Tex<Color>> {
             }
         }
         "grid" => {
-            let val1 =
-                Color(f3(&config["color_1"]).with_msg("failed to parse \
-                                                       color 1")?);
-            let val2 =
-                Color(f3(&config["color_2"]).with_msg("failed to parse \
-                                                       color 2")?);
+            let val1 = color(&config["color_1"])
+                            .with_msg("failed to parse color 1")?;
+            let val2 = color(&config["color_2"])
+                            .with_msg("failed to parse color 2")?;
             let scale =
                 f2o(&config["scale"]).with_msg("failed to parse scale")?;
             let delta =
@@ -252,8 +244,8 @@ fn load_camera(config: &Yaml) -> Res<Camera> {
     if res.len() != 2 {
         return Err("malformed resolution".into())
     }
-    let res =
-        A2(i(&res[0], "malformed width")?, i(&res[1], "malformed height")?);
+    let res = A2(i(&res[0], "malformed width")?,
+                 i(&res[1], "malformed height")?);
 
     let to_world = load_transforms(&config["transforms"])?;
 
@@ -307,17 +299,19 @@ fn load_transform((ttype, config): (&Yaml, &Yaml)) -> Res<T> {
             T::translate(t)
         }
         "look_at" => {
-            let origin =
-                P(f3(&config["origin"]).with_msg("failed to parse origin")?);
-            let target =
-                P(f3(&config["target"]).with_msg("failed to parse target")?);
-            let up =
-                V(f3(&config["up"]).with_msg("failed to parse up-vector")?);
+            let origin = P::from(f3(&config["origin"])
+                            .with_msg("failed to parse origin")?);
+            let target = P::from(f3(&config["target"])
+                            .with_msg("failed to parse target")?);
+            let up = V::from(f3(&config["up"])
+                            .with_msg("failed to parse up-vector")?);
             T::look_at(origin, target, up)
         }
         _ => return Err("unknown transform type".into()),
     })
 }
+
+fn color(vec: &Yaml) -> Res<Color> { Ok(Color::rgb(f3(vec)?)) }
 
 fn f3(vec: &Yaml) -> Res<F3> {
     let v = v(vec, "expected 3d vector")?;
@@ -374,14 +368,9 @@ fn io(i: &Yaml) -> Option<I> { i.as_i64().map(|i| i as I) }
 fn so(s: &Yaml) -> Option<&'_ str> { s.as_str() }
 fn vo<'a>(v: &'a Yaml) -> Option<&'a Vec<Yaml>> { v.as_vec() }
 
-trait ErrorContext<C> {
-    fn with_msg(self, msg: &str) -> C;
-}
+trait ErrorContext<C> { fn with_msg(self, msg: &str) -> C; }
 
-impl<T, E> ErrorContext<Res<T>> for Result<T, E> where E: std::fmt::Display
-{
-    #[inline(always)]
-    fn with_msg(self, msg: &str) -> Res<T> {
-        self.map_err(|e| format!("{}: {}", msg, e))
-    }
+impl<T, E> ErrorContext<Res<T>> for Result<T, E> where E: std::fmt::Display {
+    fn with_msg(self, msg: &str) -> Res<T>
+    { self.map_err(|e| format!("{}: {}", msg, e)) }
 }

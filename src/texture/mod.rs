@@ -12,7 +12,7 @@ pub use constant::Constant;
 pub use gradient::Gradient;
 pub use grid::Grid;
 
-#[derive(Debug)]
+#[derive(Clone, Copy, Debug)]
 pub enum Tex<A>
 {
     Checkerboard(Checkerboard<A>),
@@ -23,10 +23,9 @@ pub enum Tex<A>
 }
 
 impl<A> Tex<A>
-    where A: Copy + Add<Output = A> + Mul<F, Output = A>
+    where A: Copy + Zero + Add<Output = A> + Mul<F, Output = A>
 {
-    #[inline(always)]
-    pub fn eval(&self, s: F2) -> A {
+    #[inline(always)] pub fn eval(&self, s: F2) -> A {
         match self {
             Self::Checkerboard(t) => t.eval(s),
             Self::Constant(t) => t.eval(),

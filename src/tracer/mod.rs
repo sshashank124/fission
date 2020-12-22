@@ -25,6 +25,7 @@ pub enum Tracer {
 }
 
 impl Tracer {
+    #[inline(always)]
     pub fn trace(&self, scene: &Scene, sampler: &mut Sampler, ray: R) -> Color {
         match self {
             Self::AO(t) => t.trace(scene, sampler, ray),

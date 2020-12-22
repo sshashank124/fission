@@ -6,12 +6,9 @@ pub struct Direct;
 impl Direct {
     pub fn new() -> Self { Self }
 
-    #[inline(always)]
-    pub fn li<'a>(scene: &'a Scene,
-                  sampler: &mut Sampler,
-                  its: &Its,
-                  ray: &R)
-                  -> (Color, Option<(Color, R, Its<'a>, bool)>) {
+    #[inline(always)] pub fn li<'a>(scene: &'a Scene, sampler: &mut Sampler,
+                                    its: &Its, ray: &R)
+            -> (Color, Option<(Color, R, Its<'a>, bool)>) {
         let frame = its.to_world();
         let wo = frame / -ray.d;
 
@@ -21,15 +18,11 @@ impl Direct {
         (ll + ls, details)
     }
 
-    #[inline(always)]
-    pub fn ll(scene: &Scene,
-              sampler: &mut Sampler,
-              its: &Its,
-              frame: T,
-              wo: V)
-              -> Color {
+    #[inline(always)] pub fn ll(scene: &Scene, sampler: &mut Sampler, its: &Its,
+                                frame: T, wo: V) -> Color {
         if !its.bsdf().is_delta() {
-            let (le, sray, lpdf) = scene.sample_random_light(&its, sampler.next_2d());
+            let (le, sray, lpdf) = scene.sample_random_light(&its,
+                                                             sampler.next_2d());
             if le != Color::ZERO && !scene.intersects(sray) {
                 let wi = frame / sray.d;
                 let lb = its.lb(wo, wi);
@@ -44,36 +37,23 @@ impl Direct {
         Color::ZERO
     }
 
-    #[inline(always)]
-    pub fn ls<'a>(scene: &'a Scene,
-                  sampler: &mut Sampler,
-                  its: &Its,
-                  frame: T,
-                  wo: V)
-                  -> (Color, Option<(Color, R, Its<'a>, bool)>) {
+    #[inline(always)] pub fn ls<'a>(scene: &'a Scene, sampler: &mut Sampler,
+                                    its: &Its, frame: T, wo: V)
+            -> (Color, Option<(Color, R, Its<'a>, bool)>) {
         let (lb, wi, bpdf, spec) = its.sample_lb(wo, sampler.next_2d());
-        if lb == Color::ZERO {
-            return (Color::ZERO, None)
-        }
+        if lb == Color::ZERO { return (Color::ZERO, None) }
 
         let ray = its.spawn_ray(frame * wi);
         let its = scene.intersect(ray);
 
         let (le, lpdf) = if let Some(ref its) = its {
-            if its.has_emission() {
-                (its.le(ray), its.lpdf(ray))
-            } else {
-                (Color::ZERO, 0.)
-            }
-        } else {
-            (Color::ZERO, 0.)
-        };
+            if its.has_emission() { (its.le(ray), its.lpdf(ray)) }
+            else { (Color::ZERO, 0.) }
+        } else { (Color::ZERO, 0.) };
 
         let ls = if lpdf > 0. && le != Color::ZERO && !spec {
             lb * le * PowerScale::balance2(bpdf, lpdf)
-        } else {
-            Color::ZERO
-        };
+        } else { Color::ZERO };
 
         (ls, its.map(|i| (lb, ray, i, spec)))
     }

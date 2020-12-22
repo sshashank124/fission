@@ -29,41 +29,36 @@ impl Mesh {
 }
 
 impl Intersectable for Mesh {
-    fn bbox(&self) -> BBox { self.tris.bbox() }
+    #[inline(always)] fn bbox(&self) -> BBox { self.tris.bbox() }
 
-    #[inline(always)]
-    fn intersects(&self, ray: R) -> bool { self.tris.intersects(ray) }
+    #[inline(always)] fn intersects(&self, ray: R) -> bool
+    { self.tris.intersects(ray) }
 
-    #[inline(always)]
-    fn intersect(&self, ray: R) -> Option<Its> {
+    #[inline(always)] fn intersect(&self, ray: R) -> Option<Its> {
         self.tris
-            .fold(ray.d.map(Num::is_pos),
+            .fold(F3::from(ray.d).map(Num::is_pos),
                   (ray, None),
                   |(r, _), node| node.bbox.intersects(*r),
                   |acc, i, s| Either::R(intersect_update(acc, (i, s))))
             .1
     }
 
-    #[inline(always)]
-    fn hit_info<'a>(&'a self, i: Its<'a>) -> Its<'a> {
+    #[inline(always)] fn hit_info<'a>(&'a self, i: Its<'a>) -> Its<'a> {
         self.tris.elements[i.shape.1 as usize].hit_info(i)
     }
 
-    #[inline(always)]
-    fn sample_surface(&self, mut s: F2) -> Its {
+    #[inline(always)] fn sample_surface(&self, mut s: F2) -> Its {
         let idx = self.dpdf.sample(&mut s[0]);
         self.tris.elements[idx].sample_surface(s)
     }
 
-    #[inline(always)]
-    fn surface_area(&self) -> F { self.dpdf.total() }
+    #[inline(always)] fn surface_area(&self) -> F { self.dpdf.total() }
 
     fn intersection_cost(&self) -> F { self.tris.intersection_cost() }
 }
 
 type Acc<'a> = (R, Option<Its<'a>>);
-#[inline(always)]
-pub fn intersect_update<'a>((ray, acc): Acc<'a>,
+#[inline(always)] pub fn intersect_update<'a>((ray, acc): Acc<'a>,
                             (i, s): (usize, &'a impl Intersectable))
                             -> Acc<'a> {
     s.intersect(ray)
