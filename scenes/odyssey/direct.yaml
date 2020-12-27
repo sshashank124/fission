@@ -1,10 +1,9 @@
-integrator:
-  tracer:
-    type: direct
+tracer:
+  type: direct
 
-  sampler:
-    type: sobol
-    samples_per_pixel: 32
+sampler:
+  samples_per_pixel: 32
+  type: sobol
 
 scene:
   camera:
@@ -13,7 +12,7 @@ scene:
     resolution: [768, 432]
     transforms:
       - look_at:
-          origin: [20, 20, 50]
+          pos: [20, 20, 50]
           target: [0, 4, 0]
           up:     [0, 1, 0]
 
@@ -25,7 +24,7 @@ scene:
         type: diffuse
         albedo:
           type: constant
-          color: [.2, .2, .2]
+          val: [.2, .2, .2]
       transforms:
         - translate: [0, .5, 0]
         - scale: [1, 9, 4]
@@ -37,7 +36,7 @@ scene:
         type: diffuse
         albedo:
           type: constant
-          color: [.85, .85, .85]
+          val: [.85, .85, .85]
       transforms:
         - translate: [0, -0.5, 0]
         - scale: [25, 1, 18]
@@ -47,7 +46,7 @@ scene:
       obj: obj/cube.obj
       emission:
         type: constant
-        color: [1, 1, 1]
+        val: [1, 1, 1]
       transforms:
         - translate: [0, .5, 0]
         - scale: [1, 10, 18]

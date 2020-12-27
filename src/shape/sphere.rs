@@ -1,14 +1,14 @@
 use super::*;
 
-#[derive(Debug)]
+#[derive(Debug, Deserialize)]
 pub struct Sphere {
+    #[serde(rename="center")]
     c: P,
+    #[serde(rename="radius")]
     r: F,
 }
 
 impl Sphere {
-    pub fn new(c: P, r: F) -> Self { Self { c, r } }
-
     #[inline(always)] pub fn intersection_point(&self, ray: R) -> Option<F> {
         let d = ray.o - self.c;
         quad(ray.d.norm2(),
@@ -19,7 +19,7 @@ impl Sphere {
                           else { None })
     }
 
-    #[inline(always)] fn cartesian2uv(x: F3) -> F2 {
+    #[inline(always)] fn cartesian2uv<A: Into<F3>>(x: A) -> F2 {
         let uv = Frame::cart2spher(x);
         A2(uv[X] * F::INV_PI, 0.5 + uv[Y] * F::INV_2PI)
     }
@@ -39,14 +39,13 @@ impl Intersectable for Sphere {
 
     #[inline(always)] fn hit_info<'a>(&'a self, mut its: Its<'a>) -> Its<'a> {
         its.n = N::from(its.p - self.c);
-        its.uv = Sphere::cartesian2uv(F3::from(its.n));
+        its.uv = Sphere::cartesian2uv(its.n);
         its
     }
 
     #[inline(always)] fn sample_surface(&self, s: F2) -> Its {
         let d = V::from(UniformSphere::warp(s));
-        Its::new(self.c + d * self.r, N::from(d),
-                 Sphere::cartesian2uv(F3::from(d)), 0.)
+        Its::new(self.c + d * self.r, N::from(d), Sphere::cartesian2uv(d), 0.)
     }
 
     #[inline(always)] fn surface_area(&self) -> F { F::FOUR_PI * self.r.sq() }

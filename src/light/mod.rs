@@ -10,9 +10,13 @@ pub use emitter::*;
 pub use infinite::Infinite;
 pub use point::Point;
 
+#[derive(Debug, Deserialize)]
+#[serde(tag="type")]
 pub enum Light {
-    Area(Arc<Shape>),
+    #[serde(skip)] Area(Arc<Shape>),
+    #[serde(rename="infinitelight")]
     Infinite(Infinite),
+    #[serde(rename="pointlight")]
     Point(Point),
 }
 
@@ -39,7 +43,7 @@ impl Light {
         }
     }
 
-    #[inline(always)] pub fn power(&self) -> F { 1.  }
+    #[inline(always)] pub fn power(&self) -> F { 1. }
 }
 
 impl From<Arc<Shape>> for Light

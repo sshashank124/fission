@@ -1,7 +1,6 @@
 mod checkerboard;
 mod constant;
 mod gradient;
-mod grid;
 
 use std::ops::{Add, Mul};
 
@@ -10,16 +9,15 @@ use crate::prelude::*;
 pub use checkerboard::Checkerboard;
 pub use constant::Constant;
 pub use gradient::Gradient;
-pub use grid::Grid;
 
-#[derive(Clone, Copy, Debug)]
+#[derive(Clone, Copy, Debug, Deserialize)]
+#[serde(tag="type", rename_all="snake_case")]
 pub enum Tex<A>
 {
     Checkerboard(Checkerboard<A>),
     Constant(Constant<A>),
     LinearGradient(Gradient<A, LinearScale>),
     SmoothGradient(Gradient<A, SmoothScale>),
-    Grid(Grid<A>),
 }
 
 impl<A> Tex<A>
@@ -31,7 +29,6 @@ impl<A> Tex<A>
             Self::Constant(t) => t.eval(),
             Self::LinearGradient(t) => t.eval(s),
             Self::SmoothGradient(t) => t.eval(s),
-            Self::Grid(t) => t.eval(s),
         }
     }
 }
@@ -60,14 +57,8 @@ impl<A> From<Gradient<A, SmoothScale>> for Tex<A>
     fn from(t: Gradient<A, SmoothScale>) -> Self { Self::SmoothGradient(t) }
 }
 
-impl<A> From<Grid<A>> for Tex<A>
-    where A: Copy + Add<Output = A> + Mul<F, Output = A>
-{
-    fn from(t: Grid<A>) -> Self { Self::Grid(t) }
-}
+impl<A> Zero for Tex<A> where A: Zero
+{ const ZERO: Self = Self::Constant(Constant::ZERO); }
 
-impl<A: Copy + Zero> Zero for Tex<A>
-    where A: Add<Output = A> + Mul<F, Output = A>
-{
-    const ZERO: Self = Self::Constant(Constant::ZERO);
-}
+impl<A> Default for Tex<A> where A: Default
+{ fn default() -> Self { Self::Constant(Constant::default()) } }

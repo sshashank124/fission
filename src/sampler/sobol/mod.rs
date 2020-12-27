@@ -12,16 +12,18 @@ const VDC_MATRIX: [[u64; 50]; 25] = include!("vdc.data");
 #[allow(clippy::all)]
 const VDC_INV_MATRIX: [[u64; 52]; 26] = include!("vdc_inv.data");
 
+#[derive(Debug, Default, Deserialize)]
+#[serde(default)]
 pub struct Sobol {
-    dim:       u32,
-    m:         u32,
-    cache:     SampleIndexMemo,
-    block_pos: I2,
-    pixel_pos: I2,
-    rng:       Independent,
+    #[serde(skip)] dim:       u32,
+    #[serde(skip)] m:         u32,
+    #[serde(skip)] cache:     SampleIndexMemo,
+    #[serde(skip)] block_pos: I2,
+    #[serde(skip)] pixel_pos: I2,
+    #[serde(skip)] rng:       Independent,
 }
 
-#[derive(Clone, Default)]
+#[derive(Clone, Debug, Default)]
 struct SampleIndexMemo {
     d:       u64,
     i:       u64,
@@ -29,15 +31,6 @@ struct SampleIndexMemo {
 }
 
 impl Sobol {
-    pub fn new() -> Self {
-        Self { dim:       0,
-               m:         0,
-               cache:     SampleIndexMemo::default(),
-               block_pos: I2::ZERO,
-               pixel_pos: I2::ZERO,
-               rng:       Independent::new(), }
-    }
-
     #[inline(always)] fn sample_index(&self) -> u64 {
         if self.m == 0 {
             return 0
@@ -120,7 +113,7 @@ impl SampleIndexMemo {
         let m2 = m << 1;
         let mut cache = Self { d:       0,
                                i:       idx << m2,
-                               vdc_inv: &VDC_INV_MATRIX[(m - 1) as usize], };
+                               vdc_inv: &VDC_INV_MATRIX[(m - 1) as usize] };
         let mut c = 0;
         while idx != 0 {
             if (idx & 1) == 1 {

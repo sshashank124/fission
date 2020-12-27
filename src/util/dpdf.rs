@@ -2,14 +2,17 @@ use std::iter;
 
 use super::*;
 
-#[derive(Debug)]
+#[derive(Debug, Default)]
 pub struct DiscretePDF {
     cdf:   Vec<F>,
     total: F,
 }
 
 impl DiscretePDF {
-    pub fn new<C: IntoIterator>(iter: C, p: impl Fn(C::Item) -> F) -> Self {
+    pub fn new<'a, A, C>(iter: C, p: impl Fn(&'a A) -> F) -> Self
+        where A: 'a,
+              C: IntoIterator<Item=&'a A>,
+    {
         let mut cdf =
             iter::once(0.).chain(iter.into_iter().map(p).scan(0., |c, a| {
                                                             *c += a;

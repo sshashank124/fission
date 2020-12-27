@@ -1,3 +1,4 @@
+use std::fmt;
 use std::ops::BitOr;
 use std::sync::Arc;
 
@@ -57,7 +58,7 @@ impl Triangle {
         let dinv = det.inv();
         let tv = ray.o - self.a();
         let u = F3::dot(tv, pv) * dinv;
-        if u < 0. || u > 1. { return None }
+        if !B::b(0., 1.).bounds(u) { return None }
 
         let q = tv * self.ab();
         let v = F3::dot(ray.d, q) * dinv;
@@ -96,4 +97,8 @@ impl Intersectable for Triangle {
     #[inline(always)] fn surface_area(&self) -> F { 0.5 * self.n().norm() }
 
     fn intersection_cost(&self) -> F { 2. }
+}
+
+impl fmt::Debug for Triangle {
+    fn fmt(&self, f: &mut fmt::Formatter) -> fmt::Result { writeln!(f, "T") }
 }

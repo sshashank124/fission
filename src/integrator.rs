@@ -7,6 +7,7 @@ use crate::scene::*;
 use crate::tracer::*;
 use crate::util::Progress;
 
+#[derive(Debug, Deserialize)]
 pub struct Integrator {
     tracer:  Tracer,
     sampler: Sampler,
@@ -14,9 +15,6 @@ pub struct Integrator {
 }
 
 impl Integrator {
-    pub fn new(tracer: Tracer, sampler: Sampler, scene: Scene) -> Self
-    { Self { tracer, sampler, scene } }
-
     pub fn render(&self) -> Image {
         let mut img = self.scene.camera.new_image();
         let mut progress = Progress::new("Rendering", Some(self.sampler.spp));

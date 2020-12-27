@@ -30,8 +30,7 @@ impl<'a> Its<'a> {
     #[inline(always)] pub fn with_hit_info(self) -> Self
     { self.shape.0.hit_info(self) }
 
-    #[inline(always)] pub fn to_world(&self) -> T
-    { T::from_frame(V::from(self.n)) }
+    #[inline(always)] pub fn to_world(&self) -> T { T::from_frame(self.n) }
 
     #[inline(always)] pub fn spawn_ray(&self, d: V) -> R
     { R::unbounded(self.p, d) }

@@ -1,19 +1,14 @@
 use super::*;
 use crate::util::Either;
 
-#[derive(Debug)]
+#[derive(Debug, Deserialize)]
+#[serde(default)]
 pub struct Path {
     depth: I2,
     rr_tp: F,
 }
 
 impl Path {
-    pub fn new(depth: Option<I2>, rr_tp: Option<F>) -> Self {
-        let depth = depth.unwrap_or(A2(10, 20));
-        let rr_tp = rr_tp.unwrap_or(1.);
-        Self { depth, rr_tp }
-    }
-
     #[inline(always)]
     pub fn trace(&self, scene: &Scene, sampler: &mut Sampler, ray: R) -> Color {
         let init = (Color::ZERO, Color::ONE, ray, scene.intersect(ray), true);
@@ -44,3 +39,6 @@ impl Path {
         }
     }
 }
+
+impl Default for Path
+{ fn default() -> Self { Self { depth: A2(10, 20), rr_tp: 1. } } }

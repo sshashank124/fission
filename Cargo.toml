@@ -11,6 +11,8 @@ objloader = { git = "https://github.com/sshashank124/objloader" }
 rand_core = "*"
 rand_pcg = "*"
 rayon = "*"
+serde = { version = "*", features = ["derive"] }
+serde_yaml = "*"
 staticvec = "*"
 yaml-rust = "*"
 

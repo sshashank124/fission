@@ -1,11 +1,9 @@
 use super::*;
 
-#[derive(Debug)]
+#[derive(Debug, Deserialize)]
 pub struct Normals;
 
 impl Normals {
-    pub fn new() -> Self { Self }
-
     #[inline(always)] pub fn trace(&self, scene: &Scene, ray: R) -> Color {
         match scene.intersect(ray) {
             None => Color::ZERO,

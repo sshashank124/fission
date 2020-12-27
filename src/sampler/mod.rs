@@ -8,21 +8,24 @@ use crate::image::Block;
 pub use independent::Independent;
 pub use sobol::Sobol;
 
+#[derive(Debug, Deserialize)]
 pub struct Sampler {
+    #[serde(flatten)]
     sampler: SamplerType,
+    #[serde(rename="samples_per_pixel")]
     pub spp: I,
 }
 
+#[derive(Debug, Deserialize)]
+#[serde(tag="type", rename_all="snake_case")]
 pub enum SamplerType {
     Independent(Independent),
     Sobol(Sobol),
 }
 
 impl Sampler {
-    pub fn new(sampler: SamplerType, spp: I) -> Self { Self { sampler, spp } }
-
     #[inline(always)] pub fn for_block(&self, i: I, block: &Block) -> Self
-    { Self::new(self.sampler.for_block(i, block), self.spp) }
+    { Self { sampler: self.sampler.for_block(i, block), spp: self.spp } }
 
     #[inline(always)] pub fn prepare_for_pixel(&mut self, pos: I2)
     { self.sampler.prepare_for_pixel(pos) }
@@ -49,9 +52,8 @@ impl SamplerType {
     }
 
     #[inline(always)] pub fn prepare_for_pixel(&mut self, pos: I2) {
-        match self {
-            Self::Sobol(s) => s.prepare_for_pixel(pos),
-            _ => (),
+        if let Self::Sobol(s) = self {
+            s.prepare_for_pixel(pos)
         }
     }
 
@@ -77,3 +79,6 @@ impl From<Independent> for SamplerType {
 impl From<Sobol> for SamplerType {
     #[inline(always)] fn from(s: Sobol) -> Self { Self::Sobol(s) }
 }
+
+impl Default for SamplerType
+{ fn default() -> Self { Self::Independent(Independent::default()) } }

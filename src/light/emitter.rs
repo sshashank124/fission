@@ -17,6 +17,6 @@ impl Shape {
 
     #[inline(always)] pub fn pdf(&self, its: &Its, sray: &R) -> F {
         let ct = F3::dot(its.n, -sray.d);
-        if ct <= 0. { 0.  } else { self.surface_pdf() * sray.t.sq() / ct }
+        if ct <= 0. { 0. } else { self.surface_pdf() * sray.t.sq() / ct }
     }
 }

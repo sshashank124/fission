@@ -1,20 +1,16 @@
 use super::*;
 
-#[derive(Debug)]
+#[derive(Debug, Deserialize)]
 pub struct Perspective {
+    #[serde(rename="fov", deserialize_with="de_fov_scale")]
     fov_scale: F,
+    #[serde(default, rename="lens_radius")]
     lens_r:    F,
+    #[serde(default, rename="focal_distance")]
     fd:        F,
 }
 
 impl Perspective {
-    pub fn new(fov: F, lr: Option<F>, fd: Option<F>) -> Self {
-        let fov_scale = F::tand(0.5 * fov);
-        let lens_r = lr.unwrap_or(0.);
-        let fd = fd.unwrap_or(0.);
-        Self { fov_scale, lens_r, fd }
-    }
-
     #[inline(always)]
     pub fn ray_at(&self, point: F2, sampler: &mut Sampler) -> R {
         let d = V::from(F3::a2a(point * self.fov_scale, 1.));
@@ -27,3 +23,7 @@ impl Perspective {
         }
     }
 }
+
+fn de_fov_scale<'de, D>(de: D) -> Result<F, D::Error>
+where D: serde::Deserializer<'de>
+{ F::deserialize(de).map(|fov| F::tand(0.5 * fov)) }

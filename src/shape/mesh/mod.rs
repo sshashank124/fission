@@ -1,5 +1,7 @@
 mod triangle;
 
+use std::convert::TryFrom;
+
 use objloader::{Face, MeshData};
 
 use super::*;
@@ -7,25 +9,11 @@ use crate::util::{DiscretePDF, Either};
 
 pub use triangle::*;
 
+#[derive(Debug, Deserialize)]
+#[serde(try_from="MeshConfig")]
 pub struct Mesh {
     tris: BVH<Triangle>,
     dpdf: DiscretePDF,
-}
-
-impl Mesh {
-    pub fn new(mesh_data: MeshData, faces: Vec<Face>) -> Self {
-        let mesh_data = Arc::new(mesh_data);
-        let triangles = faces.into_iter()
-                             .map(|f| Triangle {
-                                 f,
-                                 mesh_data: mesh_data.clone()
-                             })
-                             .collect();
-        let tris = BVH::new(triangles);
-        let dpdf =
-            DiscretePDF::new(tris.elements.iter(), Triangle::surface_area);
-        Self { tris, dpdf }
-    }
 }
 
 impl Intersectable for Mesh {
@@ -64,4 +52,29 @@ type Acc<'a> = (R, Option<Its<'a>>);
     s.intersect(ray)
      .map(|it| (ray.clipped(it.t), Some(it.for_idx(i))))
      .unwrap_or_else(|| (ray, acc))
+}
+
+
+#[derive(Debug, Deserialize)]
+struct MeshConfig {
+    obj: String,
+    #[serde(default)]
+    transforms: Vec<T>,
+}
+
+impl TryFrom<MeshConfig> for Mesh {
+    type Error = String;
+
+    fn try_from(mc: MeshConfig) -> Result<Self, Self::Error> {
+        let to_world = T::product(mc.transforms.into_iter());
+        let (mesh_data, faces) = objloader::load_from_file(&mc.obj, to_world)?;
+        let mesh_data = Arc::new(mesh_data);
+        let triangles = faces.into_iter().map(|f| Triangle {
+                                 f,
+                                 mesh_data: mesh_data.clone()
+                             }).collect();
+        let tris = BVH::new(triangles);
+        let dpdf = DiscretePDF::new(&tris.elements, Triangle::surface_area);
+        Ok(Self { tris, dpdf })
+    }
 }

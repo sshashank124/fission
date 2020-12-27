@@ -1,11 +1,9 @@
 use super::*;
 
-#[derive(Debug)]
+#[derive(Debug, Deserialize)]
 pub struct Direct;
 
 impl Direct {
-    pub fn new() -> Self { Self }
-
     #[inline(always)] pub fn li<'a>(scene: &'a Scene, sampler: &mut Sampler,
                                     its: &Its, ray: &R)
             -> (Color, Option<(Color, R, Its<'a>, bool)>) {

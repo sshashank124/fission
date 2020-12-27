@@ -5,29 +5,20 @@ use crate::prelude::*;
 use crate::shape::*;
 use crate::util::DiscretePDF;
 
+#[derive(Debug, Deserialize)]
+#[serde(from="SceneConfig")]
 pub struct Scene {
-    shapes:      BVH<Arc<Shape>>,
-    pub camera:  Camera,
-    pub lights:  Vec<Arc<Light>>,
+    pub camera: Camera,
+    shapes: BVH<Arc<Shape>>,
+    pub lights: Vec<Arc<Light>>,
     pub lights_dpdf: DiscretePDF,
-    env:         Option<Arc<Light>>,
+    env: Option<Arc<Light>>,
 }
 
 impl Scene {
-    pub fn new(shapes: Vec<Arc<Shape>>,
-               lights: Vec<Light>,
-               camera: Camera)
-               -> Self {
-        let shapes = BVH::new(shapes);
-        let lights_dpdf = DiscretePDF::new(lights.iter(), Light::power);
-        let lights = lights.into_iter().map(Arc::new).collect::<Vec<_>>();
-        let env =
-            lights.iter().find(|light| light.is_env_light()).map(Arc::clone);
-        Self { shapes, camera, lights, lights_dpdf, env }
-    }
-
     #[inline(always)] pub fn intersects(&self, r: R) -> bool
     { self.shapes.intersects(r) }
+
     #[inline(always)] pub fn intersect(&self, r: R) -> Option<Its>
     { self.shapes.intersect(r) }
 
@@ -43,4 +34,42 @@ impl Scene {
             .map(|light| light.eval_env(ray))
             .unwrap_or(Color::ZERO)
     }
+}
+
+
+#[derive(Debug, Deserialize)]
+struct SceneConfig {
+    camera: Camera,
+    elements: Vec<Element>,
+}
+
+#[derive(Debug, Deserialize)]
+#[serde(untagged)]
+enum Element {
+    Shape(Shape),
+    Light(Light),
+}
+
+impl From<SceneConfig> for Scene {
+    fn from(sc: SceneConfig) -> Self {
+        let mut shapes = vec![];
+        let mut lights = vec![];
+        for elem in sc.elements {
+            match elem {
+                Element::Shape(s) => {
+                    let emitter = s.emission.is_some();
+                    let s = Arc::new(s);
+                    if emitter { lights.push(s.clone().into()); }
+                    shapes.push(s);
+                },
+                Element::Light(l) => lights.push(l),
+            }
+        }
+        let shapes = BVH::new(shapes);
+        let lights_dpdf = DiscretePDF::new(&lights, Light::power);
+        let lights = lights.into_iter().map(Arc::new).collect::<Vec<_>>();
+        let env =
+            lights.iter().find(|light| light.is_env_light()).map(Arc::clone);
+        Self { shapes, camera: sc.camera, lights, lights_dpdf, env }
+}
 }

@@ -1,3 +1,9 @@
+near/far clipping planes
+
+live rendering with gui
+
+possible replace SHAPE_PH with some unsafe thingy?
+
 Image Textures
 
 Light sampling distribution (by power?)

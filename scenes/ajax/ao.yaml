@@ -1,11 +1,10 @@
-integrator:
-  tracer:
-    type: ambient_occlusion
-    ray_length: 10
+tracer:
+  type: ambient_occlusion
+  ray_length: 10
 
-  sampler:
-    type: sobol
-    samples_per_pixel: 64
+sampler:
+  samples_per_pixel: 64
+  type: sobol
 
 scene:
   camera:
@@ -15,7 +14,7 @@ scene:
 
     transforms:
       - look_at:
-          origin: [-65.6055, 47.5762, 24.3583]
+          pos: [-65.6055, 47.5762, 24.3583]
           target: [-64.8161, 47.2211, 23.8576]
           up: [0.299858, 0.934836, -0.190177]
 

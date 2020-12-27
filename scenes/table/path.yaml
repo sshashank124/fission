@@ -1,11 +1,10 @@
-integrator:
-  tracer:
-    type: path
-    depth: [50, 100]
+tracer:
+  type: path
+  depth: [50, 100]
 
-  sampler:
-    type: sobol
-    samples_per_pixel: 128
+sampler:
+  samples_per_pixel: 128
+  type: sobol
 
 scene:
   camera:
@@ -15,7 +14,7 @@ scene:
 
     transforms:
       - look_at:
-          origin: [32.1259, -68.0505, 36.597]
+          pos: [32.1259, -68.0505, 36.597]
           target: [31.6866, -67.2776, 36.1392]
           up: [-.22886, .39656, .889024]
 
@@ -24,7 +23,7 @@ scene:
       obj: obj/table/01.obj
       emission:
         type: constant
-        color: [3, 3, 2.5]
+        val: [3, 3, 2.5]
       transforms:
         - scale: [.06, .06, -1]
         - translate: [10, 0, 25]
@@ -33,7 +32,7 @@ scene:
       obj: obj/table/01.obj
       emission:
         type: constant
-        color: [1, 1, 1.6]
+        val: [1, 1, 1.6]
       transforms:
         - scale: [.3, .3, -1]
         - translate: [0, 0, 60]
@@ -52,7 +51,7 @@ scene:
         type: diffuse
         albedo:
           type: constant
-          color: [.5, .5, .5]
+          val: [.5, .5, .5]
       transforms:
         - scale: [.2, .35, .5]
         - translate: [-35, 25, 0]

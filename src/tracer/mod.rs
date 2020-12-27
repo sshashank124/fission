@@ -15,9 +15,10 @@ pub use normals::Normals;
 pub use path::Path;
 pub use silhouette::Silhouette;
 
-#[derive(Debug)]
+#[derive(Debug, Deserialize)]
+#[serde(tag="type", rename_all="snake_case")]
 pub enum Tracer {
-    AO(AmbientOcclusion),
+    AmbientOcclusion(AmbientOcclusion),
     Direct(Direct),
     Normals(Normals),
     Path(Path),
@@ -28,7 +29,7 @@ impl Tracer {
     #[inline(always)]
     pub fn trace(&self, scene: &Scene, sampler: &mut Sampler, ray: R) -> Color {
         match self {
-            Self::AO(t) => t.trace(scene, sampler, ray),
+            Self::AmbientOcclusion(t) => t.trace(scene, sampler, ray),
             Self::Direct(t) => t.trace(scene, sampler, ray),
             Self::Normals(t) => t.trace(scene, ray),
             Self::Path(t) => t.trace(scene, sampler, ray),
@@ -38,7 +39,7 @@ impl Tracer {
 }
 
 impl From<AmbientOcclusion> for Tracer {
-    fn from(t: AmbientOcclusion) -> Self { Self::AO(t) }
+    fn from(t: AmbientOcclusion) -> Self { Self::AmbientOcclusion(t) }
 }
 
 impl From<Direct> for Tracer {

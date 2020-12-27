@@ -3,6 +3,7 @@ mod mesh;
 mod sphere;
 
 use std::borrow::Borrow;
+use std::fmt;
 use std::ops::BitAnd;
 pub use std::sync::Arc;
 
@@ -29,25 +30,21 @@ pub trait Intersectable {
     fn intersection_cost(&self) -> F;
 }
 
+#[derive(Debug, Default, Deserialize)]
+#[serde(default)]
 pub struct Shape {
+    #[serde(flatten)]
     pub shape:    ShapeType,
     pub bsdf:     BSDF,
     pub emission: Option<Tex<Color>>,
 }
 
+#[derive(Deserialize)]
+#[serde(tag="type", rename_all="snake_case")]
 pub enum ShapeType {
     None,
     Mesh(Mesh),
     Sphere(Sphere),
-}
-
-impl Shape {
-    pub const fn new(shape: ShapeType,
-                     bsdf: BSDF,
-                     emission: Option<Tex<Color>>)
-                     -> Self {
-        Self { shape, bsdf, emission }
-    }
 }
 
 impl Intersectable for Shape {
@@ -70,7 +67,8 @@ impl Intersectable for Shape {
     fn intersection_cost(&self) -> F { self.shape.intersection_cost() }
 }
 
-pub static SHAPE_PH: Shape = Shape::new(ShapeType::ZERO, BSDF::ZERO, None);
+pub static SHAPE_PH: Shape = Shape { shape: ShapeType::ZERO, bsdf: BSDF::ZERO,
+                                     emission: None };
 
 impl Intersectable for ShapeType {
     #[inline(always)] fn bbox(&self) -> BBox {
@@ -136,6 +134,18 @@ impl From<Sphere> for ShapeType
 { fn from(s: Sphere) -> Self { Self::Sphere(s) } }
 
 impl Zero for ShapeType { const ZERO: Self = Self::None; }
+
+impl Default for ShapeType { fn default() -> Self { Self::None } }
+
+impl fmt::Debug for ShapeType {
+    fn fmt(&self, f: &mut fmt::Formatter) -> fmt::Result {
+        write!(f, "{}", match self {
+            Self::None => "NoShape",
+            Self::Mesh(_) => "Mesh",
+            Self::Sphere(_) => "Sphere",
+        })
+    }
+}
 
 impl Intersectable for Arc<Shape> {
     #[inline(always)] fn bbox(&self) -> BBox { Shape::borrow(self).bbox() }

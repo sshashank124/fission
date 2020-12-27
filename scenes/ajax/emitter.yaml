@@ -1,10 +1,9 @@
-integrator:
-  tracer:
-    type: path
+tracer:
+  type: path
 
-  sampler:
-    type: sobol
-    samples_per_pixel: 128
+sampler:
+  samples_per_pixel: 128
+  type: sobol
 
 scene:
   camera:
@@ -14,7 +13,7 @@ scene:
 
     transforms:
       - look_at:
-          origin: [-65.6055, 47.5762, 24.3583]
+          pos: [-65.6055, 47.5762, 24.3583]
           target: [-64.8161, 47.2211, 23.8576]
           up: [0.299858, 0.934836, -0.190177]
 
@@ -32,11 +31,10 @@ scene:
         type: diffuse
         albedo:
           type: constant
-          color: [1, 1, 0]
+          val: [1, 1, 0]
       emission:
         type: checkerboard
-        color_1: [3, 3, 3]
-        color_2: [0, 0, 0]
+        vals: [[3, 3, 3], [0, 0, 0]]
         scale: [.025, .025]
       transforms:
         - scale: [100, 1, 100]

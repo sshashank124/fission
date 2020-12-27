@@ -2,8 +2,7 @@ use std::ops::Div;
 
 use super::*;
 
-#[inline(always)] pub fn eta(ior: Option<F2>) -> F
-{ ior.unwrap_or(A2(1.000_277, 1.5046)).reduce(Div::div) }
+#[inline(always)] pub fn eta(ior: F2) -> F { ior.reduce(Div::div) }
 
 // (fresnel coefficient, cos theta out, eta)
 #[inline(always)] pub fn fresnel(cti: F, eta: F) -> (F, F, F) {

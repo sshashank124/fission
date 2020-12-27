@@ -1,13 +1,11 @@
 use super::*;
 
-#[derive(Debug)]
+#[derive(Debug, Default, Deserialize)]
 pub struct Diffuse {
     albedo: Tex<Color>,
 }
 
 impl Diffuse {
-    pub const fn new(albedo: Tex<Color>) -> Self { Self { albedo } }
-
     #[inline(always)] pub fn eval(&self, wi: V, wo: V, uv: F2) -> Color {
         let cto = Frame::ct(wo);
         if Frame::ct(wi) <= 0. || cto <= 0. { Color::ZERO }
@@ -26,4 +24,4 @@ impl Diffuse {
     #[inline(always)] pub fn is_delta(&self) -> bool { false }
 }
 
-impl Zero for Diffuse { const ZERO: Self = Self::new(Tex::ZERO); }
+impl Zero for Diffuse { const ZERO: Self = Self { albedo: Tex::ZERO }; }

@@ -13,7 +13,8 @@ pub use diffuse::Diffuse;
 pub use microfacet::Microfacet;
 pub use mirror::Mirror;
 
-#[derive(Debug)]
+#[derive(Debug, Deserialize)]
+#[serde(tag="type", rename_all="snake_case")]
 pub enum BSDF {
     Dielectric(Dielectric),
     Diffuse(Diffuse),
@@ -71,3 +72,5 @@ impl From<Microfacet> for BSDF
 impl From<Mirror> for BSDF { fn from(f: Mirror) -> Self { Self::Mirror(f) } }
 
 impl Zero for BSDF { const ZERO: Self = Self::Diffuse(Diffuse::ZERO); }
+
+impl Default for BSDF { fn default() -> Self { Self::ZERO } }

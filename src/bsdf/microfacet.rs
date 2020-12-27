@@ -2,7 +2,8 @@ use super::*;
 
 use crate::sampler::*;
 
-#[derive(Debug)]
+#[derive(Debug, Deserialize)]
+#[serde(from="MicrofacetConfig")]
 pub struct Microfacet {
     kd:    Color,
     ks:    F,
@@ -11,13 +12,6 @@ pub struct Microfacet {
 }
 
 impl Microfacet {
-    pub fn new(kd: Color, alpha: Option<F>, ior: Option<F2>) -> Self {
-        let ks = 1. - kd.max_channel();
-        let alpha = alpha.unwrap_or(0.1);
-        let eta = eta(ior);
-        Self { kd, ks, alpha, eta }
-    }
-
     #[inline(always)] fn beckmann(&self, v: V) -> F {
         F::exp(-Frame::t2t(v) / self.alpha.sq()) * F::INV_PI
         / (self.alpha * Frame::c2t(v)).sq()
@@ -35,12 +29,10 @@ impl Microfacet {
     #[inline(always)] pub fn eval(&self, wi: V, wo: V) -> Color {
         let cti = Frame::ct(wi);
         let cto = Frame::ct(wo);
-        if cti <= 0. || cto <= 0. {
-            return Color::ZERO
-        }
-        let wh = wi + wo;
+        if cti <= 0. || cto <= 0. { return Color::ZERO }
+        let wh = (wi + wo).unit();
         let beck = self.beckmann(wh);
-        let (fr, _, _) = fresnel(F3::dot(wh, wi), self.eta);
+        let fr = fresnel(F3::dot(wh, wi), self.eta).0;
         let g = self.smith_beckmann_g1(wi, wh) * self.smith_beckmann_g1(wo, wh);
         self.kd * F::INV_PI * cto + (self.ks * beck * fr * g * 0.25) / cti
     }
@@ -59,11 +51,30 @@ impl Microfacet {
     }
 
     #[inline(always)] pub fn pdf(&self, wi: V, wo: V) -> F {
-        let wh = wi + wo;
+        let wh = (wi + wo).unit();
         let dp = CosineHemisphere::pdf(wo);
         let sp = self.beckmann(wh) * Frame::ct(wh) * 0.25 / F3::dot(wh, wo);
         LinearScale::interp(A2(dp, sp), self.ks)
     }
 
     #[inline(always)] pub fn is_delta(&self) -> bool { false }
+}
+
+
+#[derive(Debug, Deserialize)]
+struct MicrofacetConfig {
+    kd: Color,
+    alpha: Option<F>,
+    ior: Option<F2>,
+}
+
+impl From<MicrofacetConfig> for Microfacet {
+    fn from(mc: MicrofacetConfig) -> Self {
+        Self {
+            kd: mc.kd,
+            ks: 1. - mc.kd.max_channel(),
+            alpha: mc.alpha.unwrap_or(0.1),
+            eta: eta(mc.ior.unwrap_or(A2(1.000_277, 1.5046))),
+        }
+    }
 }

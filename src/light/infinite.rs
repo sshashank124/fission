@@ -1,12 +1,11 @@
 use super::*;
 
+#[derive(Debug, Deserialize)]
 pub struct Infinite {
     intensity: Tex<Color>,
 }
 
 impl Infinite {
-    pub fn new(intensity: Tex<Color>) -> Self { Self { intensity } }
-
     #[inline(always)] pub fn sample(&self, its: &Its, s: F2) -> (Color, R, F) {
         let theta_phi = s * A2(F::PI, F::TWO_PI);
         let sray = R::unbounded(its.p, V::from(Frame::spher2cart(theta_phi)));

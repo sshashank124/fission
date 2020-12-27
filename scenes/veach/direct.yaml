@@ -1,10 +1,9 @@
-integrator:
-  tracer:
-    type: direct
+tracer:
+  type: direct
 
-  sampler:
-    type: sobol
-    samples_per_pixel: 32
+sampler:
+  samples_per_pixel: 32
+  type: sobol
 
 scene:
   camera:
@@ -15,7 +14,7 @@ scene:
     transforms:
       - scale: [-1, 1, 1]
       - look_at:
-          origin: [0, 6, 27.5]
+          pos: [0, 6, 27.5]
           target: [0, -1.5, 2.5]
           up: [0, 1, 0]
 
@@ -25,28 +24,28 @@ scene:
       radius: .03333
       emission:
         type: constant
-        color: [901.803, 901.803, 901.803]
+        val: [901.803, 901.803, 901.803]
 
     - type: sphere
       center: [-1.25, 0, 0]
       radius: .1
       emission:
         type: constant
-        color: [100, 100, 100]
+        val: [100, 100, 100]
 
     - type: sphere
       center: [1.25, 0, 0]
       radius: .3
       emission:
         type: constant
-        color: [11.1111, 11.1111, 11.1111]
+        val: [11.1111, 11.1111, 11.1111]
 
     - type: sphere
       center: [3.75, 0, 0]
       radius: .9
       emission:
         type: constant
-        color: [1.23457, 1.23457, 1.23457]
+        val: [1.23457, 1.23457, 1.23457]
 
     - type: mesh
       obj: obj/veach/plate1.obj
@@ -82,4 +81,4 @@ scene:
         type: diffuse
         albedo:
           type: constant
-          color: [.1, .1, .1]
+          val: [.1, .1, .1]

@@ -1,10 +1,8 @@
 #![feature(try_trait)]
-#![allow(clippy::suspicious_arithmetic_impl)]
 
 mod aggregate;
 mod bsdf;
 mod camera;
-mod config;
 mod image;
 mod integrator;
 mod light;
@@ -17,11 +15,14 @@ mod util;
 
 mod prelude {
     pub use graphite::*;
+    pub use serde::{Deserialize, Serialize};
 }
 
 use std::env;
+use std::fs::File;
 use std::path::Path;
 
+use integrator::Integrator;
 use util::Progress;
 
 fn main() -> Result<(), String> {
@@ -29,12 +30,12 @@ fn main() -> Result<(), String> {
     if args.len() != 2 {
         return Err("Usage: fission <scene_description.yaml>".into())
     }
-    let config_file = &args[1];
 
-    let integrator = {
+    let config_file = &args[1];
+    let integrator: Integrator = {
         let _progress = Progress::new("Loading scene description", None);
-        config::load_from_file(config_file)
-               .map_err(|e| format!("Failed to load config: {}", e))?
+        let f = File::open(config_file).map_err(|e| e.to_string())?;
+        serde_yaml::from_reader(f).map_err(|e| e.to_string())?
     };
 
     let image = integrator.render();

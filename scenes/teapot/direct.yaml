@@ -1,24 +1,23 @@
-integrator:
-  tracer:
-    type: direct
+tracer:
+  type: direct
 
-  sampler:
-    type: sobol
-    samples_per_pixel: 32
+sampler:
+  samples_per_pixel: 32
+  type: sobol
 
 scene:
   camera:
     type: perspective
-    fov: 40.
+    fov: 40
     lens_radius: 0.5
-    focal_distance: 14.
+    focal_distance: 14
     resolution: [1280, 720]
 
     transforms:
       - look_at:
-          origin: [0., 4., -4.]
-          target: [0., -2., 10.]
-          up:     [0., 1., 0.]
+          pos: [0, 4, -4]
+          target: [0, -2, 10]
+          up: [0, 1, 0]
 
   elements:
     - type: mesh
@@ -27,12 +26,12 @@ scene:
         type: diffuse
         albedo:
           type: constant
-          color: [0.6, 0.6, 0.]
+          val: [0.6, 0.6, 0]
       transforms:
         - rotate:
-            axis: [0., 1., 0.]
-            angle: 20.
-        - translate: [-3., -2., 3.]
+            axis: [0, 1, 0]
+            angle: 20
+        - translate: [-3, -2, 3]
 
     - type: mesh
       obj: obj/teapot.obj
@@ -40,12 +39,12 @@ scene:
         type: diffuse
         albedo:
           type: constant
-          color: [0., 0.6, 0.6]
+          val: [0, 0.6, 0.6]
       transforms:
         - rotate:
-            axis: [0., 1., 0.]
-            angle: -60.
-        - translate: [3., -2., 6.]
+            axis: [0, 1, 0]
+            angle: -60
+        - translate: [3, -2, 6]
 
     - type: mesh
       obj: obj/teapot.obj
@@ -53,12 +52,12 @@ scene:
         type: diffuse
         albedo:
           type: constant
-          color: [0.6, 0., 0.6]
+          val: [0.6, 0, 0.6]
       transforms:
         - rotate:
-            axis: [0., 1., 0.]
-            angle: -20.
-        - translate: [-3., -2., 9.]
+            axis: [0, 1, 0]
+            angle: -20
+        - translate: [-3, -2, 9]
 
     - type: mesh
       obj: obj/teapot.obj
@@ -66,12 +65,12 @@ scene:
         type: diffuse
         albedo:
           type: constant
-          color: [0.4, 0.4, 0.4]
+          val: [0.4, 0.4, 0.4]
       transforms:
         - rotate:
-            axis: [0., 1., 0.]
-            angle: 65.
-        - translate: [3., -2., 12.]
+            axis: [0, 1, 0]
+            angle: 65
+        - translate: [3, -2, 12]
     
     - type: mesh
       obj: obj/plane.obj
@@ -79,23 +78,23 @@ scene:
         type: diffuse
         albedo:
           type: constant
-          color: [0.2, 0.5, 0.2]
+          val: [0.2, 0.5, 0.2]
       transforms:
-        - scale: [10., 1., 10.]
-        - translate: [0., -2., 10.]
+        - scale: [10, 1, 10]
+        - translate: [0, -2, 10]
 
     - type: pointlight
-      power: [400., 400., 400.]
-      position: [0., 8., 1.5]
+      power: [400, 400, 400]
+      position: [0, 8, 1.5]
 
     - type: pointlight
-      power: [400., 400., 400.]
-      position: [0., 8., 4.5]
+      power: [400, 400, 400]
+      position: [0, 8, 4.5]
 
     - type: pointlight
-      power: [400., 400., 400.]
-      position: [0., 8., 7.5]
+      power: [400, 400, 400]
+      position: [0, 8, 7.5]
 
     - type: pointlight
-      power: [400., 400., 400.]
-      position: [0., 8., 10.5]
+      power: [400, 400, 400]
+      position: [0, 8, 10.5]

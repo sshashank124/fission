@@ -1,16 +1,14 @@
 use super::*;
 
-#[derive(Debug)]
+#[derive(Debug, Deserialize)]
+#[serde(default)]
 pub struct AmbientOcclusion {
     samples: I,
+    #[serde(rename="ray_length")]
     ray_len: F,
 }
 
 impl AmbientOcclusion {
-    pub fn new(s: Option<I>, rl: Option<F>) -> Self {
-        Self { samples: s.unwrap_or(1), ray_len: rl.unwrap_or(F::POS_INF) }
-    }
-
     #[inline(always)]
     pub fn trace(&self, scene: &Scene, sampler: &mut Sampler, ray: R) -> Color {
         match scene.intersect(ray) {
@@ -25,3 +23,6 @@ impl AmbientOcclusion {
         }
     }
 }
+
+impl Default for AmbientOcclusion
+{ fn default() -> Self { Self { samples: 1, ray_len: F::POS_INF } } }
