@@ -1,8 +1,6 @@
-near/far clipping planes
+state saving/loading
 
 live rendering with gui
-
-possible replace SHAPE_PH with some unsafe thingy?
 
 Image Textures
 

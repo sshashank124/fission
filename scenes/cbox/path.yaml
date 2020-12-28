@@ -9,7 +9,7 @@ sampler:
 scene:
   camera:
     type: perspective
-    fov: 20.84
+    fov: 20.8392
     resolution: [800, 600]
 
     transforms:

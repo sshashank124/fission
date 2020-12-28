@@ -1,8 +1,6 @@
 use std::collections::HashMap;
 use std::mem;
 
-use staticvec::StaticVec;
-
 use super::*;
 use crate::util::Either;
 
@@ -63,14 +61,16 @@ impl<S> BVH<S> where S: Intersectable
                        f: impl Fn(A, usize, &'a S) -> Either<A, A>)
                        -> A {
         let mut idx = 0;
-        let mut stack = StaticVec::<I, 32>::new();
+        let mut stack: [I; 32] = [0; 32];
+        let mut sp = 0;
         loop {
             let node = &self.nodes[idx as usize];
             if pred(&mut acc, node) {
                 match node.node {
                     BVHNodeType::Tree(ri, dim) => {
                         let ii = A2(ri, idx + 1);
-                        stack.push(ii[!trav_order[dim]]);
+                        stack[sp] = ii[!trav_order[dim]];
+                        sp += 1;
                         idx = ii[trav_order[dim]];
                     }
                     BVHNodeType::Leaf(i, n) => {
@@ -80,16 +80,16 @@ impl<S> BVH<S> where S: Intersectable
                                 Either::R(a) => a,
                             };
                         }
-                        idx = match stack.pop() {
-                            Some(i) => i,
-                            _ => break
+                        idx = if sp == 0 { break } else {
+                            sp -= 1;
+                            stack[sp]
                         };
                     }
                 }
             } else {
-                idx = match stack.pop() {
-                    Some(i) => i,
-                    _ => break
+                idx = if sp == 0 { break } else {
+                    sp -= 1;
+                    stack[sp]
                 };
             }
         }

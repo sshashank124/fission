@@ -17,13 +17,16 @@ pub struct Progress<'a> {
 }
 
 impl<'a> Progress<'a> {
-    pub fn new(msg: &'a str, n: Option<I>) -> Self {
+    pub fn new(msg: &'a str, n: I) -> Self {
         let mut p = Self { msg,
                            t: Instant::now(),
-                           p: ProgressType::new(n.unwrap_or(1)) };
+                           p: ProgressType::new(n)
+        };
         p.update();
         p
     }
+
+    pub fn indeterminate(msg: &'a str) -> Self { Self::new(msg, 1) }
 
     pub fn update(&mut self) {
         print!("\r{} ... [{}]", self.msg, self.p.update());

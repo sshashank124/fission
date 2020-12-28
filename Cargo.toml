@@ -5,7 +5,7 @@ authors = ["Shashank Singh <sshashank124@gmail.com>"]
 edition = "2018"
 
 [dependencies]
-exr = "*"
+exr = "^1"
 graphite = { git = "https://github.com/sshashank124/graphite" }
 objloader = { git = "https://github.com/sshashank124/objloader" }
 rand_core = "*"
@@ -13,8 +13,6 @@ rand_pcg = "*"
 rayon = "*"
 serde = { version = "*", features = ["derive"] }
 serde_yaml = "*"
-staticvec = "*"
-yaml-rust = "*"
 
 [profile.release]
 panic = "abort"

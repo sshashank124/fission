@@ -33,7 +33,7 @@ fn main() -> Result<(), String> {
 
     let config_file = &args[1];
     let integrator: Integrator = {
-        let _progress = Progress::new("Loading scene description", None);
+        let _progress = Progress::indeterminate("Loading scene description");
         let f = File::open(config_file).map_err(|e| e.to_string())?;
         serde_yaml::from_reader(f).map_err(|e| e.to_string())?
     };
@@ -43,7 +43,7 @@ fn main() -> Result<(), String> {
     let save_path = Path::new(config_file).with_extension("exr");
     let save_name = save_path.to_str().unwrap();
     {
-        let _progress = Progress::new("Saving rendered image", None);
+        let _progress = Progress::indeterminate("Saving rendered image");
         image.save_exr(save_name)
              .map_err(|e| format!("Saving image failed: {}", e))?;
     }
