@@ -3,9 +3,8 @@ use super::*;
 #[derive(Debug, Deserialize)]
 #[serde(default)]
 pub struct AmbientOcclusion {
-    samples: I,
-    #[serde(rename="ray_length")]
-    ray_len: F,
+    samples:    I,
+    ray_length: F,
 }
 
 impl AmbientOcclusion {
@@ -17,7 +16,7 @@ impl AmbientOcclusion {
                 let f = its.to_world();
                 Color::gray((0..self.samples).filter(|_| {
                     let wi = V::from(CosineHemisphere::warp(sampler.next_2d()));
-                    !scene.intersects(R::r(its.p, f * wi, self.ray_len))
+                    !scene.intersects(R::r(its.p, f * wi, self.ray_length))
                 }).count() as F / self.samples as F)
             }
         }
@@ -25,4 +24,4 @@ impl AmbientOcclusion {
 }
 
 impl Default for AmbientOcclusion
-{ fn default() -> Self { Self { samples: 1, ray_len: F::POS_INF } } }
+{ fn default() -> Self { Self { samples: 1, ray_length: F::POS_INF } } }

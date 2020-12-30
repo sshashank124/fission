@@ -8,11 +8,11 @@ use crate::util::DiscretePDF;
 #[derive(Debug, Deserialize)]
 #[serde(from="SceneConfig")]
 pub struct Scene {
-    pub camera: Camera,
-    shapes: BVH<Arc<Shape>>,
-    pub lights: Vec<Arc<Light>>,
+    pub camera:      Camera,
+        shapes:      BVH<Arc<Shape>>,
+    pub lights:      Vec<Arc<Light>>,
     pub lights_dpdf: DiscretePDF,
-    env: Option<Arc<Light>>,
+        env:         Option<Arc<Light>>,
 }
 
 impl Scene {
@@ -39,7 +39,7 @@ impl Scene {
 
 #[derive(Debug, Deserialize)]
 struct SceneConfig {
-    camera: Camera,
+    camera:   Camera,
     elements: Vec<Element>,
 }
 

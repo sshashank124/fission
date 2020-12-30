@@ -8,10 +8,10 @@ pub use perspective::Perspective;
 #[derive(Debug, Deserialize)]
 #[serde(from="CameraConfig")]
 pub struct Camera {
-    model: CameraType,
+        model:      CameraType,
     pub resolution: I2,
-    from_pixel: T2,
-    to_world: T,
+        from_pixel: T2,
+        to_world:   T,
 }
 
 #[derive(Debug, Deserialize)]

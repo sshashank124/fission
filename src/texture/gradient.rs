@@ -5,7 +5,8 @@ use super::*;
 #[derive(Clone, Copy, Debug, Default, Deserialize)]
 pub struct Gradient<A, L> {
     vals:    A2<A>,
-    #[serde(skip)] phantom: PhantomData<L>,
+    #[serde(skip)]
+    phantom: PhantomData<L>,
 }
 
 impl<A, L> Gradient<A, L>

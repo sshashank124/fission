@@ -16,7 +16,7 @@ const BLOCK_SIZE: I2 = A2(16, 16);
 
 #[derive(Clone, Debug, Deserialize, Serialize)]
 pub struct Block {
-    data: Vec<Pixel>,
+        data: Vec<Pixel>,
     pub rect: Rect,
 }
 

@@ -5,7 +5,7 @@ use super::*;
 #[derive(Clone, Copy, Debug, Default, PartialEq, Deserialize, Serialize)]
 pub struct Pixel {
     val: Color,
-    w: F,
+    w:   F,
 }
 
 impl Pixel {

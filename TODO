@@ -1,6 +1,4 @@
-align struct field names and types
-
-live rendering with gui
+live rendering with gui or use tev IPC
 
 Light sampling distribution (by power)
 

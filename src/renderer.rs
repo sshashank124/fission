@@ -12,15 +12,15 @@ use crate::tracer::*;
 use crate::util::{Progress, threaded};
 
 pub struct Renderer<'a> {
-    state: RenderState,
-    running: Arc<AtomicBool>,
+    state:      RenderState,
+    running:    Arc<AtomicBool>,
     integrator: &'a Integrator,
 }
 
 #[derive(Debug, Deserialize, Serialize)]
 pub struct RenderState {
-    pub img: Image,
-    pass: I,
+    pub img:  Image,
+        pass: I,
 }
 
 #[derive(Debug, Deserialize)]

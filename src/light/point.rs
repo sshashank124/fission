@@ -4,7 +4,7 @@ use super::*;
 pub struct Point {
     #[serde(rename="power", deserialize_with="de_intensity")]
     intensity: Color,
-    position: P,
+    position:  P,
 }
 
 impl Point {

@@ -19,7 +19,7 @@ impl<A: Copy> Checkerboard<A> {
 
 #[derive(Debug, Deserialize)]
 struct CheckerboardConfig<A> {
-    vals: A2<A>,
+    vals:  A2<A>,
     scale: Option<F2>,
     delta: Option<F2>,
 }

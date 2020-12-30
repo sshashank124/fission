@@ -6,14 +6,14 @@ use crate::util::Either;
 
 #[derive(Debug)]
 pub struct BVH<S> {
-    nodes:        Vec<BVHNode>,
+        nodes:    Vec<BVHNode>,
     pub elements: Vec<S>,
 }
 
 #[derive(Debug)]
 pub struct BVHNode {
     pub bbox: BBox,
-    node:     BVHNodeType,
+        node: BVHNodeType,
 }
 
 #[derive(Debug)]

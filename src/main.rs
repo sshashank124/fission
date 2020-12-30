@@ -55,13 +55,8 @@ fn main() -> Result<(), Box<dyn std::error::Error>> {
     };
 
     // Render
-    let state = match state_file {
-        None => None,
-        Some(file) => {
-            let reader = BufReader::new(File::open(file)?);
-            Some(bincode::deserialize_from(reader)?)
-        }
-    };
+    let state = state_file.map(File::open).transpose()?.map(BufReader::new)
+                          .map(bincode::deserialize_from).transpose()?;
     let mut renderer = Renderer::new(running, &integrator, state);
     let state = renderer.render();
 
