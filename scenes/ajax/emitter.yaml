@@ -1,8 +1,9 @@
+passes: 128
+
 tracer:
   type: path
 
 sampler:
-  samples_per_pixel: 128
   type: sobol
 
 scene:

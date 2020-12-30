@@ -1,7 +1,6 @@
 mod perspective;
 
 use crate::prelude::*;
-use crate::image::*;
 use crate::sampler::*;
 
 pub use perspective::Perspective;
@@ -9,10 +8,10 @@ pub use perspective::Perspective;
 #[derive(Debug, Deserialize)]
 #[serde(from="CameraConfig")]
 pub struct Camera {
-    model:      CameraType,
-    resolution: I2,
+    model: CameraType,
+    pub resolution: I2,
     from_pixel: T2,
-    to_world:   T,
+    to_world: T,
 }
 
 #[derive(Debug, Deserialize)]
@@ -25,8 +24,6 @@ impl Camera {
     #[inline(always)]
     pub fn ray_at(&self, point: F2, sampler: &mut Sampler) -> R
     { self.to_world * self.model.ray_at(self.from_pixel * point, sampler) }
-
-    pub fn new_image(&self) -> Image { Image::new(self.resolution) }
 }
 
 impl CameraType {

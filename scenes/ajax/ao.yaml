@@ -1,9 +1,10 @@
+passes: 64
+
 tracer:
   type: ambient_occlusion
   ray_length: 10
 
 sampler:
-  samples_per_pixel: 64
   type: sobol
 
 scene:

@@ -285,7 +285,7 @@ type Acc<'a> = (R, Option<Its<'a>>);
      .unwrap_or_else(|| (ray, acc))
 }
 
-pub fn partition<E>(items: &mut [E], pred: impl Fn(&E) -> bool) -> I {
+fn partition<E>(items: &mut [E], pred: impl Fn(&E) -> bool) -> I {
     let mut pivot = 0;
     let mut it = items.iter_mut();
     'main: while let Some(i) = it.next() {

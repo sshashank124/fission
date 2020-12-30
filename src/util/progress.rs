@@ -4,44 +4,45 @@ use std::time::Instant;
 use super::*;
 
 pub trait ProgressTracker {
-    fn new(n: I) -> Self;
+    fn new(i: I, n: I) -> Self;
     fn update(&mut self) -> String;
-    fn finish(&mut self) -> String;
+    fn finish(&self) -> String;
 }
 
 #[must_use]
 pub struct Progress<'a> {
-    msg: &'a str,
-    t:   Instant,
-    p:   ProgressType,
+    msg:  &'a str,
+    t:    Instant,
+    p:    ProgressType,
+    done: bool,
 }
 
 impl<'a> Progress<'a> {
-    pub fn new(msg: &'a str, n: I) -> Self {
-        let mut p = Self { msg,
-                           t: Instant::now(),
-                           p: ProgressType::new(n)
-        };
+    pub fn new(msg: &'a str, i: I, n: I) -> Self {
+        let mut p = Self { msg, t: Instant::now(), p: ProgressType::new(i, n),
+                           done: false };
         p.update();
         p
     }
 
-    pub fn indeterminate(msg: &'a str) -> Self { Self::new(msg, 1) }
+    pub fn indeterminate(msg: &'a str) -> Self { Self::new(msg, 0, 1) }
 
     pub fn update(&mut self) {
         print!("\r{} ... [{}]", self.msg, self.p.update());
         stdout().flush().unwrap();
     }
+
+    fn print_result(&self, result: &str) {
+        println!("\r{} ... {} ({:.2?}) {}",
+                 self.msg, result, self.t.elapsed(), self.p.finish());
+    }
+
+    pub fn cancel(mut self)
+    { self.print_result("CANCELLED"); self.done = true; }
 }
 
-impl Drop for Progress<'_> {
-    fn drop(&mut self) {
-        println!("\r{} ... DONE ({:.2?}) {}",
-                 self.msg,
-                 self.t.elapsed(),
-                 self.p.finish());
-    }
-}
+impl Drop for Progress<'_>
+{ fn drop(&mut self) { if !self.done { self.print_result("DONE"); } } }
 
 pub enum ProgressType {
     Bar(BarProgress),
@@ -56,7 +57,7 @@ pub struct BarProgress {
 const SUB_BOX: [char; 8] = [' ', '▏', '▎', '▍', '▌', '▋', '▊', '▉'];
 
 impl ProgressTracker for BarProgress {
-    fn new(n: I) -> Self { Self { i: 0, w: 50, scale: 50. / n as F } }
+    fn new(i: I, n: I) -> Self { Self { i, w: 50, scale: 50. / n as F } }
 
     fn update(&mut self) -> String {
         let pf = self.i as F * self.scale;
@@ -66,7 +67,7 @@ impl ProgressTracker for BarProgress {
         format!("{}{:<cw$}", "█".repeat(p), SUB_BOX[dp], cw = self.w - p)
     }
 
-    fn finish(&mut self) -> String { " ".repeat(self.w) }
+    fn finish(&self) -> String { " ".repeat(self.w) }
 }
 
 pub struct CounterProgress {
@@ -76,20 +77,19 @@ pub struct CounterProgress {
 }
 
 impl ProgressTracker for CounterProgress {
-    fn new(n: I) -> Self {
-        Self { i: 0, n, w: F::log10(n as F).ceili() as usize }
-    }
+    fn new(i: I, n: I) -> Self
+    { Self { i, n, w: F::log10(n as F).ceili() as usize } }
 
     fn update(&mut self) -> String {
         self.i += 1;
         format!("{:width$}/{:width$}", self.i - 1, self.n, width = self.w)
     }
 
-    fn finish(&mut self) -> String { " ".repeat(self.w) }
+    fn finish(&self) -> String { " ".repeat(self.w) }
 }
 
 impl ProgressTracker for ProgressType {
-    fn new(n: I) -> Self { BarProgress::new(n).into() }
+    fn new(i: I, n: I) -> Self { BarProgress::new(i, n).into() }
 
     fn update(&mut self) -> String {
         match self {
@@ -98,7 +98,7 @@ impl ProgressTracker for ProgressType {
         }
     }
 
-    fn finish(&mut self) -> String {
+    fn finish(&self) -> String {
         match self {
             Self::Bar(p) => p.finish(),
             Self::Counter(p) => p.finish(),
@@ -106,10 +106,8 @@ impl ProgressTracker for ProgressType {
     }
 }
 
-impl From<BarProgress> for ProgressType {
-    fn from(p: BarProgress) -> Self { Self::Bar(p) }
-}
+impl From<BarProgress> for ProgressType
+{ fn from(p: BarProgress) -> Self { Self::Bar(p) } }
 
-impl From<CounterProgress> for ProgressType {
-    fn from(p: CounterProgress) -> Self { Self::Counter(p) }
-}
+impl From<CounterProgress> for ProgressType
+{ fn from(p: CounterProgress) -> Self { Self::Counter(p) } }

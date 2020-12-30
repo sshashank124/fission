@@ -1,11 +1,7 @@
-state saving/loading
+align struct field names and types
 
 live rendering with gui
 
+Light sampling distribution (by power)
+
 Image Textures
-
-Light sampling distribution (by power?)
-
-account for eta in RR
-
-Textured BSDFs (eventually abstracted out)

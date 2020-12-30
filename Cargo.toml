@@ -5,7 +5,9 @@ authors = ["Shashank Singh <sshashank124@gmail.com>"]
 edition = "2018"
 
 [dependencies]
+bincode = "*"
 crossbeam = "*"
+ctrlc = "*"
 exr = "^1"
 graphite = { git = "https://github.com/sshashank124/graphite" }
 objloader = { git = "https://github.com/sshashank124/objloader" }

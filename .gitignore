@@ -2,4 +2,5 @@ Cargo.lock
 target
 *.obj
 *.exr
+*.state
 *.png

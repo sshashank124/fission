@@ -14,7 +14,7 @@ pub type Image = Block;
 
 const BLOCK_SIZE: I2 = A2(16, 16);
 
-#[derive(Clone, Debug)]
+#[derive(Clone, Debug, Deserialize, Serialize)]
 pub struct Block {
     data: Vec<Pixel>,
     pub rect: Rect,

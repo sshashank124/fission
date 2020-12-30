@@ -4,8 +4,8 @@ mod aggregate;
 mod bsdf;
 mod camera;
 mod image;
-mod integrator;
 mod light;
+mod renderer;
 mod sampler;
 mod scene;
 mod shape;
@@ -20,32 +20,62 @@ mod prelude {
 
 use std::env;
 use std::fs::File;
+use std::io::{BufReader, BufWriter};
 use std::path::Path;
+use std::sync::Arc;
+use std::sync::atomic::{AtomicBool, Ordering};
 
-use integrator::Integrator;
+use renderer::{Integrator, Renderer};
 use util::Progress;
 
 fn main() -> Result<(), Box<dyn std::error::Error>> {
-    let args = env::args().collect::<Vec<_>>();
-    if args.len() != 2 {
-        return Err("Usage: fission <scene_description.yaml>".into())
-    }
+    let running = Arc::new(AtomicBool::new(true));
 
-    let config_file = &args[1];
+    let r = running.clone();
+    ctrlc::set_handler(move || { r.store(false, Ordering::SeqCst); })?;
+
+    // Parse Args
+    let mut args = env::args();
+    if let None = args.next() { return Err("what".into()) }
+
+    let config_file = match args.next() {
+        Some(arg) => arg,
+        None => return Err("Usage: fission <scene_description.yaml> \
+                            [render_progress.state]".into())
+    };
+    let config_path = Path::new(&config_file);
+
+    let state_file = args.next();
+
+    // Load Integrator
     let integrator: Integrator = {
         let _progress = Progress::indeterminate("Loading scene description");
-        let f = File::open(config_file)?;
+        let f = BufReader::new(File::open(config_path)?);
         serde_yaml::from_reader(f)?
     };
 
-    let image = integrator.render();
+    // Render
+    let state = match state_file {
+        None => None,
+        Some(file) => {
+            let reader = BufReader::new(File::open(file)?);
+            Some(bincode::deserialize_from(reader)?)
+        }
+    };
+    let mut renderer = Renderer::new(running, &integrator, state);
+    let state = renderer.render();
 
-    let save_path = Path::new(config_file).with_extension("exr");
-    let save_name = save_path.to_str().unwrap();
+    // Save Results
     {
+        let img_save_path = config_path.with_extension("exr");
         let _progress = Progress::indeterminate("Saving rendered image");
-        image.save_exr(save_name)
-             .map_err(|e| format!("Saving image failed: {}", e))?;
+        state.img.save_exr(img_save_path.to_str().unwrap())?;
+    }
+    {
+        let state_save_path = config_path.with_extension("state");
+        let _progress = Progress::indeterminate("Saving render state");
+        let f = BufWriter::new(File::create(state_save_path)?);
+        bincode::serialize_into(f, state)?;
     }
 
     Ok(())

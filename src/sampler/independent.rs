@@ -10,8 +10,8 @@ pub struct Independent {
 impl Independent {
     fn from_seed(seed: u64) -> Self { Self { rng: Prng::seed_from_u64(seed) } }
 
-    #[inline(always)] pub fn for_rect(&self, i: I, rect: &Rect) -> Self {
-        Self::from_seed(((i as u64) << 42) + ((rect.pos[Y] as u64) << 21)
+    #[inline(always)] pub fn for_rect(&self, pass: I, rect: &Rect) -> Self {
+        Self::from_seed(((pass as u64) << 42) + ((rect.pos[Y] as u64) << 21)
                                            + (rect.pos[X] as u64))
     }
 

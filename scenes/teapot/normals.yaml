@@ -1,8 +1,9 @@
+passes: 32
+
 tracer:
   type: normals
 
 sampler:
-  samples_per_pixel: 32
   type: sobol
 
 scene:
