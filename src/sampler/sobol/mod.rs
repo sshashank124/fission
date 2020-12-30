@@ -50,17 +50,16 @@ impl Sobol {
         index
     }
 
-    #[inline(always)] pub fn for_block(&self, i: I, block: &Block) -> Self {
-        let Block { pos, dims, .. } = block;
-        let res = ceil_pow2_u32(dims.reduce(Num::max) as u32);
+    #[inline(always)] pub fn for_rect(&self, i: I, rect: &Rect) -> Self {
+        let res = ceil_pow2_u32(rect.length() as u32);
         let m = log2_ceil_u32(res);
         let cache = SampleIndexMemo::new(i as u64, m);
         Self { dim: 0,
                m,
                cache,
-               block_pos: *pos,
+               block_pos: rect.pos,
                pixel_pos: I2::ZERO,
-               rng: self.rng.for_block(i, block) }
+               rng: self.rng.for_rect(i, rect) }
     }
 
     #[inline(always)] pub fn prepare_for_pixel(&mut self, pos: I2) {

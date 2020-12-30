@@ -25,7 +25,7 @@ use std::path::Path;
 use integrator::Integrator;
 use util::Progress;
 
-fn main() -> Result<(), String> {
+fn main() -> Result<(), Box<dyn std::error::Error>> {
     let args = env::args().collect::<Vec<_>>();
     if args.len() != 2 {
         return Err("Usage: fission <scene_description.yaml>".into())
@@ -34,8 +34,8 @@ fn main() -> Result<(), String> {
     let config_file = &args[1];
     let integrator: Integrator = {
         let _progress = Progress::indeterminate("Loading scene description");
-        let f = File::open(config_file).map_err(|e| e.to_string())?;
-        serde_yaml::from_reader(f).map_err(|e| e.to_string())?
+        let f = File::open(config_file)?;
+        serde_yaml::from_reader(f)?
     };
 
     let image = integrator.render();

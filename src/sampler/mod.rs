@@ -3,7 +3,7 @@ mod rng;
 mod sobol;
 
 use crate::prelude::*;
-use crate::image::Block;
+use crate::image::Rect;
 
 pub use independent::Independent;
 pub use sobol::Sobol;
@@ -24,8 +24,8 @@ pub enum SamplerType {
 }
 
 impl Sampler {
-    #[inline(always)] pub fn for_block(&self, i: I, block: &Block) -> Self
-    { Self { sampler: self.sampler.for_block(i, block), spp: self.spp } }
+    #[inline(always)] pub fn for_rect(&self, i: I, rect: &Rect) -> Self
+    { Self { sampler: self.sampler.for_rect(i, rect), spp: self.spp } }
 
     #[inline(always)] pub fn prepare_for_pixel(&mut self, pos: I2)
     { self.sampler.prepare_for_pixel(pos) }
@@ -44,10 +44,10 @@ impl Sampler {
 }
 
 impl SamplerType {
-    #[inline(always)] pub fn for_block(&self, i: I, block: &Block) -> Self {
+    #[inline(always)] pub fn for_rect(&self, i: I, rect: &Rect) -> Self {
         match self {
-            Self::Independent(s) => s.for_block(i, block).into(),
-            Self::Sobol(s) => s.for_block(i, block).into(),
+            Self::Independent(s) => s.for_rect(i, rect).into(),
+            Self::Sobol(s) => s.for_rect(i, rect).into(),
         }
     }
 
