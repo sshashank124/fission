@@ -14,5 +14,6 @@ Features:
 - Lights (Point, Area, Infinite)
 - Samplers (Discrete PDF, Independent [PCG64], Sobol LDS)
 - Textures (Constant, Checkerboard, Gradient, Grid)
-- YAML scene config loader
+- YAML scene config loader (automatic deserialization)
 - OpenEXR Image output
+- Render State serializing-to and deserializing-from disk
