@@ -1,6 +1,5 @@
 use std::sync::Arc;
 use std::sync::atomic::{AtomicBool, Ordering};
-use std::sync::mpsc;
 
 use rayon::iter::{ParallelBridge, ParallelIterator};
 
@@ -44,7 +43,7 @@ impl<'a> Renderer<'a> {
     }
 
     pub fn render(&mut self) -> &RenderState {
-        let (block_tx, block_rx) = mpsc::channel();
+        let (block_tx, block_rx) = crossbeam::channel::unbounded();
 
         threaded::run(|| {
             let block_tx = block_tx;
@@ -69,7 +68,7 @@ impl<'a> Renderer<'a> {
 
                         (pos, tracer.trace(&scene, &mut sampler, ray))
                     }))
-                }).for_each_with(block_tx.clone(), |tx, b| tx.send(b).unwrap());
+                }).for_each_with(&block_tx, |tx, b| tx.send(b).unwrap());
                 progress.update();
                 self.state.pass += 1;
             }
