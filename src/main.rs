@@ -14,6 +14,7 @@ mod tracer;
 mod util;
 
 mod prelude {
+    pub use anyhow::*;
     pub use graphite::*;
     pub use serde::{Deserialize, Serialize};
 }
@@ -25,10 +26,11 @@ use std::path::Path;
 use std::sync::Arc;
 use std::sync::atomic::{AtomicBool, Ordering};
 
+use prelude::*;
 use renderer::{Integrator, Renderer};
 use util::Progress;
 
-fn main() -> Result<(), Box<dyn std::error::Error>> {
+fn main() -> Result<()> {
     let running = Arc::new(AtomicBool::new(true));
 
     let r = running.clone();
@@ -36,12 +38,12 @@ fn main() -> Result<(), Box<dyn std::error::Error>> {
 
     // Parse Args
     let mut args = env::args();
-    if let None = args.next() { return Err("what".into()) }
+    ensure!(args.next().is_some(), "I can't believe you've done this");
 
     let config_file = match args.next() {
         Some(arg) => arg,
-        None => return Err("Usage: fission <scene_description.yaml> \
-                            [render_progress.state]".into())
+        None => bail!("Usage: fission <scene_description.yaml> \
+                       [render_progress.state]"),
     };
     let config_path = Path::new(&config_file);
 

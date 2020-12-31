@@ -33,13 +33,13 @@ impl Block {
         block
     }
 
-    pub fn save_exr(&self, filename: &str) -> Result<(), String> {
+    pub fn save_exr(&self, filename: &str) -> Result<()> {
         let dims: (usize, usize) = A2::from(self.rect.dims).into();
         write_rgb_f32_file(filename, dims, |x, y| self[I2::from(A2(x, y))]
                                                       .eval().to_rgb()
                                                       .map(|f| f as f32)
-                                                      .into()
-        ).map_err(|e| e.to_string())
+                                                      .into())?;
+        Ok(())
     }
 }
 

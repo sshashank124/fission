@@ -63,9 +63,9 @@ struct MeshConfig {
 }
 
 impl TryFrom<MeshConfig> for Mesh {
-    type Error = String;
+    type Error = Error;
 
-    fn try_from(mc: MeshConfig) -> Result<Self, Self::Error> {
+    fn try_from(mc: MeshConfig) -> Result<Self> {
         let to_world = T::product(mc.transforms.into_iter());
         let (mesh_data, faces) = objloader::load_from_file(&mc.obj, to_world)?;
         let mesh_data = Arc::new(mesh_data);
