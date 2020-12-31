@@ -10,7 +10,7 @@ bincode = "*"
 crossbeam = "*"
 ctrlc = "*"
 exr = "^1"
-graphite = { git = "https://github.com/sshashank124/graphite" }
+graphite = { git = "https://github.com/sshashank124/graphite", features = ["serde-derive"] }
 objloader = { git = "https://github.com/sshashank124/objloader" }
 rand_core = "*"
 rand_pcg = "*"
