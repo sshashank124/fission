@@ -11,7 +11,7 @@ use super::*;
     if ct_t2 <= 0. { return (1., 0., 1.) }
     let ct_i = F::abs(ct_i);
     let ct_t = F::sqrt(ct_t2);
-    let r = A2(-s.mul_add(ct_t, ct_i) / s.mul_add(ct_t, ct_i),
-               s.mul_add(ct_i, - ct_t) / s.mul_add(ct_i, ct_t));
+    let r = A2(ct_t.mul_add(-s, ct_i) / ct_t.mul_add(s, ct_i),
+               ct_i.mul_add(s, -ct_t) / ct_i.mul_add(s, ct_t));
     (r.map(F::sq).mean(), ct_t * f, s)
 }
