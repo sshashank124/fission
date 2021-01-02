@@ -15,13 +15,10 @@ impl Diffuse {
     #[inline(always)]
     pub fn sample(&self, uv: F2, s: F2) -> (Color, V, F, bool) {
         let wo = V::from(CosineHemisphere::warp(s));
-        (self.albedo.eval(uv), wo, self.pdf(wo), self.is_delta())
+        (self.albedo.eval(uv), wo, Self::pdf(wo), false)
     }
 
-    #[inline(always)] pub fn pdf(&self, wo: V) -> F
-    { CosineHemisphere::pdf(wo) }
-
-    #[inline(always)] pub fn is_delta(&self) -> bool { false }
+    #[inline(always)] pub fn pdf(wo: V) -> F { CosineHemisphere::pdf(wo) }
 }
 
 impl Zero for Diffuse { const ZERO: Self = Self { albedo: Tex::ZERO }; }

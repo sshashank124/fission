@@ -2,7 +2,7 @@ use super::*;
 
 impl Shape {
     #[inline(always)] pub fn eval(&self, uv: F2) -> Color
-    { self.emission.as_ref().map(|e| e.eval(uv)).unwrap_or(Color::ZERO) }
+    { self.emission.as_ref().map_or(Color::ZERO, |e| e.eval(uv)) }
 
     #[inline(always)] pub fn sample(&self, its: &Its, s: F2) -> (Color, R, F) {
         if let Some(emission) = &self.emission {

@@ -34,14 +34,14 @@ pub trait Intersectable {
 #[serde(default)]
 pub struct Shape {
     #[serde(flatten)]
-    pub shape:    ShapeType,
+        shape:    Type,
     pub bsdf:     BSDF,
     pub emission: Option<Tex<Color>>,
 }
 
 #[derive(Deserialize)]
 #[serde(tag="type", rename_all="snake_case")]
-pub enum ShapeType {
+enum Type {
     None,
     Mesh(Mesh),
     Sphere(Sphere),
@@ -67,10 +67,10 @@ impl Intersectable for Shape {
     fn intersection_cost(&self) -> F { self.shape.intersection_cost() }
 }
 
-pub static SHAPE_PH: Shape = Shape { shape: ShapeType::ZERO, bsdf: BSDF::ZERO,
+pub static SHAPE_PH: Shape = Shape { shape: Type::ZERO, bsdf: BSDF::ZERO,
                                      emission: None };
 
-impl Intersectable for ShapeType {
+impl Intersectable for Type {
     #[inline(always)] fn bbox(&self) -> BBox {
         match self {
             Self::None => unreachable!(),
@@ -128,16 +128,16 @@ impl Intersectable for ShapeType {
     }
 }
 
-impl From<Mesh> for ShapeType { fn from(s: Mesh) -> Self { Self::Mesh(s) } }
+impl From<Mesh> for Type { fn from(s: Mesh) -> Self { Self::Mesh(s) } }
 
-impl From<Sphere> for ShapeType
+impl From<Sphere> for Type
 { fn from(s: Sphere) -> Self { Self::Sphere(s) } }
 
-impl Zero for ShapeType { const ZERO: Self = Self::None; }
+impl Zero for Type { const ZERO: Self = Self::None; }
 
-impl Default for ShapeType { fn default() -> Self { Self::None } }
+impl Default for Type { fn default() -> Self { Self::None } }
 
-impl fmt::Debug for ShapeType {
+impl fmt::Debug for Type {
     fn fmt(&self, f: &mut fmt::Formatter) -> fmt::Result {
         write!(f, "{}", match self {
             Self::None => "NoShape",
@@ -179,7 +179,7 @@ impl Intersectable for BBox {
 
     #[inline(always)] fn surface_area(&self) -> F {
         let e = self.extents();
-        2. * (e[X] * e[Y] + e[X] * e[Z] + e[Y] * e[Z])
+        2. * e[X].mul_add(e[Y], e[X].mul_add(e[Z], e[Y] + e[Z]))
     }
 
     fn intersection_cost(&self) -> F { 1. }

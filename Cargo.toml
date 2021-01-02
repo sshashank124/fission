@@ -1,22 +1,27 @@
 [package]
 name = "fission"
+description = "Physically-Based Ray Tracing Renderer"
 version = "0.1.0"
 authors = ["Shashank Singh <sshashank124@gmail.com>"]
 edition = "2018"
+license = "MIT"
+repository = "https://github.com/sshashank124/fission"
+keywords = ["ray-tracing", "rendering", "realistic", "path-tracing", "graphics"]
+categories = ["graphics", "mathematics", "rendering"]
 
 [dependencies]
-anyhow = "*"
-bincode = "*"
-crossbeam = "*"
-ctrlc = "*"
+anyhow = "^1"
+bincode = "^1"
+crossbeam = "^0.8"
+ctrlc = "^3"
 exr = "^1"
 graphite = { git = "https://github.com/sshashank124/graphite", features = ["serde-derive"] }
 objloader = { git = "https://github.com/sshashank124/objloader" }
-rand_core = "*"
-rand_pcg = "*"
-rayon = "*"
-serde = { version = "*", features = ["derive"] }
-serde_yaml = "*"
+rand_core = "^0.6"
+rand_pcg = "^0.3"
+rayon = "^1"
+serde = { version = "^1", features = ["derive"] }
+serde_yaml = "^0.8"
 
 [profile.release]
 panic = "abort"

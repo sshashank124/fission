@@ -50,7 +50,7 @@ impl Sobol {
         index
     }
 
-    #[inline(always)] pub fn for_rect(&self, pass: I, rect: &Rect) -> Self {
+    #[inline(always)] pub fn for_rect(pass: I, rect: &Rect) -> Self {
         let res = ceil_pow2_u32(rect.length() as u32);
         let m = log2_ceil_u32(res);
         let cache = SampleIndexMemo::new(pass as u64, m);
@@ -59,7 +59,7 @@ impl Sobol {
                cache,
                block_pos: rect.pos,
                pixel_pos: I2::ZERO,
-               rng: self.rng.for_rect(pass, rect) }
+               rng: Independent::for_rect(pass, rect) }
     }
 
     #[inline(always)] pub fn prepare_for_pixel(&mut self, pos: I2) {
@@ -76,7 +76,8 @@ impl Sobol {
         let mut f = sample_float(self.sample_index(), self.dim);
 
         if self.dim < 2 {
-            f = (f * (1 << self.m) as F) + self.block_pos[self.dim as I] as F;
+            f = f.mul_add((1 << self.m) as F,
+                          self.block_pos[self.dim as I] as F);
             f = Num::clamp_unit(f - self.pixel_pos[self.dim as I] as F);
         }
 
@@ -94,7 +95,7 @@ impl Sobol {
     sample_sobol(idx, dim) as F * F::FRAC_1_2POW32
 }
 
-#[inline(always)] fn sample_sobol(mut idx: u64, dim: u32) -> u32 {
+#[inline(always)] const fn sample_sobol(mut idx: u64, dim: u32) -> u32 {
     let mut res = 0;
     let mut loc = dim * SOBOL_SIZE;
     while idx != 0 {
@@ -108,7 +109,7 @@ impl Sobol {
 }
 
 impl SampleIndexMemo {
-    #[inline(always)] fn new(mut idx: u64, m: u32) -> Self {
+    #[inline(always)] const fn new(mut idx: u64, m: u32) -> Self {
         let m2 = m << 1;
         let mut cache = Self { d:       0,
                                i:       idx << m2,
@@ -125,7 +126,7 @@ impl SampleIndexMemo {
     }
 }
 
-#[inline(always)] pub fn ceil_pow2_u32(i: u32) -> u32
+#[inline(always)] pub const fn ceil_pow2_u32(i: u32) -> u32
 { 1 << (32 - i.saturating_sub(1).leading_zeros()) }
 
-#[inline(always)] pub fn log2_ceil_u32(i: u32) -> u32 { 31 - i.leading_zeros() }
+#[inline(always)] pub const fn log2_ceil_u32(i: u32) -> u32 { 31 - i.leading_zeros() }

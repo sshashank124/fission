@@ -28,12 +28,8 @@ impl Scene {
         self.lights[idx].sample(its, s)
     }
 
-    #[inline(always)] pub fn lenv(&self, ray: &R) -> Color {
-        self.env
-            .as_ref()
-            .map(|light| light.eval_env(ray))
-            .unwrap_or(Color::ZERO)
-    }
+    #[inline(always)] pub fn lenv(&self, ray: &R) -> Color
+    { self.env.as_ref().map_or(Color::ZERO, |light| light.eval_env(ray)) }
 }
 
 
@@ -66,7 +62,7 @@ impl From<SceneConfig> for Scene {
             }
         }
         let shapes = BVH::new(shapes);
-        let lights_dpdf = DiscretePDF::new(&lights, Light::power);
+        let lights_dpdf = DiscretePDF::new(&lights, |_| Light::power());
         let lights = lights.into_iter().map(Arc::new).collect::<Vec<_>>();
         let env =
             lights.iter().find(|light| light.is_env_light()).map(Arc::clone);

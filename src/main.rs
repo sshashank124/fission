@@ -1,5 +1,20 @@
 #![feature(try_trait)]
 
+#![warn(clippy::all,
+        clippy::cargo,
+        clippy::nursery,
+        clippy::pedantic)]
+
+#![allow(clippy::cast_possible_truncation,
+         clippy::cast_possible_wrap,
+         clippy::cast_sign_loss,
+         clippy::find_map,
+         clippy::inline_always,
+         clippy::multiple_crate_versions,
+         clippy::non_ascii_literal,
+         clippy::unreadable_literal,
+         clippy::wildcard_imports)]
+
 mod aggregate;
 mod bsdf;
 mod camera;

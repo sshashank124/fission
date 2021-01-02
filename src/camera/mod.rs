@@ -8,7 +8,7 @@ pub use perspective::Perspective;
 #[derive(Debug, Deserialize)]
 #[serde(from="CameraConfig")]
 pub struct Camera {
-        model:      CameraType,
+        model:      Type,
     pub resolution: I2,
         from_pixel: T2,
         to_world:   T,
@@ -16,7 +16,7 @@ pub struct Camera {
 
 #[derive(Debug, Deserialize)]
 #[serde(tag="type", rename_all="snake_case")]
-pub enum CameraType {
+enum Type {
     Perspective(Perspective),
 }
 
@@ -26,7 +26,7 @@ impl Camera {
     { self.to_world * self.model.ray_at(self.from_pixel * point, sampler) }
 }
 
-impl CameraType {
+impl Type {
     #[inline(always)] fn ray_at(&self, point: F2, sampler: &mut Sampler) -> R {
         match self {
             Self::Perspective(c) => c.ray_at(point, sampler),
@@ -34,14 +34,14 @@ impl CameraType {
     }
 }
 
-impl From<Perspective> for CameraType
+impl From<Perspective> for Type
 { fn from(p: Perspective) -> Self { Self::Perspective(p) } }
 
 
 #[derive(Debug, Deserialize)]
 struct CameraConfig {
     #[serde(flatten)]
-    model:      CameraType,
+    model:      Type,
     resolution: I2,
     transforms: Vec<T>,
 }

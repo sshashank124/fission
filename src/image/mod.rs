@@ -43,8 +43,8 @@ impl Block {
     }
 }
 
-impl AddAssign<Block> for Block {
-    #[inline(always)] fn add_assign(&mut self, block: Block)
+impl AddAssign for Block {
+    #[inline(always)] fn add_assign(&mut self, block: Self)
     { block.rect.positions().for_each(|pos| self[pos] += block[pos]); }
 }
 

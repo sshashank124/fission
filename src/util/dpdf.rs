@@ -35,5 +35,5 @@ impl DiscretePDF {
         idx
     }
 
-    #[inline(always)] pub fn total(&self) -> F { self.total }
+    #[inline(always)] pub const fn total(&self) -> F { self.total }
 }

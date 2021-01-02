@@ -23,27 +23,23 @@ pub enum Light {
 impl Light {
     #[inline(always)] pub fn sample(&self, its: &Its, s: F2) -> (Color, R, F) {
         match self {
-            Light::Area(l) => l.sample(its, s),
-            Light::Infinite(l) => l.sample(its, s),
-            Light::Point(l) => l.sample(its),
+            Self::Area(l) => l.sample(its, s),
+            Self::Infinite(l) => l.sample(its, s),
+            Self::Point(l) => l.sample(its),
         }
     }
 
-    #[inline(always)] pub fn is_env_light(&self) -> bool {
-        match self {
-            Light::Infinite(l) => l.is_env_light(),
-            _ => false,
-        }
-    }
+    #[inline(always)] pub const fn is_env_light(&self) -> bool
+    { matches!(self, Self::Infinite(_)) }
 
     #[inline(always)] pub fn eval_env(&self, ray: &R) -> Color {
         match self {
-            Light::Infinite(l) => l.eval_env(ray),
+            Self::Infinite(l) => l.eval_env(ray),
             _ => Color::ZERO,
         }
     }
 
-    #[inline(always)] pub fn power(&self) -> F { 1. }
+    #[inline(always)] pub const fn power() -> F { 1. }
 }
 
 impl From<Arc<Shape>> for Light

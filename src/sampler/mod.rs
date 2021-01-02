@@ -18,8 +18,8 @@ pub enum Sampler {
 impl Sampler {
     #[inline(always)] pub fn for_rect(&self, pass: I, rect: &Rect) -> Self {
         match self {
-            Self::Independent(s) => s.for_rect(pass, rect).into(),
-            Self::Sobol(s) => s.for_rect(pass, rect).into(),
+            Self::Independent(_) => Independent::for_rect(pass, rect).into(),
+            Self::Sobol(_) => Sobol::for_rect(pass, rect).into(),
         }
     }
 

@@ -24,7 +24,7 @@ impl AddAssign<Color> for Pixel {
 }
 
 impl AddAssign for Pixel {
-    #[inline(always)] fn add_assign(&mut self, pixel: Pixel) {
+    #[inline(always)] fn add_assign(&mut self, pixel: Self) {
         self.val += pixel.val;
         self.w += pixel.w;
     }

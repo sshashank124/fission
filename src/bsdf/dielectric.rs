@@ -13,10 +13,8 @@ impl Dielectric {
         let (wo, p) = if s[0] <= fr { (V::from(Frame::reflect(wi)), fr) } else {
             (V::from(A3(-eta * wi[X], -eta * wi[Y], ctt)).unit(), 1. - fr)
         };
-        (Color::ONE, wo, p, self.is_delta())
+        (Color::ONE, wo, p, true)
     }
-
-    #[inline(always)] pub fn is_delta(&self) -> bool { true }
 }
 
 fn de_ior_eta<'de, D>(de: D) -> Result<F, D::Error>

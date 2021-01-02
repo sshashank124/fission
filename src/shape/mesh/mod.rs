@@ -46,12 +46,12 @@ impl Intersectable for Mesh {
 }
 
 type Acc<'a> = (R, Option<Its<'a>>);
-#[inline(always)] pub fn intersect_update<'a>((ray, acc): Acc<'a>,
-                            (i, s): (usize, &'a impl Intersectable))
-                            -> Acc<'a> {
+#[inline(always)]
+pub fn intersect_update<'a>((ray, acc): Acc<'a>,
+                            (i, s): (usize, &'a impl Intersectable)) -> Acc<'a>
+{
     s.intersect(ray)
-     .map(|it| (ray.clipped(it.t), Some(it.for_idx(i))))
-     .unwrap_or_else(|| (ray, acc))
+     .map_or_else(|| (ray, acc), |it| (ray.clipped(it.t), Some(it.for_idx(i))))
 }
 
 

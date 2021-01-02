@@ -7,7 +7,7 @@ pub struct Rect {
 }
 
 impl Rect {
-    #[inline(always)] pub fn new(pos: I2, dims: I2) -> Self
+    #[inline(always)] pub const fn new(pos: I2, dims: I2) -> Self
     { Self { pos, dims } }
 
     #[inline(always)] pub fn area(&self) -> I { self.dims.product() }

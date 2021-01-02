@@ -1,6 +1,5 @@
 use super::*;
 
-#[derive(Debug, Deserialize)]
 pub struct Direct;
 
 impl Direct {
@@ -19,7 +18,7 @@ impl Direct {
     #[inline(always)] pub fn ll(scene: &Scene, sampler: &mut Sampler, its: &Its,
                                 frame: T, wo: V) -> Color {
         if !its.bsdf().is_delta() {
-            let (le, sray, lpdf) = scene.sample_random_light(&its,
+            let (le, sray, lpdf) = scene.sample_random_light(its,
                                                              sampler.next_2d());
             if le != Color::ZERO && !scene.intersects(sray) {
                 let wi = frame / sray.d;
@@ -38,26 +37,26 @@ impl Direct {
     #[inline(always)] pub fn ls<'a>(scene: &'a Scene, sampler: &mut Sampler,
                                     its: &Its, frame: T, wo: V)
             -> (Color, Option<(Color, R, Its<'a>, bool)>) {
-        let (lb, wi, bpdf, spec) = its.sample_lb(wo, sampler.next_2d());
+        let (lb, wi, b_pdf, spec) = its.sample_lb(wo, sampler.next_2d());
         if lb == Color::ZERO { return (Color::ZERO, None) }
 
         let ray = its.spawn_ray(frame * wi);
         let its = scene.intersect(ray);
 
-        let (le, lpdf) = if let Some(ref its) = its {
+        let (le, l_pdf) = its.as_ref().map_or((Color::ZERO, 0.), |its|
             if its.has_emission() { (its.le(ray), its.lpdf(ray)) }
             else { (Color::ZERO, 0.) }
-        } else { (Color::ZERO, 0.) };
+        );
 
-        let ls = if lpdf > 0. && le != Color::ZERO && !spec {
-            lb * le * PowerScale::balance2(bpdf, lpdf)
+        let ls = if l_pdf > 0. && le != Color::ZERO && !spec {
+            lb * le * PowerScale::balance2(b_pdf, l_pdf)
         } else { Color::ZERO };
 
         (ls, its.map(|i| (lb, ray, i, spec)))
     }
 
     #[inline(always)]
-    pub fn trace(&self, scene: &Scene, sampler: &mut Sampler, ray: R) -> Color {
+    pub fn trace(scene: &Scene, sampler: &mut Sampler, ray: R) -> Color {
         match scene.intersect(ray) {
             None => scene.lenv(&ray),
             Some(its) => {

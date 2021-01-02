@@ -3,7 +3,7 @@ use std::time::Instant;
 
 use super::*;
 
-pub trait ProgressTracker {
+pub trait Status {
     fn new(i: I, n: I) -> Self;
     fn update(&mut self) -> String;
     fn finish(&self) -> String;
@@ -13,13 +13,13 @@ pub trait ProgressTracker {
 pub struct Progress<'a> {
     msg:  &'a str,
     t:    Instant,
-    p:    ProgressType,
+    p:    Type,
     done: bool,
 }
 
 impl<'a> Progress<'a> {
     pub fn new(msg: &'a str, i: I, n: I) -> Self {
-        let mut p = Self { msg, t: Instant::now(), p: ProgressType::new(i, n),
+        let mut p = Self { msg, t: Instant::now(), p: Type::new(i, n),
                            done: false };
         p.update();
         p
@@ -44,19 +44,19 @@ impl<'a> Progress<'a> {
 impl Drop for Progress<'_>
 { fn drop(&mut self) { if !self.done { self.print_result("DONE"); } } }
 
-pub enum ProgressType {
-    Bar(BarProgress),
-    Counter(CounterProgress),
+enum Type {
+    Bar(Bar),
+    Counter(Counter),
 }
 
-pub struct BarProgress {
+struct Bar {
     i:     I,
     w:     usize,
     scale: F,
 }
 const SUB_BOX: [char; 8] = [' ', '▏', '▎', '▍', '▌', '▋', '▊', '▉'];
 
-impl ProgressTracker for BarProgress {
+impl Status for Bar {
     fn new(i: I, n: I) -> Self { Self { i, w: 50, scale: 50. / n as F } }
 
     fn update(&mut self) -> String {
@@ -70,13 +70,13 @@ impl ProgressTracker for BarProgress {
     fn finish(&self) -> String { " ".repeat(self.w) }
 }
 
-pub struct CounterProgress {
+struct Counter {
     i: I,
     n: I,
     w: usize,
 }
 
-impl ProgressTracker for CounterProgress {
+impl Status for Counter {
     fn new(i: I, n: I) -> Self
     { Self { i, n, w: F::log10(n as F).ceili() as usize } }
 
@@ -88,8 +88,8 @@ impl ProgressTracker for CounterProgress {
     fn finish(&self) -> String { " ".repeat(self.w) }
 }
 
-impl ProgressTracker for ProgressType {
-    fn new(i: I, n: I) -> Self { BarProgress::new(i, n).into() }
+impl Status for Type {
+    fn new(i: I, n: I) -> Self { Bar::new(i, n).into() }
 
     fn update(&mut self) -> String {
         match self {
@@ -106,8 +106,8 @@ impl ProgressTracker for ProgressType {
     }
 }
 
-impl From<BarProgress> for ProgressType
-{ fn from(p: BarProgress) -> Self { Self::Bar(p) } }
+impl From<Bar> for Type
+{ fn from(p: Bar) -> Self { Self::Bar(p) } }
 
-impl From<CounterProgress> for ProgressType
-{ fn from(p: CounterProgress) -> Self { Self::Counter(p) } }
+impl From<Counter> for Type
+{ fn from(p: Counter) -> Self { Self::Counter(p) } }

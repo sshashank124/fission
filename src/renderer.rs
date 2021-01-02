@@ -10,6 +10,14 @@ use crate::scene::*;
 use crate::tracer::*;
 use crate::util::{Progress, threaded};
 
+#[derive(Debug, Deserialize)]
+pub struct Integrator {
+    tracer:  Tracer,
+    sampler: Sampler,
+    scene:   Scene,
+    passes:  I,
+}
+
 pub struct Renderer<'a> {
     state:      RenderState,
     running:    Arc<AtomicBool>,
@@ -20,14 +28,6 @@ pub struct Renderer<'a> {
 pub struct RenderState {
     pub img:  Image,
         pass: I,
-}
-
-#[derive(Debug, Deserialize)]
-pub struct Integrator {
-    tracer:  Tracer,
-    sampler: Sampler,
-    scene:   Scene,
-    passes:  I,
 }
 
 impl<'a> Renderer<'a> {
@@ -66,7 +66,7 @@ impl<'a> Renderer<'a> {
                         let pos = F2::from(pos) + sampler.next_2d();
                         let ray = scene.camera.ray_at(pos, &mut sampler);
 
-                        (pos, tracer.trace(&scene, &mut sampler, ray))
+                        (pos, tracer.trace(scene, &mut sampler, ray))
                     }))
                 }).for_each_with(&block_tx, |tx, b| tx.send(b).unwrap());
                 progress.update();

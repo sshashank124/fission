@@ -116,9 +116,7 @@ struct BuildInfo {
     isect_cost: F,
 }
 
-impl BuildNode {
-    fn size(&self) -> I { self.sizel + self.sizer + 1 }
-}
+impl BuildNode { const fn size(&self) -> I { self.sizel + self.sizer + 1 } }
 
 fn flatten_tree(tree: &BuildNode, nodes: &mut Vec<BVHNode>, mut offset: I) {
     offset += 1;
@@ -198,17 +196,16 @@ fn build(build_infos: &mut [BuildInfo],
         let cost_of_split = |(a, b): (&[Bucket], &[Bucket])| {
             let range_cost = |r: &[Bucket]| {
                 r.iter()
-                 .fold((0., BBox::ZERO), |(c, bb), Bucket { cost, bbox }| {
-                     (c + cost, bb | *bbox)
-                 })
+                 .fold((0., BBox::ZERO),
+                       |(c, bb), Bucket { cost, bbox }| (c + cost, bb | *bbox))
             };
 
             let (cost1, bbox1) = range_cost(a);
             let (cost2, bbox2) = range_cost(b);
 
-            1.
-            + (cost1 * bbox1.surface_area() + cost2 * bbox2.surface_area())
-              / bbox.surface_area()
+            1. + F2::dot(A2(cost1, cost2),
+                         A2(&bbox1, &bbox2).map(BBox::surface_area))
+               / bbox.surface_area()
         };
 
 
@@ -227,15 +224,15 @@ fn build(build_infos: &mut [BuildInfo],
         partition(build_infos, |build_info| bucket_index(build_info) < mc_idx)
     };
 
-    let treel = build(&mut build_infos[..pivot as usize], idx_map);
-    let treer = build(&mut build_infos[pivot as usize..], idx_map);
+    let tree_l = build(&mut build_infos[..pivot as usize], idx_map);
+    let tree_r = build(&mut build_infos[pivot as usize..], idx_map);
 
     BuildNode { bbox,
-                sizel: treel.size(),
-                sizer: treer.size(),
+                sizel: tree_l.size(),
+                sizer: tree_r.size(),
                 node: BuildNodeType::Tree(dim,
-                                          Box::new(treel),
-                                          Box::new(treer)) }
+                                          Box::new(tree_l),
+                                          Box::new(tree_r)) }
 }
 
 impl<S> Intersectable for BVH<S> where S: Intersectable
@@ -270,26 +267,26 @@ impl<S> Intersectable for BVH<S> where S: Intersectable
     fn surface_area(&self) -> F { unreachable!() }
 
     fn intersection_cost(&self) -> F {
-        2.
-        * ((self.nodes.len() as F).log2() * BBox::ZERO.intersection_cost()
-           + self.elements[0].intersection_cost())
+        2. * (self.nodes.len() as F).log2()
+            .mul_add(BBox::ZERO.intersection_cost(),
+                     self.elements[0].intersection_cost())
     }
 }
 
 type Acc<'a> = (R, Option<Its<'a>>);
-#[inline(always)] pub fn intersect_update<'a>((ray, acc): Acc<'a>,
-                            s: &'a impl Intersectable)
-                            -> Acc<'a> {
+#[inline(always)]
+pub fn intersect_update<'a>((ray, acc): Acc<'a>,
+                            s: &'a impl Intersectable) -> Acc<'a>
+{
     s.intersect(ray)
-     .map(|it| (ray.clipped(it.t), Some(it)))
-     .unwrap_or_else(|| (ray, acc))
+     .map_or_else(|| (ray, acc), |it| (ray.clipped(it.t), Some(it)))
 }
 
 fn partition<E>(items: &mut [E], pred: impl Fn(&E) -> bool) -> I {
     let mut pivot = 0;
     let mut it = items.iter_mut();
     'main: while let Some(i) = it.next() {
-        if !pred(&i) {
+        if !pred(i) {
             loop {
                 match it.next_back() {
                     Some(j) => {
