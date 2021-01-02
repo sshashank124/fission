@@ -8,7 +8,7 @@ pub struct Point {
 }
 
 impl Point {
-    #[inline(always)] pub fn sample(&self, its: &Its) -> (Color, R, F) {
+    #[inline] pub fn sample(&self, its: &Its) -> (Color, R, F) {
         let sray = R::p2(its.p, self.position);
         (self.intensity / sray.t.sq(), sray, 1.)
     }

@@ -12,12 +12,12 @@ pub struct Microfacet {
 }
 
 impl Microfacet {
-    #[inline(always)] fn beckmann(&self, v: V) -> F {
+    #[inline] fn beckmann(&self, v: V) -> F {
         F::exp(-Frame::t2t(v) / self.alpha.sq()) * F::INV_PI
         / (self.alpha * Frame::c2t(v)).sq()
     }
 
-    #[inline(always)] fn smith_beckmann_g1(&self, v: V, n: V) -> F {
+    #[inline] fn smith_beckmann_g1(&self, v: V, n: V) -> F {
         let tt = Frame::tt(v);
         if tt == 0. { return 1. }
         if F3::dot(n, v) * Frame::ct(v) <= 0. { return 0. }
@@ -27,7 +27,7 @@ impl Microfacet {
             / a.sq().mul_add(2.577, a.mul_add(2.276, 1.))
     }
 
-    #[inline(always)] pub fn eval(&self, wi: V, wo: V) -> Color {
+    #[inline] pub fn eval(&self, wi: V, wo: V) -> Color {
         let ct_i = Frame::ct(wi);
         let ct_o = Frame::ct(wo);
         if ct_i <= 0. || ct_o <= 0. { return Color::ZERO }
@@ -38,7 +38,7 @@ impl Microfacet {
         self.kd * F::INV_PI * ct_o + (self.ks * beck * fr * g * 0.25) / ct_i
     }
 
-    #[inline(always)]
+    #[inline]
     pub fn sample(&self, wi: V, s: F2) -> (Color, V, F, bool) {
         let spec = |s| {
             let n = V::from(BeckmannHemisphere::warp(s, self.alpha));
@@ -51,7 +51,7 @@ impl Microfacet {
          wo, p, false)
     }
 
-    #[inline(always)] pub fn pdf(&self, wi: V, wo: V) -> F {
+    #[inline] pub fn pdf(&self, wi: V, wo: V) -> F {
         let wh = (wi + wo).unit();
         let dp = CosineHemisphere::pdf(wo);
         let sp = self.beckmann(wh) * Frame::ct(wh) * 0.25 / F3::dot(wh, wo);

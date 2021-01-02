@@ -11,7 +11,7 @@ pub struct Perspective {
 }
 
 impl Perspective {
-    #[inline(always)]
+    #[inline]
     pub fn ray_at(&self, point: F2, sampler: &mut Sampler) -> R {
         let d = V::from(F3::a2a(point * self.fov_scale, 1.));
         let ray = R::unbounded(P::ZERO, d);

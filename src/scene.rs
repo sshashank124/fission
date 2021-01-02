@@ -16,19 +16,19 @@ pub struct Scene {
 }
 
 impl Scene {
-    #[inline(always)] pub fn intersects(&self, r: R) -> bool
+    #[inline] pub fn intersects(&self, r: R) -> bool
     { self.shapes.intersects(r) }
 
-    #[inline(always)] pub fn intersect(&self, r: R) -> Option<Its>
+    #[inline] pub fn intersect(&self, r: R) -> Option<Its>
     { self.shapes.intersect(r) }
 
-    #[inline(always)]
+    #[inline]
     pub fn sample_random_light(&self, its: &Its, mut s: F2) -> (Color, R, F) {
         let idx = self.lights_dpdf.sample(&mut s[0]);
         self.lights[idx].sample(its, s)
     }
 
-    #[inline(always)] pub fn lenv(&self, ray: &R) -> Color
+    #[inline] pub fn lenv(&self, ray: &R) -> Color
     { self.env.as_ref().map_or(Color::ZERO, |light| light.eval_env(ray)) }
 }
 

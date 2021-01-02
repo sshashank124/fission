@@ -3,7 +3,7 @@ use super::*;
 pub struct Direct;
 
 impl Direct {
-    #[inline(always)] pub fn li<'a>(scene: &'a Scene, sampler: &mut Sampler,
+    #[inline] pub fn li<'a>(scene: &'a Scene, sampler: &mut Sampler,
                                     its: &Its, ray: &R)
             -> (Color, Option<(Color, R, Its<'a>, bool)>) {
         let frame = its.to_world();
@@ -15,7 +15,7 @@ impl Direct {
         (ll + ls, details)
     }
 
-    #[inline(always)] pub fn ll(scene: &Scene, sampler: &mut Sampler, its: &Its,
+    #[inline] pub fn ll(scene: &Scene, sampler: &mut Sampler, its: &Its,
                                 frame: T, wo: V) -> Color {
         if !its.bsdf().is_delta() {
             let (le, sray, lpdf) = scene.sample_random_light(its,
@@ -34,7 +34,7 @@ impl Direct {
         Color::ZERO
     }
 
-    #[inline(always)] pub fn ls<'a>(scene: &'a Scene, sampler: &mut Sampler,
+    #[inline] pub fn ls<'a>(scene: &'a Scene, sampler: &mut Sampler,
                                     its: &Its, frame: T, wo: V)
             -> (Color, Option<(Color, R, Its<'a>, bool)>) {
         let (lb, wi, b_pdf, spec) = its.sample_lb(wo, sampler.next_2d());
@@ -55,7 +55,7 @@ impl Direct {
         (ls, its.map(|i| (lb, ray, i, spec)))
     }
 
-    #[inline(always)]
+    #[inline]
     pub fn trace(scene: &Scene, sampler: &mut Sampler, ray: R) -> Color {
         match scene.intersect(ray) {
             None => scene.lenv(&ray),

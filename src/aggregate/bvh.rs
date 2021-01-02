@@ -54,7 +54,7 @@ impl<S> BVH<S> where S: Intersectable
         Self { elements, nodes }
     }
 
-    #[inline(always)] pub fn fold<'a, A>(&'a self,
+    #[inline] pub fn fold<'a, A>(&'a self,
                        trav_order: A3<bool>,
                        mut acc: A,
                        pred: impl Fn(&mut A, &BVHNode) -> bool,
@@ -237,10 +237,10 @@ fn build(build_infos: &mut [BuildInfo],
 
 impl<S> Intersectable for BVH<S> where S: Intersectable
 {
-    #[inline(always)] fn bbox(&self) -> BBox
+    #[inline] fn bbox(&self) -> BBox
     { self.elements.iter().fold(BBox::ZERO, |bbox, e| bbox | e.bbox()) }
 
-    #[inline(always)] fn intersects(&self, ray: R) -> bool {
+    #[inline] fn intersects(&self, ray: R) -> bool {
         self.fold(F3::from(ray.d).map(Num::is_pos),
                   false,
                   |_, node| node.bbox.intersects(ray),
@@ -253,7 +253,7 @@ impl<S> Intersectable for BVH<S> where S: Intersectable
                   })
     }
 
-    #[inline(always)] fn intersect(&self, ray: R) -> Option<Its> {
+    #[inline] fn intersect(&self, ray: R) -> Option<Its> {
         self.fold(F3::from(ray.d).map(Num::is_pos),
                   (ray, None),
                   |(r, _), node| node.bbox.intersects(*r),
@@ -274,7 +274,7 @@ impl<S> Intersectable for BVH<S> where S: Intersectable
 }
 
 type Acc<'a> = (R, Option<Its<'a>>);
-#[inline(always)]
+#[inline]
 pub fn intersect_update<'a>((ray, acc): Acc<'a>,
                             s: &'a impl Intersectable) -> Acc<'a>
 {

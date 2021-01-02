@@ -9,7 +9,7 @@ pub struct Path {
 }
 
 impl Path {
-    #[inline(always)]
+    #[inline]
     pub fn trace(&self, scene: &Scene, sampler: &mut Sampler, ray: R) -> Color {
         let init = (Color::ZERO, Color::ONE, ray, scene.intersect(ray), true);
         if init.3.is_none() {

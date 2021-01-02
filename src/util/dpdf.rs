@@ -24,7 +24,7 @@ impl DiscretePDF {
         Self { cdf, total }
     }
 
-    #[inline(always)] pub fn sample(&self, s: &mut F) -> usize {
+    #[inline] pub fn sample(&self, s: &mut F) -> usize {
         let idx = Num::clamp(self.cdf.lower_bound(*s) - 1,
                              0,
                              self.cdf.len() as I - 1)
@@ -35,5 +35,5 @@ impl DiscretePDF {
         idx
     }
 
-    #[inline(always)] pub const fn total(&self) -> F { self.total }
+    #[inline] pub const fn total(&self) -> F { self.total }
 }

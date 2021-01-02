@@ -25,7 +25,7 @@ pub trait Intersectable {
 
     fn sample_surface(&self, s: F2) -> Its;
     fn surface_area(&self) -> F;
-    #[inline(always)] fn surface_pdf(&self) -> F { self.surface_area().inv() }
+    #[inline] fn surface_pdf(&self) -> F { self.surface_area().inv() }
 
     fn intersection_cost(&self) -> F;
 }
@@ -48,21 +48,21 @@ enum Type {
 }
 
 impl Intersectable for Shape {
-    #[inline(always)] fn bbox(&self) -> BBox { self.shape.bbox() }
+    #[inline] fn bbox(&self) -> BBox { self.shape.bbox() }
 
-    #[inline(always)] fn intersects(&self, ray: R) -> bool
+    #[inline] fn intersects(&self, ray: R) -> bool
     { self.shape.intersects(ray) }
 
-    #[inline(always)] fn intersect(&self, ray: R) -> Option<Its>
+    #[inline] fn intersect(&self, ray: R) -> Option<Its>
     { self.shape.intersect(ray).map(|its| its.for_shape(self)) }
 
-    #[inline(always)] fn hit_info<'a>(&'a self, its: Its<'a>) -> Its<'a>
+    #[inline] fn hit_info<'a>(&'a self, its: Its<'a>) -> Its<'a>
     { self.shape.hit_info(its) }
 
-    #[inline(always)] fn sample_surface(&self, s: F2) -> Its
+    #[inline] fn sample_surface(&self, s: F2) -> Its
     { self.shape.sample_surface(s) }
 
-    #[inline(always)] fn surface_area(&self) -> F { self.shape.surface_area() }
+    #[inline] fn surface_area(&self) -> F { self.shape.surface_area() }
 
     fn intersection_cost(&self) -> F { self.shape.intersection_cost() }
 }
@@ -71,7 +71,7 @@ pub static SHAPE_PH: Shape = Shape { shape: Type::ZERO, bsdf: BSDF::ZERO,
                                      emission: None };
 
 impl Intersectable for Type {
-    #[inline(always)] fn bbox(&self) -> BBox {
+    #[inline] fn bbox(&self) -> BBox {
         match self {
             Self::None => unreachable!(),
             Self::Mesh(s) => s.bbox(),
@@ -79,7 +79,7 @@ impl Intersectable for Type {
         }
     }
 
-    #[inline(always)] fn intersects(&self, ray: R) -> bool {
+    #[inline] fn intersects(&self, ray: R) -> bool {
         match self {
             Self::None => unreachable!(),
             Self::Mesh(s) => s.intersects(ray),
@@ -87,7 +87,7 @@ impl Intersectable for Type {
         }
     }
 
-    #[inline(always)] fn intersect(&self, ray: R) -> Option<Its> {
+    #[inline] fn intersect(&self, ray: R) -> Option<Its> {
         match self {
             Self::None => unreachable!(),
             Self::Mesh(s) => s.intersect(ray),
@@ -95,7 +95,7 @@ impl Intersectable for Type {
         }
     }
 
-    #[inline(always)] fn hit_info<'a>(&'a self, its: Its<'a>) -> Its<'a> {
+    #[inline] fn hit_info<'a>(&'a self, its: Its<'a>) -> Its<'a> {
         match self {
             Self::None => unreachable!(),
             Self::Mesh(s) => s.hit_info(its),
@@ -103,7 +103,7 @@ impl Intersectable for Type {
         }
     }
 
-    #[inline(always)] fn sample_surface(&self, s: F2) -> Its {
+    #[inline] fn sample_surface(&self, s: F2) -> Its {
         match self {
             Self::None => unreachable!(),
             Self::Mesh(sh) => sh.sample_surface(s),
@@ -111,7 +111,7 @@ impl Intersectable for Type {
         }
     }
 
-    #[inline(always)] fn surface_area(&self) -> F {
+    #[inline] fn surface_area(&self) -> F {
         match self {
             Self::None => unreachable!(),
             Self::Mesh(s) => s.surface_area(),
@@ -148,28 +148,28 @@ impl fmt::Debug for Type {
 }
 
 impl Intersectable for Arc<Shape> {
-    #[inline(always)] fn bbox(&self) -> BBox { Shape::borrow(self).bbox() }
+    #[inline] fn bbox(&self) -> BBox { Shape::borrow(self).bbox() }
 
-    #[inline(always)] fn intersects(&self, ray: R) -> bool
+    #[inline] fn intersects(&self, ray: R) -> bool
     { Shape::borrow(self).intersects(ray) }
 
-    #[inline(always)] fn intersect(&self, ray: R) -> Option<Its>
+    #[inline] fn intersect(&self, ray: R) -> Option<Its>
     { Shape::borrow(self).intersect(ray).map(|its| its.for_shape(self)) }
 
-    #[inline(always)] fn hit_info<'a>(&'a self, its: Its<'a>) -> Its<'a>
+    #[inline] fn hit_info<'a>(&'a self, its: Its<'a>) -> Its<'a>
     { Shape::borrow(self).hit_info(its) }
 
-    #[inline(always)] fn sample_surface(&self, s: F2) -> Its
+    #[inline] fn sample_surface(&self, s: F2) -> Its
     { Shape::borrow(self).sample_surface(s) }
 
-    #[inline(always)] fn surface_area(&self) -> F
+    #[inline] fn surface_area(&self) -> F
     { Shape::borrow(self).surface_area() }
 
     fn intersection_cost(&self) -> F { Shape::borrow(self).intersection_cost() }
 }
 
 impl Intersectable for BBox {
-    #[inline(always)] fn intersects(&self, ray: R) -> bool
+    #[inline] fn intersects(&self, ray: R) -> bool
     { !((*self - ray.o) / ray.d).0.fold(ray.range(), BitAnd::bitand).degen() }
 
     fn bbox(&self) -> BBox { unreachable!() }
@@ -177,7 +177,7 @@ impl Intersectable for BBox {
     fn hit_info(&self, _: Its) -> Its { unreachable!() }
     fn sample_surface(&self, _: F2) -> Its { unreachable!() }
 
-    #[inline(always)] fn surface_area(&self) -> F {
+    #[inline] fn surface_area(&self) -> F {
         let e = self.extents();
         2. * e[X].mul_add(e[Y], e[X].mul_add(e[Z], e[Y] + e[Z]))
     }

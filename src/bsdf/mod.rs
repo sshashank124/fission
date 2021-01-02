@@ -24,7 +24,7 @@ pub enum BSDF {
 
 impl BSDF {
     // BSDF * cos(theta)
-    #[inline(always)] pub fn eval(&self, wi: V, wo: V, uv: F2) -> Color {
+    #[inline] pub fn eval(&self, wi: V, wo: V, uv: F2) -> Color {
         match self {
             Self::Diffuse(f) => f.eval(wi, wo, uv),
             Self::Microfacet(f) => f.eval(wi, wo),
@@ -33,7 +33,7 @@ impl BSDF {
     }
 
     // (color, wo, pdf, specular)
-    #[inline(always)]
+    #[inline]
     pub fn sample(&self, wi: V, uv: F2, s: F2) -> (Color, V, F, bool) {
         match self {
             Self::Dielectric(f) => f.sample(wi, s),
@@ -43,7 +43,7 @@ impl BSDF {
         }
     }
 
-    #[inline(always)] pub fn pdf(&self, wi: V, wo: V) -> F {
+    #[inline] pub fn pdf(&self, wi: V, wo: V) -> F {
         F::clamp_pos(match self {
             Self::Diffuse(_) => Diffuse::pdf(wo),
             Self::Microfacet(f) => f.pdf(wi, wo),
@@ -51,7 +51,7 @@ impl BSDF {
         })
     }
 
-    #[inline(always)] pub const fn is_delta(&self) -> bool
+    #[inline] pub const fn is_delta(&self) -> bool
     { matches!(self, Self::Mirror | Self::Dielectric(_)) }
 }
 

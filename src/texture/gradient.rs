@@ -13,6 +13,6 @@ impl<A, L> Gradient<A, L>
     where A: Copy + Add<Output = A> + Mul<F, Output = A>,
           L: Interp<A>,
 {
-    #[inline(always)] pub fn eval(&self, s: F2) -> A
+    #[inline] pub fn eval(&self, s: F2) -> A
     { L::interp(self.vals, s[0]) }
 }

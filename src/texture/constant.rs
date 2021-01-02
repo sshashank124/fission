@@ -6,7 +6,7 @@ pub struct Constant<A> {
 }
 
 impl<A: Copy> Constant<A>
-{ #[inline(always)] pub fn eval(&self) -> A { self.val } }
+{ #[inline] pub fn eval(&self) -> A { self.val } }
 
 impl<A> Zero for Constant<A> where A: Zero
 { const ZERO: Self = Self { val: A::ZERO }; }

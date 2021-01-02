@@ -8,7 +8,7 @@ pub struct Checkerboard<A> {
 }
 
 impl<A: Copy> Checkerboard<A> {
-    #[inline(always)] pub fn eval(&self, s: F2) -> A {
+    #[inline] pub fn eval(&self, s: F2) -> A {
         self.vals[(self.t * s).map(|f| {
             let r = F::floori(f) % 2;
             if r < 0 { r + 2 } else { r }

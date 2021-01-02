@@ -31,7 +31,7 @@ struct SampleIndexMemo {
 }
 
 impl Sobol {
-    #[inline(always)] fn sample_index(&self) -> u64 {
+    #[inline] fn sample_index(&self) -> u64 {
         if self.m == 0 {
             return 0
         }
@@ -50,7 +50,7 @@ impl Sobol {
         index
     }
 
-    #[inline(always)] pub fn for_rect(pass: I, rect: &Rect) -> Self {
+    #[inline] pub fn for_rect(pass: I, rect: &Rect) -> Self {
         let res = ceil_pow2_u32(rect.length() as u32);
         let m = log2_ceil_u32(res);
         let cache = SampleIndexMemo::new(pass as u64, m);
@@ -62,12 +62,12 @@ impl Sobol {
                rng: Independent::for_rect(pass, rect) }
     }
 
-    #[inline(always)] pub fn prepare_for_pixel(&mut self, pos: I2) {
+    #[inline] pub fn prepare_for_pixel(&mut self, pos: I2) {
         self.dim = 0;
         self.pixel_pos = pos;
     }
 
-    #[inline(always)] fn next_1d(&mut self) -> F {
+    #[inline] fn next_1d(&mut self) -> F {
         if self.dim >= SOBOL_NDIM {
             eprintln!("Sobol: dim overflow at idx: {}", self.cache.i);
             return self.rng()
@@ -85,17 +85,17 @@ impl Sobol {
         f
     }
 
-    #[inline(always)] pub fn next_2d(&mut self) -> F2
+    #[inline] pub fn next_2d(&mut self) -> F2
     { A2(self.next_1d(), self.next_1d()) }
 
-    #[inline(always)] pub fn rng(&mut self) -> F { self.rng.rng() }
+    #[inline] pub fn rng(&mut self) -> F { self.rng.rng() }
 }
 
-#[inline(always)] fn sample_float(idx: u64, dim: u32) -> F {
+#[inline] fn sample_float(idx: u64, dim: u32) -> F {
     sample_sobol(idx, dim) as F * F::FRAC_1_2POW32
 }
 
-#[inline(always)] const fn sample_sobol(mut idx: u64, dim: u32) -> u32 {
+#[inline] const fn sample_sobol(mut idx: u64, dim: u32) -> u32 {
     let mut res = 0;
     let mut loc = dim * SOBOL_SIZE;
     while idx != 0 {
@@ -109,7 +109,7 @@ impl Sobol {
 }
 
 impl SampleIndexMemo {
-    #[inline(always)] const fn new(mut idx: u64, m: u32) -> Self {
+    #[inline] const fn new(mut idx: u64, m: u32) -> Self {
         let m2 = m << 1;
         let mut cache = Self { d:       0,
                                i:       idx << m2,
@@ -126,7 +126,7 @@ impl SampleIndexMemo {
     }
 }
 
-#[inline(always)] pub const fn ceil_pow2_u32(i: u32) -> u32
+#[inline] pub const fn ceil_pow2_u32(i: u32) -> u32
 { 1 << (32 - i.saturating_sub(1).leading_zeros()) }
 
-#[inline(always)] pub const fn log2_ceil_u32(i: u32) -> u32 { 31 - i.leading_zeros() }
+#[inline] pub const fn log2_ceil_u32(i: u32) -> u32 { 31 - i.leading_zeros() }

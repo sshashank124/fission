@@ -21,13 +21,13 @@ enum Type {
 }
 
 impl Camera {
-    #[inline(always)]
+    #[inline]
     pub fn ray_at(&self, point: F2, sampler: &mut Sampler) -> R
     { self.to_world * self.model.ray_at(self.from_pixel * point, sampler) }
 }
 
 impl Type {
-    #[inline(always)] fn ray_at(&self, point: F2, sampler: &mut Sampler) -> R {
+    #[inline] fn ray_at(&self, point: F2, sampler: &mut Sampler) -> R {
         match self {
             Self::Perspective(c) => c.ray_at(point, sampler),
         }

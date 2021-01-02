@@ -7,7 +7,7 @@ pub struct Sphere {
 }
 
 impl Sphere {
-    #[inline(always)] pub fn intersection_point(&self, ray: R) -> Option<F> {
+    #[inline] pub fn intersection_point(&self, ray: R) -> Option<F> {
         let d = ray.o - self.center;
         quad(ray.d.norm2(),
              2. * F3::dot(ray.d, d),
@@ -17,7 +17,7 @@ impl Sphere {
                           else { None })
     }
 
-    #[inline(always)] fn cartesian2uv<A: Into<F3>>(x: A) -> F2 {
+    #[inline] fn cartesian2uv<A: Into<F3>>(x: A) -> F2 {
         let uv = Frame::cart2spher(x);
         // A2(uv[X] * F::INV_PI, 0.5 + uv[Y] * F::INV_2PI)
         A2(uv[X] * F::INV_PI, uv[Y].mul_add(F::INV_2PI, 0.5))
@@ -25,30 +25,30 @@ impl Sphere {
 }
 
 impl Intersectable for Sphere {
-    #[inline(always)] fn bbox(&self) -> BBox
+    #[inline] fn bbox(&self) -> BBox
     { BBox::ZERO | (self.center - self.radius) | (self.center + self.radius) }
 
-    #[inline(always)] fn intersects(&self, ray: R) -> bool
+    #[inline] fn intersects(&self, ray: R) -> bool
     { self.intersection_point(ray).is_some() }
 
-    #[inline(always)] fn intersect(&self, ray: R) -> Option<Its> {
+    #[inline] fn intersect(&self, ray: R) -> Option<Its> {
         self.intersection_point(ray)
             .map(|t| Its::new(ray.at(t), N::ZERO, F2::ZERO, t))
     }
 
-    #[inline(always)] fn hit_info<'a>(&'a self, mut its: Its<'a>) -> Its<'a> {
+    #[inline] fn hit_info<'a>(&'a self, mut its: Its<'a>) -> Its<'a> {
         its.n = N::from(its.p - self.center);
         its.uv = Self::cartesian2uv(its.n);
         its
     }
 
-    #[inline(always)] fn sample_surface(&self, s: F2) -> Its {
+    #[inline] fn sample_surface(&self, s: F2) -> Its {
         let d = V::from(UniformSphere::warp(s));
         Its::new(self.center + d * self.radius, N::from(d),
                  Self::cartesian2uv(d), 0.)
     }
 
-    #[inline(always)] fn surface_area(&self) -> F
+    #[inline] fn surface_area(&self) -> F
     { F::FOUR_PI * self.radius.sq() }
 
     fn intersection_cost(&self) -> F { 2. }

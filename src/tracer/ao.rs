@@ -8,7 +8,7 @@ pub struct AmbientOcclusion {
 }
 
 impl AmbientOcclusion {
-    #[inline(always)]
+    #[inline]
     pub fn trace(&self, scene: &Scene, sampler: &mut Sampler, ray: R) -> Color {
         match scene.intersect(ray) {
             None => Color::ZERO,

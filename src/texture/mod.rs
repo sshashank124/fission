@@ -23,7 +23,7 @@ pub enum Tex<A>
 impl<A> Tex<A>
     where A: Copy + Zero + Add<Output = A> + Mul<F, Output = A>
 {
-    #[inline(always)] pub fn eval(&self, s: F2) -> A {
+    #[inline] pub fn eval(&self, s: F2) -> A {
         match self {
             Self::Checkerboard(t) => t.eval(s),
             Self::Constant(t) => t.eval(),

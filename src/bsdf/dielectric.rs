@@ -7,7 +7,7 @@ pub struct Dielectric {
 }
 
 impl Dielectric {
-    #[inline(always)]
+    #[inline]
     pub fn sample(&self, wi: V, s: F2) -> (Color, V, F, bool) {
         let (fr, ctt, eta) = fresnel(Frame::ct(wi), self.eta);
         let (wo, p) = if s[0] <= fr { (V::from(Frame::reflect(wi)), fr) } else {

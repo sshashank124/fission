@@ -1,10 +1,10 @@
 use super::*;
 
 impl Shape {
-    #[inline(always)] pub fn eval(&self, uv: F2) -> Color
+    #[inline] pub fn eval(&self, uv: F2) -> Color
     { self.emission.as_ref().map_or(Color::ZERO, |e| e.eval(uv)) }
 
-    #[inline(always)] pub fn sample(&self, its: &Its, s: F2) -> (Color, R, F) {
+    #[inline] pub fn sample(&self, its: &Its, s: F2) -> (Color, R, F) {
         if let Some(emission) = &self.emission {
             let surface = self.sample_surface(s);
             let sray = R::p2(its.p, surface.p);
@@ -15,7 +15,7 @@ impl Shape {
         } else { unreachable!() }
     }
 
-    #[inline(always)] pub fn pdf(&self, its: &Its, sray: &R) -> F {
+    #[inline] pub fn pdf(&self, its: &Its, sray: &R) -> F {
         let ct = F3::dot(its.n, -sray.d);
         if ct <= 0. { 0. } else { self.surface_pdf() * sray.t.sq() / ct }
     }
