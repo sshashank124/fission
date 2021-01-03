@@ -1,0 +1,17 @@
+[package]
+name = "fission-gui"
+description = "Physically-Based Ray Tracing Renderer - GUI Interface"
+version = "0.1.0"
+authors = ["Shashank Singh <sshashank124@gmail.com>"]
+edition = "2018"
+license = "MIT"
+repository = "https://github.com/sshashank124/fission"
+keywords = ["ray-tracing", "rendering", "realistic", "path-tracing", "graphics"]
+categories = ["graphics", "mathematics", "rendering"]
+
+[dependencies]
+anyhow = "^1"
+bincode = "^1"
+fission-core = { path = "../fission-core" }
+serde_yaml = "^0.8"
+wgpu = "^0.6"

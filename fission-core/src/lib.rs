@@ -16,6 +16,8 @@
          clippy::non_ascii_literal,
          clippy::unreadable_literal)]
 
+#![allow(clippy::cargo_common_metadata)]
+
 mod aggregate;
 mod bsdf;
 mod camera;

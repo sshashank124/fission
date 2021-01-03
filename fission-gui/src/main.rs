@@ -2,19 +2,17 @@ use std::env;
 use std::fs::File;
 use std::io::{BufReader, BufWriter};
 use std::path::Path;
-use std::sync::Arc;
-use std::sync::atomic::{AtomicBool, Ordering};
+use std::sync::{Arc, atomic::{AtomicBool, Ordering}};
 
 use anyhow::{bail, ensure};
 
-use fission::renderer::{Integrator, Renderer};
-use fission::util::progress::Progress;
+use fission_core::renderer::{Integrator, Renderer};
+use fission_core::util::progress::Progress;
 
 fn main() -> anyhow::Result<()> {
     let running = Arc::new(AtomicBool::new(true));
 
     let r = running.clone();
-    ctrlc::set_handler(move || { r.store(false, Ordering::SeqCst); })?;
 
     // Parse Args
     let mut args = env::args();
@@ -23,7 +21,7 @@ fn main() -> anyhow::Result<()> {
     let config_file = match args.next() {
         Some(arg) => arg,
         None => bail!("Usage: fission <scene_description.yaml> \
-                       [render_progress.state]"),
+                                      [render_progress.state]"),
     };
     let config_path = Path::new(&config_file);
 
