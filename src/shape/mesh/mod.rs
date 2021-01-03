@@ -1,13 +1,17 @@
 mod triangle;
 
 use std::convert::TryFrom;
+use std::sync::Arc;
 
-use objloader::{Face, MeshData};
+#[allow(clippy::wildcard_imports)]
+use graphite::*;
+use serde::Deserialize;
 
-use super::*;
-use crate::util::{DiscretePDF, Either};
+use crate::aggregate::bvh::BVH;
+use crate::shape::{Intersectable, intersection::Its};
+use crate::util::{dpdf::DiscretePDF, either::Either};
 
-pub use triangle::*;
+use triangle::Triangle;
 
 #[derive(Debug, Deserialize)]
 #[serde(try_from="MeshConfig")]
@@ -63,9 +67,9 @@ struct MeshConfig {
 }
 
 impl TryFrom<MeshConfig> for Mesh {
-    type Error = Error;
+    type Error = anyhow::Error;
 
-    fn try_from(mc: MeshConfig) -> Result<Self> {
+    fn try_from(mc: MeshConfig) -> anyhow::Result<Self> {
         let to_world = T::product(mc.transforms.into_iter());
         let (mesh_data, faces) = objloader::load_from_file(&mc.obj, to_world)?;
         let mesh_data = Arc::new(mesh_data);

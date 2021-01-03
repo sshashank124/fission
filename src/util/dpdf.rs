@@ -1,6 +1,9 @@
 use std::iter;
 
-use super::*;
+#[allow(clippy::wildcard_imports)]
+use graphite::*;
+
+use super::vec::LowerBound;
 
 #[derive(Debug, Default)]
 pub struct DiscretePDF {

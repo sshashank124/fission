@@ -1,4 +1,7 @@
-use super::*;
+#[allow(clippy::wildcard_imports)]
+use graphite::*;
+
+use crate::shape::{Intersectable, Shape, intersection::Its};
 
 impl Shape {
     #[inline] pub fn eval(&self, uv: F2) -> Color

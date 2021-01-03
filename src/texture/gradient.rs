@@ -1,6 +1,9 @@
 use std::marker::PhantomData;
+use std::ops::{Add, Mul};
 
-use super::*;
+#[allow(clippy::wildcard_imports)]
+use graphite::*;
+use serde::Deserialize;
 
 #[derive(Clone, Copy, Debug, Default, Deserialize)]
 pub struct Gradient<A, L> {

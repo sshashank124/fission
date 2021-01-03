@@ -1,9 +1,13 @@
 use std::ops::{Div, Mul};
 
-use super::*;
+#[allow(clippy::wildcard_imports)]
+use graphite::*;
+
+use crate::bsdf::BSDF;
+use crate::shape::{self, Intersectable, Shape};
 
 pub type ShapeRef<'a> = (&'a Shape, I);
-static SHAPE_REF_PH: ShapeRef = (&SHAPE_PH, 0);
+static SHAPE_REF_PH: ShapeRef = (&shape::PLACEHOLDER, 0);
 
 pub struct Its<'a> {
     pub p:     P,

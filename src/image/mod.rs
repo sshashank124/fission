@@ -1,13 +1,15 @@
 mod pixel;
-mod rect;
+pub mod rect;
 
 use std::ops::{AddAssign, Index, IndexMut};
 
 use exr::prelude::write_rgb_f32_file;
+#[allow(clippy::wildcard_imports)]
+use graphite::*;
+use serde::{Deserialize, Serialize};
 
-use crate::prelude::*;
 use pixel::Pixel;
-pub use rect::Rect;
+use rect::Rect;
 
 
 pub type Image = Block;
@@ -33,7 +35,7 @@ impl Block {
         block
     }
 
-    pub fn save_exr(&self, filename: &str) -> Result<()> {
+    pub fn save_exr(&self, filename: &str) -> anyhow::Result<()> {
         let dims: (usize, usize) = A2::from(self.rect.dims).into();
         write_rgb_f32_file(filename, dims, |x, y| self[I2::from(A2(x, y))]
                                                       .eval().to_rgb()

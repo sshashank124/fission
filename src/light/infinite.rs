@@ -1,4 +1,9 @@
-use super::*;
+#[allow(clippy::wildcard_imports)]
+use graphite::*;
+use serde::Deserialize;
+
+use crate::shape::intersection::Its;
+use crate::texture::Tex;
 
 #[derive(Debug, Deserialize)]
 pub struct Infinite {

@@ -1,8 +1,11 @@
 use std::collections::HashMap;
 use std::mem;
 
-use super::*;
-use crate::util::Either;
+#[allow(clippy::wildcard_imports)]
+use graphite::*;
+
+use crate::shape::{Intersectable, intersection::Its};
+use crate::util::either::Either;
 
 #[derive(Debug)]
 pub struct BVH<S> {

@@ -1,6 +1,8 @@
 use std::ops::AddAssign;
 
-use super::*;
+#[allow(clippy::wildcard_imports)]
+use graphite::*;
+use serde::{Deserialize, Serialize};
 
 #[derive(Clone, Copy, Debug, Default, PartialEq, Deserialize, Serialize)]
 pub struct Pixel {

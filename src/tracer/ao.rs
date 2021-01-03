@@ -1,4 +1,9 @@
-use super::*;
+#[allow(clippy::wildcard_imports)]
+use graphite::*;
+use serde::Deserialize;
+
+use crate::sampler::Sampler;
+use crate::scene::Scene;
 
 #[derive(Debug, Deserialize)]
 #[serde(default)]

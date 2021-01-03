@@ -1,8 +1,5 @@
-use super::*;
+#[allow(clippy::wildcard_imports)]
+use graphite::*;
 
-pub struct Mirror;
-
-impl Mirror {
-    #[inline] pub fn sample(wi: V) -> (Color, V, F, bool)
-    { (Color::ONE, V::from(Frame::reflect(wi)), 1., true) }
-}
+#[inline] pub fn sample(wi: V) -> (Color, V, F, bool)
+{ (Color::ONE, V::from(Frame::reflect(wi)), 1., true) }

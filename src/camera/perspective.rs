@@ -1,4 +1,8 @@
-use super::*;
+#[allow(clippy::wildcard_imports)]
+use graphite::*;
+use serde::Deserialize;
+
+use crate::sampler::Sampler;
 
 #[derive(Debug, Deserialize)]
 pub struct Perspective {

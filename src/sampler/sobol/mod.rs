@@ -1,4 +1,9 @@
-use super::*;
+#[allow(clippy::wildcard_imports)]
+use graphite::*;
+use serde::Deserialize;
+
+use crate::image::rect::Rect;
+use crate::sampler::independent::Independent;
 
 const SOBOL_NDIM: u32 = 1024;
 const SOBOL_SIZE: u32 = 52;

@@ -1,9 +1,8 @@
-use super::*;
+use graphite::Zero;
+use serde::Deserialize;
 
 #[derive(Clone, Copy, Debug, Default, Deserialize)]
-pub struct Constant<A> {
-    val: A,
-}
+pub struct Constant<A> { val: A }
 
 impl<A: Copy> Constant<A>
 { #[inline] pub fn eval(&self) -> A { self.val } }

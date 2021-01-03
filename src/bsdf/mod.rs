@@ -4,14 +4,13 @@ mod fresnel;
 mod microfacet;
 mod mirror;
 
-use crate::prelude::*;
-use crate::texture::*;
-use fresnel::*;
+#[allow(clippy::wildcard_imports)]
+use graphite::*;
+use serde::Deserialize;
 
-pub use dielectric::Dielectric;
-pub use diffuse::Diffuse;
-pub use microfacet::Microfacet;
-pub use mirror::Mirror;
+use dielectric::Dielectric;
+use diffuse::Diffuse;
+use microfacet::Microfacet;
 
 #[derive(Debug, Deserialize)]
 #[serde(tag="type", rename_all="snake_case")]
@@ -39,7 +38,7 @@ impl BSDF {
             Self::Dielectric(f) => f.sample(wi, s),
             Self::Diffuse(f) => f.sample(uv, s),
             Self::Microfacet(f) => f.sample(wi, s),
-            Self::Mirror => Mirror::sample(wi),
+            Self::Mirror => mirror::sample(wi),
         }
     }
 
@@ -62,8 +61,6 @@ impl From<Diffuse> for BSDF { fn from(f: Diffuse) -> Self { Self::Diffuse(f) } }
 
 impl From<Microfacet> for BSDF
 { fn from(f: Microfacet) -> Self { Self::Microfacet(f) } }
-
-impl From<Mirror> for BSDF { fn from(_: Mirror) -> Self { Self::Mirror } }
 
 impl Zero for BSDF { const ZERO: Self = Self::Diffuse(Diffuse::ZERO); }
 

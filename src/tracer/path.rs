@@ -1,5 +1,12 @@
-use super::*;
-use crate::util::Either;
+#[allow(clippy::wildcard_imports)]
+use graphite::*;
+use serde::Deserialize;
+
+use crate::sampler::Sampler;
+use crate::scene::Scene;
+use crate::util::either::Either;
+
+use super::direct;
 
 #[derive(Debug, Deserialize)]
 #[serde(default)]
@@ -19,7 +26,7 @@ impl Path {
         match (0..self.depth[1]).try_fold(init,
             |(mut li, mut tp, ray, its, spec), depth|
                 its.map_or_else(move || Either::L(li), |its| {
-                    let (ld, res) = Direct::li(scene, sampler, &its, &ray);
+                    let (ld, res) = direct::li(scene, sampler, &its, &ray);
                     li += tp * (ld + if spec { its.le(ray) }
                                      else { Color::ZERO });
 

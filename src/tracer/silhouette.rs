@@ -1,8 +1,7 @@
-use super::*;
+#[allow(clippy::wildcard_imports)]
+use graphite::*;
 
-pub struct Silhouette;
+use crate::scene::Scene;
 
-impl Silhouette {
-    #[inline] pub fn trace(scene: &Scene, ray: R) -> Color
-    { if scene.intersects(ray) { Color::ZERO } else { Color::ONE } }
-}
+#[inline] pub fn trace(scene: &Scene, ray: R) -> Color
+{ if scene.intersects(ray) { Color::ZERO } else { Color::ONE } }

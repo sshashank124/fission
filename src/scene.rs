@@ -1,9 +1,14 @@
-use crate::aggregate::BVH;
+use std::sync::Arc;
+
+#[allow(clippy::wildcard_imports)]
+use graphite::*;
+use serde::Deserialize;
+
+use crate::aggregate::bvh::BVH;
 use crate::camera::Camera;
-use crate::light::*;
-use crate::prelude::*;
-use crate::shape::*;
-use crate::util::DiscretePDF;
+use crate::light::Light;
+use crate::shape::{Intersectable, Shape, intersection::Its};
+use crate::util::dpdf::DiscretePDF;
 
 #[derive(Debug, Deserialize)]
 #[serde(from="SceneConfig")]

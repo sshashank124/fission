@@ -1,4 +1,6 @@
-use super::*;
+#[allow(clippy::wildcard_imports)]
+use graphite::*;
+use serde::Deserialize;
 
 #[derive(Clone, Copy, Debug, Deserialize)]
 #[serde(from="CheckerboardConfig<A>")]

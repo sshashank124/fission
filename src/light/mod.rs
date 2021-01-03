@@ -2,13 +2,16 @@ mod emitter;
 mod infinite;
 mod point;
 
-use crate::prelude::*;
-use crate::shape::*;
-use crate::texture::*;
+use std::sync::Arc;
 
-pub use emitter::*;
-pub use infinite::Infinite;
-pub use point::Point;
+#[allow(clippy::wildcard_imports)]
+use graphite::*;
+use serde::Deserialize;
+
+use crate::shape::{Shape, intersection::Its};
+
+use infinite::Infinite;
+use point::Point;
 
 #[derive(Debug, Deserialize)]
 #[serde(tag="type")]

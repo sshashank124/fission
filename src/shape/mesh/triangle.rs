@@ -2,7 +2,11 @@ use std::fmt;
 use std::ops::BitOr;
 use std::sync::Arc;
 
-use super::*;
+#[allow(clippy::wildcard_imports)]
+use graphite::*;
+use objloader::{Face, MeshData};
+
+use crate::shape::{Intersectable, intersection::Its};
 
 pub struct Triangle {
     pub f:         Face,

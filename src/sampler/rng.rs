@@ -1,5 +1,4 @@
 use rand_core::RngCore;
-pub use rand_core::SeedableRng;
 use rand_pcg::Pcg64;
 
 pub trait RandomFloat<FT> { fn next_f(&mut self) -> FT; }

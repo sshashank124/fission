@@ -1,7 +1,8 @@
 use std::io::{stdout, Write};
 use std::time::Instant;
 
-use super::*;
+#[allow(clippy::wildcard_imports)]
+use graphite::*;
 
 pub trait Status {
     fn new(i: I, n: I) -> Self;

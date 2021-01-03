@@ -1,4 +1,8 @@
-use super::*;
+#[allow(clippy::wildcard_imports)]
+use graphite::*;
+use serde::Deserialize;
+
+use crate::texture::Tex;
 
 #[derive(Debug, Default, Deserialize)]
 pub struct Diffuse {

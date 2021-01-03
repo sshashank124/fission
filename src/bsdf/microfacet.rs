@@ -1,6 +1,10 @@
-use super::*;
+#[allow(clippy::wildcard_imports)]
+use graphite::*;
+use serde::Deserialize;
 
-use crate::sampler::*;
+use crate::sampler;
+
+use super::fresnel;
 
 #[derive(Debug, Deserialize)]
 #[serde(from="MicrofacetConfig")]
@@ -33,7 +37,7 @@ impl Microfacet {
         if ct_i <= 0. || ct_o <= 0. { return Color::ZERO }
         let wh = (wi + wo).unit();
         let beck = self.beckmann(wh);
-        let fr = fresnel(F3::dot(wh, wi), self.eta).0;
+        let fr = fresnel::eval(F3::dot(wh, wi), self.eta).0;
         let g = self.smith_beckmann_g1(wi, wh) * self.smith_beckmann_g1(wo, wh);
         self.kd * F::INV_PI * ct_o + (self.ks * beck * fr * g * 0.25) / ct_i
     }
@@ -45,7 +49,7 @@ impl Microfacet {
             (n * 2. * F3::dot(n, wi) - wi).unit()
         };
         let diffuse = |s| V::from(CosineHemisphere::warp(s));
-        let wo = Sampler::split_reuse_2d(s, self.ks, spec, diffuse);
+        let wo = sampler::split_reuse_2d(s, self.ks, spec, diffuse);
         let p = self.pdf(wi, wo);
         (if p <= 0. { Color::ZERO } else { self.eval(wi, wo) / p },
          wo, p, false)
@@ -73,7 +77,7 @@ impl From<MicrofacetConfig> for Microfacet {
             kd: mc.kd,
             ks: 1. - mc.kd.max_channel(),
             alpha: mc.alpha.unwrap_or(0.1),
-            eta: eta(mc.ior.unwrap_or(A2(1.000_277, 1.5046))),
+            eta: fresnel::eta(mc.ior.unwrap_or(A2(1.000_277, 1.5046))),
         }
     }
 }

@@ -1,14 +1,16 @@
 use std::sync::Arc;
 use std::sync::atomic::{AtomicBool, Ordering};
 
+#[allow(clippy::wildcard_imports)]
+use graphite::*;
 use rayon::iter::{ParallelBridge, ParallelIterator};
+use serde::{Deserialize, Serialize};
 
-use crate::image::*;
-use crate::prelude::*;
-use crate::sampler::*;
-use crate::scene::*;
-use crate::tracer::*;
-use crate::util::{Progress, threaded};
+use crate::image::{Block, Image};
+use crate::sampler::Sampler;
+use crate::scene::Scene;
+use crate::tracer::Tracer;
+use crate::util::{progress::Progress, threaded};
 
 #[derive(Debug, Deserialize)]
 pub struct Integrator {

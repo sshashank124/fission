@@ -1,4 +1,8 @@
-use super::*;
+#[allow(clippy::wildcard_imports)]
+use graphite::*;
+use serde::Deserialize;
+
+use super::fresnel;
 
 #[derive(Debug, Deserialize)]
 pub struct Dielectric {
@@ -9,7 +13,7 @@ pub struct Dielectric {
 impl Dielectric {
     #[inline]
     pub fn sample(&self, wi: V, s: F2) -> (Color, V, F, bool) {
-        let (fr, ctt, eta) = fresnel(Frame::ct(wi), self.eta);
+        let (fr, ctt, eta) = fresnel::eval(Frame::ct(wi), self.eta);
         let (wo, p) = if s[0] <= fr { (V::from(Frame::reflect(wi)), fr) } else {
             (V::from(A3(-eta * wi[X], -eta * wi[Y], ctt)).unit(), 1. - fr)
         };
@@ -19,4 +23,4 @@ impl Dielectric {
 
 fn de_ior_eta<'de, D>(de: D) -> Result<F, D::Error>
 where D: serde::Deserializer<'de>
-{ F2::deserialize(de).map(eta) }
+{ F2::deserialize(de).map(fresnel::eta) }

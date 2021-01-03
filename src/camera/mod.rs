@@ -1,9 +1,12 @@
 mod perspective;
 
-use crate::prelude::*;
-use crate::sampler::*;
+#[allow(clippy::wildcard_imports)]
+use graphite::*;
+use serde::Deserialize;
 
-pub use perspective::Perspective;
+use crate::sampler::Sampler;
+
+use perspective::Perspective;
 
 #[derive(Debug, Deserialize)]
 #[serde(from="CameraConfig")]

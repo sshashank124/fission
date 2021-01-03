@@ -1,20 +1,22 @@
-mod intersection;
+pub mod intersection;
 mod mesh;
 mod sphere;
 
 use std::borrow::Borrow;
 use std::fmt;
 use std::ops::BitAnd;
-pub use std::sync::Arc;
+use std::sync::Arc;
 
-use crate::aggregate::*;
-use crate::bsdf::*;
-use crate::prelude::*;
-use crate::texture::*;
+#[allow(clippy::wildcard_imports)]
+use graphite::*;
+use serde::Deserialize;
 
-pub use intersection::*;
-pub use mesh::*;
-pub use sphere::*;
+use crate::bsdf::BSDF;
+use crate::texture::Tex;
+
+use intersection::Its;
+use mesh::Mesh;
+use sphere::Sphere;
 
 pub trait Intersectable {
     fn bbox(&self) -> BBox;
@@ -67,8 +69,8 @@ impl Intersectable for Shape {
     fn intersection_cost(&self) -> F { self.shape.intersection_cost() }
 }
 
-pub static SHAPE_PH: Shape = Shape { shape: Type::ZERO, bsdf: BSDF::ZERO,
-                                     emission: None };
+pub static PLACEHOLDER: Shape = Shape { shape: Type::ZERO, bsdf: BSDF::ZERO,
+                                        emission: None };
 
 impl Intersectable for Type {
     #[inline] fn bbox(&self) -> BBox {

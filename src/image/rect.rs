@@ -1,4 +1,8 @@
-use super::*;
+#[allow(clippy::wildcard_imports)]
+use graphite::*;
+use serde::{Deserialize, Serialize};
+
+use super::BLOCK_SIZE;
 
 #[derive(Clone, Copy, Debug, PartialEq, Eq, Deserialize, Serialize)]
 pub struct Rect {

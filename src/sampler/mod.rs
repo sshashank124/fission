@@ -2,11 +2,14 @@ mod independent;
 mod rng;
 mod sobol;
 
-use crate::prelude::*;
-use crate::image::Rect;
+#[allow(clippy::wildcard_imports)]
+use graphite::*;
+use serde::Deserialize;
 
-pub use independent::Independent;
-pub use sobol::Sobol;
+use crate::image::rect::Rect;
+
+use independent::Independent;
+use sobol::Sobol;
 
 #[derive(Debug, Deserialize)]
 #[serde(tag="type", rename_all="snake_case")]
@@ -42,15 +45,15 @@ impl Sampler {
             Self::Sobol(s) => s.rng(),
         }
     }
+}
 
-    #[inline] pub fn split_reuse_2d<A>(s: F2,
-                             p: F,
-                             f1: impl Fn(F2) -> A,
-                             f2: impl Fn(F2) -> A)
-                             -> A {
-        if s[0] < p { f1(A2(s[0] / p, s[1])) }
-        else { f2(A2((s[0] - p) / (1. - p), s[1])) }
-    }
+#[inline] pub fn split_reuse_2d<A>(s: F2,
+                         p: F,
+                         f1: impl Fn(F2) -> A,
+                         f2: impl Fn(F2) -> A)
+                         -> A {
+    if s[0] < p { f1(A2(s[0] / p, s[1])) }
+    else { f2(A2((s[0] - p) / (1. - p), s[1])) }
 }
 
 impl From<Independent> for Sampler

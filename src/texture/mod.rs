@@ -4,11 +4,13 @@ mod gradient;
 
 use std::ops::{Add, Mul};
 
-use crate::prelude::*;
+#[allow(clippy::wildcard_imports)]
+use graphite::*;
+use serde::Deserialize;
 
-pub use checkerboard::Checkerboard;
-pub use constant::Constant;
-pub use gradient::Gradient;
+use checkerboard::Checkerboard;
+use constant::Constant;
+use gradient::Gradient;
 
 #[derive(Clone, Copy, Debug, Deserialize)]
 #[serde(tag="type", rename_all="snake_case")]

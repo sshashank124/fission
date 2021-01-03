@@ -1,39 +1,3 @@
-#![feature(try_trait)]
-
-#![warn(clippy::all,
-        clippy::cargo,
-        clippy::nursery,
-        clippy::pedantic)]
-
-#![allow(clippy::cast_possible_truncation,
-         clippy::cast_possible_wrap,
-         clippy::cast_sign_loss,
-         clippy::find_map,
-         clippy::inline_always,
-         clippy::multiple_crate_versions,
-         clippy::non_ascii_literal,
-         clippy::unreadable_literal,
-         clippy::wildcard_imports)]
-
-mod aggregate;
-mod bsdf;
-mod camera;
-mod image;
-mod light;
-mod renderer;
-mod sampler;
-mod scene;
-mod shape;
-mod texture;
-mod tracer;
-mod util;
-
-mod prelude {
-    pub use anyhow::*;
-    pub use graphite::*;
-    pub use serde::{Deserialize, Serialize};
-}
-
 use std::env;
 use std::fs::File;
 use std::io::{BufReader, BufWriter};
@@ -41,11 +5,12 @@ use std::path::Path;
 use std::sync::Arc;
 use std::sync::atomic::{AtomicBool, Ordering};
 
-use prelude::*;
-use renderer::{Integrator, Renderer};
-use util::Progress;
+use anyhow::{bail, ensure};
 
-fn main() -> Result<()> {
+use fission::renderer::{Integrator, Renderer};
+use fission::util::progress::Progress;
+
+fn main() -> anyhow::Result<()> {
     let running = Arc::new(AtomicBool::new(true));
 
     let r = running.clone();
