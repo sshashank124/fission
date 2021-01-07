@@ -1,13 +1,12 @@
-live rendering with gui
+simplify fission-gui/src/graphics code
+apply sRGB transform as a compute module (GPU pipeline or CPU)
 
+try meshdata as AoS instead of SoA
 add objects to git-lfs
-
 add screenshots and examples in README.md
-
 add logging/tracing
-
 profiling
-
 Light sampling distribution (by power)
-
 Image Textures
+
+use wgsl in wgpu 0.7

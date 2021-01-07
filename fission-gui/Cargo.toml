@@ -11,7 +11,11 @@ categories = ["graphics", "mathematics", "rendering"]
 
 [dependencies]
 anyhow = "^1"
-bincode = "^1"
-fission-core = { path = "../fission-core" }
-serde_yaml = "^0.8"
+bytemuck = "^1"
+fission = { path = "../fission" }
+futures = "^0.3"
 wgpu = "^0.6"
+winit = "0.24"
+
+[build-dependencies]
+shaderc = "^0.7"

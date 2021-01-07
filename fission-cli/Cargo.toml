@@ -11,7 +11,5 @@ categories = ["graphics", "mathematics", "rendering"]
 
 [dependencies]
 anyhow = "^1"
-bincode = "^1"
 ctrlc = "^3"
-fission-core = { path = "../fission-core" }
-serde_yaml = "^0.8"
+fission = { path = "../fission" }

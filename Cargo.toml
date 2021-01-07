@@ -1,6 +1,6 @@
 [workspace]
 members = [
-    "fission-core",
+    "fission",
     "fission-cli",
     "fission-gui",
 ]
