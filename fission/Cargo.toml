@@ -12,7 +12,7 @@ categories = ["graphics", "mathematics", "rendering"]
 [dependencies]
 anyhow = "^1"
 bincode = "^1"
-crossbeam = "^0.8"
+crossbeam-channel = "^0.5"
 exr = "^1"
 graphite = { git = "https://github.com/sshashank124/graphite", features = ["serde-derive"] }
 objloader = { git = "https://github.com/sshashank124/objloader" }

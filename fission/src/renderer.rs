@@ -2,7 +2,6 @@ use std::sync::Arc;
 use std::sync::atomic::{AtomicBool, Ordering};
 use std::thread;
 
-use crossbeam::channel;
 #[allow(clippy::wildcard_imports)]
 use graphite::*;
 use rayon::iter::{ParallelBridge, ParallelIterator};
@@ -45,8 +44,8 @@ impl Renderer {
         }
     }
 
-    pub fn render(self) -> channel::Receiver<RenderState> {
-        let (frame_tx, frame_rx) = channel::unbounded();
+    pub fn render(self) -> crossbeam_channel::Receiver<RenderState> {
+        let (frame_tx, frame_rx) = crossbeam_channel::unbounded();
 
         thread::spawn(move || {
             let Integrator { tracer, sampler, scene, passes } = self.integrator;
