@@ -4,17 +4,18 @@ use std::cell::RefCell;
 use std::rc::Rc;
 use std::time::{Duration, Instant};
 
-use winit::{dpi::PhysicalSize,
-            event::{ElementState, Event, KeyboardInput, VirtualKeyCode,
-                    WindowEvent},
-            event_loop::{ControlFlow, EventLoop},
-            platform::run_return::EventLoopExtRunReturn,
-            window::WindowBuilder};
+use winit::dpi::PhysicalSize;
+use winit::event::{ElementState, Event, KeyboardInput, VirtualKeyCode,
+                   WindowEvent};
+use winit::event_loop::{ControlFlow, EventLoop};
+use winit::platform::run_return::EventLoopExtRunReturn;
+use winit::window::WindowBuilder;
 
 use fission::graphite::{ConvFrom, U, U2};
 use fission::renderer::RenderState;
+use fission::util::progress::Progress;
 
-use graphics::Pipeline;
+use graphics::GPU;
 
 fn main() -> anyhow::Result<()> {
     // Parse Args
@@ -31,20 +32,23 @@ fn main() -> anyhow::Result<()> {
     // Setup Renderer
     let (renderer, running) = fission::load_from_file(&scene_file, state_file)?;
 
-    // Setup Window
-    let dims = U2::of(renderer.state.img.rect.dims);
+    // Setup Window and GPU Pipeline
     let mut event_loop = EventLoop::new();
-    let size = PhysicalSize::from(<(U, U)>::from(dims));
-    let win = WindowBuilder::new()
-        .with_title(format!("Fission - Rendering: {}", scene_file))
-        .with_inner_size(size)
-        .with_min_inner_size(size)
-        .with_max_inner_size(size)
-        .with_resizable(false)
-        .build(&event_loop).unwrap();
+    let (window, mut pipeline) = {
+        let _p = Progress::indeterminate("Setting up Window and GPU Pipeline");
+        let dims = U2::of(renderer.state.img.rect.dims);
+        let size: PhysicalSize<u32> = <(U, U)>::from(dims).into();
+        let window = WindowBuilder::new()
+            .with_title(format!("Fission - Rendering: {}", scene_file))
+            .with_inner_size(size)
+            .with_min_inner_size(size)
+            .with_max_inner_size(size)
+            .with_resizable(false)
+            .build(&event_loop).unwrap();
 
-    // Setup GPU
-    let mut pipeline = futures::executor::block_on(Pipeline::new(&win, size));
+        let pipeline = futures::executor::block_on(GPU::new(&window));
+        (window, pipeline)
+    };
 
     let frame_rx = renderer.render();
 
@@ -62,8 +66,10 @@ fn main() -> anyhow::Result<()> {
         }
 
         match event {
+            Event::RedrawRequested(_) =>
+                if pipeline.render().is_err() { *cflow = ControlFlow::Exit },
             Event::WindowEvent { ref event, window_id }
-            if window_id == win.id() => {
+            if window_id == window.id() => {
                 match event {
                     WindowEvent::CloseRequested |
                     WindowEvent::KeyboardInput { input: KeyboardInput {
@@ -73,9 +79,7 @@ fn main() -> anyhow::Result<()> {
                     _ => ()
                 }
             }
-            Event::RedrawRequested(_) =>
-                if pipeline.render().is_err() { *cflow = ControlFlow::Exit },
-            Event::MainEventsCleared => win.request_redraw(),
+            Event::MainEventsCleared => window.request_redraw(),
             _ => ()
         }
     });

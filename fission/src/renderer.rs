@@ -74,7 +74,7 @@ impl Renderer {
                 }).sum();
 
                 state.pass += 1;
-                frame_tx.send(state.clone()).unwrap();
+                let _ = frame_tx.send(state.clone());
                 progress.update();
             }
         });

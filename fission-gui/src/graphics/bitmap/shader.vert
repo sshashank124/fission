@@ -1,6 +1,6 @@
 #version 450
 
-layout(location=0) in vec2 uv_in;
+layout(location=0) in  vec2 uv_in;
 layout(location=0) out vec2 uv_out;
 
 void main() {
