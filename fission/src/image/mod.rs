@@ -43,8 +43,8 @@ impl Block {
     pub fn save_exr(&self, filename: &str) -> anyhow::Result<()> {
         let dims: (usize, usize) = A2::of(self.rect.dims).into();
         write_rgb_f32_file(filename, dims, |x, y| {
-            let color = self[I2::of(A2(x, y))].eval().to_rgb().0;
-            F3::of(color).into()
+            let color = self[I2::of(A2(x, y))].to_color().to_rgb().0;
+            color.into()
         })?;
         Ok(())
     }

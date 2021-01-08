@@ -1,10 +1,12 @@
-mod bitmap;
+mod blit;
 
 use winit::window::Window;
 
-use fission::image::Image;
+use fission::image::{Image, pixel::Pixel};
 
-use bitmap::Bitmap;
+use blit::Blit;
+
+const DISPLAY_FORMAT: wgpu::TextureFormat = wgpu::TextureFormat::Bgra8Unorm;
 
 pub struct GPU {
     surface:         wgpu::Surface,
@@ -12,7 +14,7 @@ pub struct GPU {
     queue:           wgpu::Queue,
     sc_desc:         wgpu::SwapChainDescriptor,
     swap_chain:      wgpu::SwapChain,
-    bitmap:          Bitmap,
+    blit:            Blit,
 }
 
 impl GPU {
@@ -32,19 +34,23 @@ impl GPU {
 
         let sc_desc = wgpu::SwapChainDescriptor {
             usage: wgpu::TextureUsage::OUTPUT_ATTACHMENT,
-            format: wgpu::TextureFormat::Bgra8UnormSrgb,
+            format: DISPLAY_FORMAT,
             width: dims.width, height: dims.height,
             present_mode: wgpu::PresentMode::Mailbox,
         };
         let swap_chain = device.create_swap_chain(&surface, &sc_desc);
 
-        let bitmap = Bitmap::new(&device, dims);
+        let blit = Blit::new(&device, dims);
 
-        Self { surface, device, queue, sc_desc, swap_chain, bitmap }
+        Self { surface, device, queue, sc_desc, swap_chain, blit }
     }
 
-    pub fn update(&mut self, image: &Image)
-    { self.bitmap.update(image, &self.queue); }
+    pub fn update(&mut self, image: &Image) {
+        let data = image.pixels().map(Pixel::to_rgbw)
+                                 .collect::<Vec<_>>();
+
+        self.blit.update(bytemuck::cast_slice(&data), &self.queue);
+    }
 
     pub fn render(&mut self) -> anyhow::Result<()> {
         let res = self.try_render();
@@ -70,7 +76,7 @@ impl GPU {
                 }],
                 depth_stencil_attachment: None,
         });
-        self.bitmap.render_pass(render_pass);
+        self.blit.render_pass(render_pass);
 
         self.queue.submit(Some(encoder.finish()));
 

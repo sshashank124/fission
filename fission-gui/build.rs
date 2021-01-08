@@ -16,8 +16,8 @@ impl SimpleCompiler for Compiler {
 }
 
 fn main() {
-    let shaders = &[("src/graphics/bitmap/shader.vert", ShaderKind::Vertex),
-                    ("src/graphics/bitmap/shader.frag", ShaderKind::Fragment)];
+    let shaders = &[("src/graphics/blit/shader.vert", ShaderKind::Vertex),
+                    ("src/graphics/blit/shader.frag", ShaderKind::Fragment)];
     let mut compiler = Compiler::new().unwrap();
     for (shader_file, kind) in shaders {
         compiler.compile_to_spirv(shader_file, *kind);

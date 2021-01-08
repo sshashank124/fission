@@ -1,5 +1,3 @@
-apply sRGB transform as a compute module (GPU pipeline or CPU)
-
 try meshdata as AoS instead of SoA
 add objects to git-lfs
 add screenshots and examples in README.md

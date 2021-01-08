@@ -14,8 +14,13 @@ pub struct Pixel {
 }
 
 impl Pixel {
-    #[inline] pub fn eval(&self) -> Color
+    #[inline] pub fn to_color(&self) -> Color
     { self.val / if F::approx_zero(self.w) { 1. } else { self.w } }
+
+    #[inline] pub fn to_rgbw(&self) -> [f32; 4] {
+        let rgb = self.val.to_rgb().0.conv();
+        [rgb.0, rgb.1, rgb.2, f32::of(self.w)]
+    }
 }
 
 impl Zero for Pixel
