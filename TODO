@@ -1,9 +1,7 @@
-try meshdata as AoS instead of SoA
 add objects to git-lfs
 add screenshots and examples in README.md
-add logging/tracing
-profiling
+
 Light sampling distribution (by power)
-Image Textures
+use GPU compute pipelines for parts of ray-tracing
 
 use wgsl in wgpu 0.7

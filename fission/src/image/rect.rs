@@ -22,7 +22,7 @@ impl Rect {
     { pos[Y] * self.dims[X] + pos[X] }
 
     #[inline] pub fn flatten_abs_pos(&self, pos: I2) -> I
-    { self.flatten_rel_pos(pos - self.pos) }
+    { self.flatten_rel_pos((pos - self.pos).zip(self.dims - 1, Num::min)) }
 
     #[inline]
     pub fn chunks(&self) -> impl Iterator<Item=Self> {
