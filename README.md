@@ -17,3 +17,7 @@ Features:
 - YAML scene config loader (automatic deserialization)
 - OpenEXR Image output
 - Render State serializing-to and deserializing-from disk
+
+Front-Ends:
+- GUI Renderer
+- CLI Renderer
