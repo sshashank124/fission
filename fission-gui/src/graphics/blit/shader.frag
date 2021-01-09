@@ -20,5 +20,5 @@ void main() {
     vec4 color = colors[int(gl_FragCoord.y) * frame_width
                       + int(gl_FragCoord.x)];
     vec3 rgb = color.rgb / color.w;
-    out_color = vec4(srgb(rgb.r), srgb(rgb.g), srgb(rgb.b), 1.);
+    out_color = vec4(srgb(rgb.r), srgb(rgb.g), srgb(rgb.b), 1);
 }
