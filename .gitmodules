@@ -1,0 +1,3 @@
+[submodule "scenes"]
+	path = scenes
+	url = git@github.com:sshashank124/fission-scenes

@@ -1,7 +1,5 @@
-add objects to git-lfs
-add screenshots and examples in README.md
-
-Light sampling distribution (by power)
+add screenshots and examples in README.md (also in scenes)
 use GPU compute pipelines for parts of ray-tracing
-
+Light sampling distribution (by power)
+volumetric
 use wgsl in wgpu 0.7
