@@ -2,7 +2,6 @@ mod graphics;
 
 use std::cell::RefCell;
 use std::rc::Rc;
-use std::time::{Duration, Instant};
 
 use winit::dpi::PhysicalSize;
 use winit::event::{ElementState, Event, KeyboardInput, VirtualKeyCode,
@@ -33,7 +32,8 @@ fn main() -> anyhow::Result<()> {
     let (renderer, running) = fission::load_from_file(&scene_file, state_file)?;
 
     // Setup Window and GPU Pipeline
-    let mut event_loop = EventLoop::new();
+    let mut event_loop = EventLoop::with_user_event();
+    let el_proxy = event_loop.create_proxy();
     let (window, mut pipeline) = {
         let _p = Progress::indeterminate("Setting up Window and GPU Pipeline");
         let dims = U2::of(renderer.state.img.rect.dims);
@@ -55,17 +55,20 @@ fn main() -> anyhow::Result<()> {
     let final_state = Rc::new(RefCell::new(RenderState::default()));
     let final_state_memo = final_state.clone();
 
+    std::thread::spawn(move || {
+        for frame in frame_rx {
+            let _ = el_proxy.send_event(frame);
+        }
+    });
+
     // Event Loop
     event_loop.run_return(move |event, _, cflow| {
-        *cflow = ControlFlow::WaitUntil(Instant::now()
-                                        + Duration::from_millis(15));
-
-        if let Ok(state) = frame_rx.try_recv() {
-            pipeline.update(&state.img);
-            *final_state_memo.borrow_mut() = state;
-        }
-
+        *cflow = ControlFlow::Wait;
         match event {
+            Event::UserEvent(render_state) => {
+                pipeline.update(&render_state.img);
+                *final_state_memo.borrow_mut() = render_state;
+            }
             Event::RedrawRequested(_) =>
                 if pipeline.render().is_err() { *cflow = ControlFlow::Exit },
             Event::WindowEvent { ref event, window_id }

@@ -1,5 +1,6 @@
-add screenshots and examples in README.md (also in scenes)
+image texture
 use GPU compute pipelines for parts of ray-tracing
 Light sampling distribution (by power)
-volumetric
+volumetric path tracer
+add screenshots and examples in README.md (also in scenes)
 use wgsl in wgpu 0.7
