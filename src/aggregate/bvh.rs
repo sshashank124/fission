@@ -21,7 +21,7 @@ pub struct BVHNode {
 
 #[derive(Debug)]
 pub enum BVHNodeType {
-    Leaf(I, I),
+    Leaf(I, i16),
     Tree(I, Dim),
 }
 
@@ -77,7 +77,7 @@ impl<S> BVH<S> where S: Intersectable
                         idx = ii[trav_order[dim]];
                     }
                     BVHNodeType::Leaf(i, n) => {
-                        for j in usize::of(i)..usize::of(i + n) {
+                        for j in usize::of(i)..usize::of(i + I::of(n)) {
                             acc = match f(acc, j, &self.elements[j]) {
                                 Either::L(b) => return b,
                                 Either::R(a) => a,
@@ -124,7 +124,7 @@ impl BuildNode { const fn size(&self) -> I { self.sizel + self.sizer + 1 } }
 fn flatten_tree(tree: &BuildNode, nodes: &mut Vec<BVHNode>, mut offset: I) {
     offset += 1;
     let node = match tree.node {
-        BuildNodeType::Leaf(idx, n) => BVHNodeType::Leaf(idx, n),
+        BuildNodeType::Leaf(idx, n) => BVHNodeType::Leaf(idx, i16::of(n)),
         BuildNodeType::Tree(dim, ref treel, _) => {
             BVHNodeType::Tree(offset + treel.size(), dim)
         }
