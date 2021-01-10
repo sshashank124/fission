@@ -20,22 +20,21 @@ impl Path {
     #[inline]
     pub fn trace(&self, scene: &Scene, sampler: &mut Sampler, ray: R) -> Color {
         let init = (Color::ZERO, Color::ONE, ray, scene.intersect(ray), true);
-        if init.3.is_none() {
-            return scene.lenv(&ray)
-        }
+        if init.3.is_none() { return scene.lenv(&ray) }
 
         match (0..self.depth[1]).try_fold(init,
             |(mut li, mut tp, ray, its, spec), depth|
-                its.map_or_else(move || Either::L(li), |its| {
-                    let (ld, res) = direct::li(scene, sampler, &its, &ray);
-                    li += tp * (ld + if spec { its.le(ray) }
-                                     else { Color::ZERO });
+                its.map_or_else(move || Either::L(li + tp * scene.lenv(&ray)),
+                                |its| {
+                    if spec { li += tp * its.le(ray); }
+                    let (ld, lb, ray, its, spec) = direct::li(scene, sampler,
+                                                              &its, &ray);
+                    li += tp * ld;
+                    tp *= lb;
 
-                    let (ray, its, spec) = match res {
-                        None => return Either::L(li),
-                        Some((lb, ray, its, spec))
-                            => { tp *= lb; (ray, Some(its), spec) },
-                    };
+                    if its.is_none() {
+                        return Either::L(li + tp * scene.lenv(&ray))
+                    }
 
                     if depth > self.depth[0] {
                         let q = F::min(tp.max_channel(), self.rr_tp);

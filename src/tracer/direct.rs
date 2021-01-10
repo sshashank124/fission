@@ -8,14 +8,14 @@ use crate::shape::intersection::Its;
 
 #[inline] pub fn li<'a>(scene: &'a Scene, sampler: &mut Sampler,
                         its: &Its, ray: &R)
-        -> (Color, Option<(Color, R, Its<'a>, bool)>) {
+        -> (Color, Color, R, Option<Its<'a>>, bool) {
     let frame = its.to_world();
     let wo = frame / -ray.d;
 
     let ll = ll(scene, sampler, its, frame, wo);
-    let (ls, details) = ls(scene, sampler, its, frame, wo);
+    let (ls, lb, ray, its, spec) = ls(scene, sampler, its, frame, wo);
 
-    (ll + ls, details)
+    (ll + ls, lb, ray, its, spec)
 }
 
 #[inline] pub fn ll(scene: &Scene, sampler: &mut Sampler, its: &Its,
@@ -37,16 +37,17 @@ use crate::shape::intersection::Its;
     Color::ZERO
 }
 
-#[inline] pub fn ls<'a>(scene: &'a Scene, sampler: &mut Sampler,
-                        its: &Its, frame: T, wo: V)
-        -> (Color, Option<(Color, R, Its<'a>, bool)>) {
+#[inline] pub fn ls<'a>(scene: &'a Scene, sampler: &mut Sampler, its: &Its,
+                        frame: T, wo: V)
+        -> (Color, Color, R, Option<Its<'a>>, bool) {
     let (lb, wi, b_pdf, spec) = its.sample_lb(wo, sampler.next_2d());
-    if lb == Color::ZERO { return (Color::ZERO, None) }
-
     let ray = its.spawn_ray(frame * wi);
+
+    if lb == Color::ZERO { return (lb, lb, ray, None, spec) }
+
     let its = scene.intersect(ray);
 
-    let (le, l_pdf) = its.as_ref().map_or((Color::ZERO, 0.), |its|
+    let (le, l_pdf) = its.as_ref().map_or_else(|| (scene.lenv(&ray), 1.), |its|
         if its.has_emission() { (its.le(ray), its.lpdf(ray)) }
         else { (Color::ZERO, 0.) }
     );
@@ -55,11 +56,10 @@ use crate::shape::intersection::Its;
         lb * le * PowerScale::balance2(b_pdf, l_pdf)
     } else { Color::ZERO };
 
-    (ls, its.map(|i| (lb, ray, i, spec)))
+    (ls, lb, ray, its, spec)
 }
 
-#[inline]
-pub fn trace(scene: &Scene, sampler: &mut Sampler, ray: R) -> Color {
+#[inline] pub fn trace(scene: &Scene, sampler: &mut Sampler, ray: R) -> Color {
     match scene.intersect(ray) {
         None => scene.lenv(&ray),
         Some(its) => {
