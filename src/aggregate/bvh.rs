@@ -30,17 +30,11 @@ impl<S> BVH<S> where S: Intersectable
     pub fn new(elems: Vec<S>) -> Self {
         assert!(!elems.is_empty());
 
-        let mut build_infos = elems.iter()
-                                   .enumerate()
-                                   .map(|(idx, e)| {
-                                       let bbox = e.bbox();
-                                       BuildInfo { bbox,
-                                                   center: bbox.center(),
-                                                   idx: idx.conv(),
-                                                   isect_cost:
-                                                       e.intersection_cost() }
-                                   })
-                                   .collect::<Vec<_>>();
+        let mut build_infos = elems.iter().enumerate().map(|(idx, e)| {
+            let bbox = e.bbox();
+            BuildInfo { bbox, center: bbox.center(), idx: idx.conv(),
+                        isect_cost: e.intersection_cost() }
+        }).collect::<Vec<_>>();
 
         let mut idx_map = HashMap::with_capacity(elems.len());
         let root = build(&mut build_infos[..], &mut idx_map);
@@ -171,52 +165,51 @@ fn build(build_infos: &mut [BuildInfo],
 
     let (extent, dim) = centers_bbox.max_extent();
 
-    let pivot = if F::approx_zero(extent) {
-        n / 2
-    } else {
-        let lb = centers_bbox[dim][0];
-        let mut buckets =
-            [Bucket { cost: 0., bbox: BBox::ZERO }; NUM_BUCKETS];
-
-        let bucket_index = |build_info: &BuildInfo| {
+    let (dim, pivot) = if F::approx_zero(extent) { (dim, n / 2) } else {
+        let bucket_index = |build_info: &BuildInfo, dim: Dim| {
             let idx = I::of(F::of(NUM_BUCKETS)
-                                   * ((build_info.center[dim] - lb) / extent));
+                                   * ((build_info.center[dim]
+                                       - centers_bbox[dim][0])
+                                      / centers_bbox.extents()[dim]));
             idx.min(I::of(NUM_BUCKETS) - 1)
         };
 
-        build_infos.iter().for_each(|build_info| {
-            let idx = bucket_index(build_info);
-            buckets[usize::of(idx)].cost += build_info.isect_cost;
-            buckets[usize::of(idx)].bbox
-                = buckets[usize::of(idx)].bbox | build_info.bbox;
-        });
+        let (_, mc_idx, mc_dim) = XYZ.map(|dim| {
+            let mut buckets =
+                [Bucket { cost: 0., bbox: BBox::ZERO }; NUM_BUCKETS];
 
-        let cost_of_split = |(a, b): (&[Bucket], &[Bucket])| {
-            let range_cost = |r: &[Bucket]| {
-                r.iter()
-                 .fold((0., BBox::ZERO),
-                       |(c, bb), Bucket { cost, bbox }| (c + cost, bb | *bbox))
+            build_infos.iter().for_each(|build_info| {
+                let idx = bucket_index(build_info, dim);
+                buckets[usize::of(idx)].cost += build_info.isect_cost;
+                buckets[usize::of(idx)].bbox
+                    = buckets[usize::of(idx)].bbox | build_info.bbox;
+            });
+
+            let cost_of_split = |(a, b): (&[Bucket], &[Bucket])| {
+                let range_cost = |r: &[Bucket]| r.iter().fold((0., BBox::ZERO),
+                    |(c, bb), Bucket { cost, bbox }| (c + cost, bb | *bbox));
+
+                let (cost1, bbox1) = range_cost(a);
+                let (cost2, bbox2) = range_cost(b);
+
+                1. + F2::dot(A2(cost1, cost2),
+                             A2(&bbox1, &bbox2).map(BBox::surface_area))
+                   / bbox.surface_area()
             };
 
-            let (cost1, bbox1) = range_cost(a);
-            let (cost2, bbox2) = range_cost(b);
-
-            1. + F2::dot(A2(cost1, cost2),
-                         A2(&bbox1, &bbox2).map(BBox::surface_area))
-               / bbox.surface_area()
-        };
-
-
-        let mc_idx =
             (1..NUM_BUCKETS - 1).map(|i| (i, buckets.split_at(i.conv())))
                                 .map(|(idx, bb)| (cost_of_split(bb), idx))
                                 .fold((F::POS_INF, 0), |(a, b), (c, d)| {
                                     if a < c { (a, b) }
                                     else { (c, d) }
-                                }).1;
+                                })
+        }).zip(XYZ, |a, b| (a, b))
+          .fold((F::POS_INF, 0, X), |(cost, idx, dim), ((c, i), d)|
+                if c < cost { (c, i, d) } else { (cost, idx, dim) });
 
-        partition(build_infos, |build_info| bucket_index(build_info)
-                                            < mc_idx.conv())
+        (mc_dim, partition(build_infos,
+                           |build_info| bucket_index(build_info, mc_dim)
+                                        < mc_idx.conv()))
     };
 
     let tree_l = build(&mut build_infos[..usize::of(pivot)], idx_map);
