@@ -5,65 +5,54 @@ use crate::color::Color;
 use crate::sampler::Sampler;
 use crate::scene::Scene;
 use crate::shape::intersection::Its;
+use crate::util::pdf::PDF;
 
-#[inline] pub fn li<'a>(scene: &'a Scene, sampler: &mut Sampler,
-                        its: &Its, ray: &R)
-        -> (Color, Color, R, Option<Its<'a>>, bool) {
-    let frame = its.to_world();
-    let wo = frame / -ray.d;
-
-    let ll = ll(scene, sampler, its, frame, wo);
-    let (ls, lb, ray, its, spec) = ls(scene, sampler, its, frame, wo);
-
-    (ll + ls, lb, ray, its, spec)
-}
-
-#[inline] pub fn ll(scene: &Scene, sampler: &mut Sampler, its: &Its,
-                    frame: T, wo: V) -> Color {
+#[inline] pub fn l_light(scene: &Scene, its: &Its, wo: V, frame: T, s: F2) -> Color {
     if !its.bsdf().is_delta() {
-        let (le, sray, lpdf) = scene.sample_random_light(its,
-                                                         sampler.next_2d());
-        if le != Color::ZERO && !scene.intersects(sray) {
-            let wi = frame / sray.d;
-            let lb = its.lb(wo, wi);
-            if lb != Color::ZERO {
-                return le
-                       * lb
-                       * scene.lights_dpdf.total()
-                       * PowerScale::balance2(lpdf, its.bpdf(wo, wi))
+        let (light, sray) = scene.sample_random_light(its, s);
+        if light.pdf > 0. && light.val != Color::ZERO && !scene.intersects(sray) {
+            let bsdf = its.bsdf_f_pdf(wo, frame / sray.d);
+            if bsdf.pdf > 0. && bsdf.val != Color::ZERO {
+                return light.val * bsdf.val * PowerScale::balance2(light.pdf, bsdf.pdf);
             }
         }
     }
     Color::ZERO
 }
 
-#[inline] pub fn ls<'a>(scene: &'a Scene, sampler: &mut Sampler, its: &Its,
-                        frame: T, wo: V)
-        -> (Color, Color, R, Option<Its<'a>>, bool) {
-    let (lb, wi, b_pdf, spec) = its.sample_lb(wo, sampler.next_2d());
-    let ray = its.spawn_ray(frame * wi);
+#[derive(Debug)]
+pub struct BounceInfo {
+    pub l:    Color,
+    pub tp:   Color,
+    pub its:  Option<Its>,
+    pub ray:  R,
+    pub spec: bool,
+}
 
-    if lb == Color::ZERO { return (lb, lb, ray, None, spec) }
-
-    let its = scene.intersect(ray);
-
-    let (le, l_pdf) = its.as_ref().map_or_else(|| (scene.lenv(&ray), 1.), |its|
-        if its.has_emission() { (its.le(ray), its.lpdf(ray)) }
-        else { (Color::ZERO, 0.) }
-    );
-
-    let ls = if l_pdf > 0. && le != Color::ZERO && !spec {
-        lb * le * PowerScale::balance2(b_pdf, l_pdf)
-    } else { Color::ZERO };
-
-    (ls, lb, ray, its, spec)
+#[inline] pub fn l_mat(scene: &Scene, its: &Its, wo: V, frame: T, s: F2) -> Option<BounceInfo> {
+    let (bsdf, wi, spec) = its.sample_bsdf(wo, s);
+    if bsdf.pdf > 0. && bsdf.val != Color::ZERO {
+        let ray = its.spawn_ray(frame * wi);
+        let its = scene.intersect(ray);
+        let light = match &its {
+            None => PDF::sole(scene.lenv(&ray)),
+            Some(its) if its.emits() => its.l_emit_pdf(ray),
+            _ => PDF::ZERO,
+        };
+        let l = if light.pdf > 0. && light.val != Color::ZERO && !spec {
+            bsdf.val * light.val * PowerScale::balance2(bsdf.pdf, light.pdf)
+        } else { Color::ZERO };
+        Some(BounceInfo { l, tp: bsdf.val, its, ray, spec })
+    } else { None }
 }
 
 #[inline] pub fn trace(scene: &Scene, sampler: &mut Sampler, ray: R) -> Color {
-    match scene.intersect(ray) {
-        None => scene.lenv(&ray),
-        Some(its) => {
-            its.le(ray) + li(scene, sampler, &its, &ray).0
-        }
-    }
+    scene.intersect(ray).map_or_else(|| scene.lenv(&ray), |its| {
+        let frame = its.to_world();
+        let wo = frame / -ray.d;
+
+        its.l_emit(ray) + l_light(scene, &its, wo, frame, sampler.next_2d())
+                        + l_mat(scene, &its, wo, frame, sampler.next_2d())
+                            .map_or(Color::ZERO, |bounce| bounce.l)
+    })
 }

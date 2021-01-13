@@ -1,3 +1,5 @@
+use std::ops::{Add, Mul};
+
 #[allow(clippy::wildcard_imports)]
 use graphite::*;
 use serde::Deserialize;
@@ -16,6 +18,10 @@ impl<A: Copy> Checkerboard<A> {
             if r < 0 { r + 2 } else { r }
         }).as_ref().reduce(I::eq)]
     }
+}
+
+impl<A> Checkerboard<A> where A: Copy + Zero + Add<Output=A> + Mul<F, Output=A> {
+    #[inline] pub fn mean(&self) -> A { self.vals.mean() }
 }
 
 

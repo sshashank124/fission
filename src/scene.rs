@@ -1,5 +1,3 @@
-use std::sync::Arc;
-
 #[allow(clippy::wildcard_imports)]
 use graphite::*;
 use serde::Deserialize;
@@ -9,29 +7,27 @@ use crate::camera::Camera;
 use crate::color::Color;
 use crate::light::Light;
 use crate::shape::{Intersectable, Shape, intersection::Its};
-use crate::util::dpdf::DiscretePDF;
+use crate::util::{dpdf::DiscretePDF, pdf::PDF};
 
 #[derive(Debug, Deserialize)]
 #[serde(from="SceneConfig")]
 pub struct Scene {
     pub camera:      Camera,
-        shapes:      BVH<Arc<Shape>>,
-    pub lights:      Vec<Arc<Light>>,
-    pub lights_dpdf: DiscretePDF,
-        env:         Option<Arc<Light>>,
+        shapes:      BVH<&'static Shape>,
+    pub lights:      Vec<&'static Light>,
+        lights_dpdf: DiscretePDF,
+        env:         Option<&'static Light>,
 }
 
 impl Scene {
-    #[inline] pub fn intersects(&self, r: R) -> bool
-    { self.shapes.intersects(r) }
+    #[inline] pub fn intersects(&self, r: R) -> bool { self.shapes.intersects(r) }
+    #[inline] pub fn intersect(&self, r: R) -> Option<Its> { self.shapes.intersect(r) }
 
-    #[inline] pub fn intersect(&self, r: R) -> Option<Its>
-    { self.shapes.intersect(r) }
-
-    #[inline]
-    pub fn sample_random_light(&self, its: &Its, mut s: F2) -> (Color, R, F) {
-        let idx = self.lights_dpdf.sample(&mut s[0]);
-        self.lights[idx].sample(its, s)
+    #[inline] pub fn sample_random_light(&self, its: &Its,
+                                         mut s: F2) -> (PDF<Color>, R) {
+        let (idx, prob) = self.lights_dpdf.sample(&mut s[0]);
+        let (l_light, sray) = self.lights[idx].sample(its, s);
+        (l_light.scale(prob), sray)
     }
 
     #[inline] pub fn lenv(&self, ray: &R) -> Color
@@ -60,18 +56,19 @@ impl From<SceneConfig> for Scene {
             match elem {
                 Element::Shape(s) => {
                     let emitter = s.emission.is_some();
-                    let s = Arc::new(s);
-                    if emitter { lights.push(s.clone().into()); }
+                    let s: &Shape = Box::leak(Box::new(s));
+                    if emitter {
+                        let l: &Light = Box::leak(Box::new(s.into()));
+                        lights.push(l);
+                    }
                     shapes.push(s);
                 },
-                Element::Light(l) => lights.push(l),
+                Element::Light(l) => lights.push(Box::leak(Box::new(l))),
             }
         }
         let shapes = BVH::new(shapes);
-        let lights_dpdf = DiscretePDF::new(&lights, |_| Light::power());
-        let lights = lights.into_iter().map(Arc::new).collect::<Vec<_>>();
-        let env =
-            lights.iter().find(|light| light.is_env_light()).map(Arc::clone);
+        let lights_dpdf = DiscretePDF::new(&lights, |light| light.power());
+        let env = lights.iter().copied().find(|light| light.is_env_light());
         Self { shapes, camera: sc.camera, lights, lights_dpdf, env }
 }
 }

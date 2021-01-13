@@ -27,13 +27,14 @@ impl DiscretePDF {
         Self { cdf, total }
     }
 
-    #[inline] pub fn sample(&self, s: &mut F) -> usize {
+    #[inline] pub fn sample(&self, s: &mut F) -> (usize, F) {
         let idx = usize::of(Num::clamp(self.cdf.lower_bound(*s) - 1,
                                        0, I::of(self.cdf.len()) - 1));
         let ci = self.cdf[idx];
         let cj = self.cdf[idx + 1];
-        *s = (*s - ci) / (cj - ci);
-        idx
+        let prob = cj - ci;
+        *s = (*s - ci) / prob;
+        (idx, prob)
     }
 
     #[inline] pub const fn total(&self) -> F { self.total }

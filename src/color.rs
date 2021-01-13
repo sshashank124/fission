@@ -20,6 +20,9 @@ impl RGB {
     #[inline] pub const fn gray(g: F) -> Self { Self(F3::rep(g)) }
     #[inline] pub const fn to_rgb(self) -> Self { self }
     #[inline] pub fn max_channel(self) -> F { self.0.max() }
+
+    const SENSITIVITIES: F3 = A3(0.212671, 0.715160, 0.072169);
+    #[inline] pub fn luminance(self) -> F { F3::dot(self.0, Self::SENSITIVITIES) }
 }
 
 op!(Neg::neg, *RGB);

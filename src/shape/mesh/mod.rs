@@ -1,7 +1,6 @@
 mod triangle;
 
 use std::convert::TryFrom;
-use std::sync::Arc;
 
 #[allow(clippy::wildcard_imports)]
 use graphite::*;
@@ -23,8 +22,7 @@ pub struct Mesh {
 impl Intersectable for Mesh {
     #[inline] fn bbox(&self) -> BBox { self.tris.bbox() }
 
-    #[inline] fn intersects(&self, ray: R) -> bool
-    { self.tris.intersects(ray) }
+    #[inline] fn intersects(&self, ray: R) -> bool { self.tris.intersects(ray) }
 
     #[inline] fn intersect(&self, ray: R) -> Option<Its> {
         self.tris
@@ -35,12 +33,11 @@ impl Intersectable for Mesh {
             .1
     }
 
-    #[inline] fn hit_info<'a>(&'a self, i: Its<'a>) -> Its<'a> {
-        self.tris.elements[usize::of(i.shape.1)].hit_info(i)
-    }
+    #[inline] fn hit_info(&self, i: Its) -> Its
+    { self.tris.elements[usize::of(i.shape.1)].hit_info(i) }
 
     #[inline] fn sample_surface(&self, mut s: F2) -> Its {
-        let idx = self.dpdf.sample(&mut s[0]);
+        let (idx, _) = self.dpdf.sample(&mut s[0]);
         self.tris.elements[idx].sample_surface(s)
     }
 
@@ -49,11 +46,8 @@ impl Intersectable for Mesh {
     fn intersection_cost(&self) -> F { self.tris.intersection_cost() }
 }
 
-type Acc<'a> = (R, Option<Its<'a>>);
-#[inline]
-pub fn intersect_update<'a>((ray, acc): Acc<'a>,
-                            (i, s): (usize, &'a impl Intersectable)) -> Acc<'a>
-{
+#[inline] pub fn intersect_update((ray, acc): (R, Option<Its>),
+                                  (i, s): (usize, &impl Intersectable)) -> (R, Option<Its>) {
     s.intersect(ray)
      .map_or_else(|| (ray, acc), |it| (ray.clipped(it.t), Some(it.for_idx(i))))
 }
@@ -72,11 +66,8 @@ impl TryFrom<MeshConfig> for Mesh {
     fn try_from(mc: MeshConfig) -> anyhow::Result<Self> {
         let to_world = T::product(mc.transforms.into_iter());
         let (mesh_data, faces) = objloader::load_from_file(&mc.obj, to_world)?;
-        let mesh_data = Arc::new(mesh_data);
-        let triangles = faces.into_iter().map(|f| Triangle {
-                                 f,
-                                 mesh_data: mesh_data.clone()
-                             }).collect();
+        let mesh_data: &'static _ = Box::leak(Box::new(mesh_data));
+        let triangles = faces.into_iter().map(|f| Triangle { f, mesh_data }).collect();
         let tris = BVH::new(triangles);
         let dpdf = DiscretePDF::new(&tris.elements, Triangle::surface_area);
         Ok(Self { tris, dpdf })

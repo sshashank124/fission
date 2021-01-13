@@ -1,11 +1,15 @@
 use std::collections::HashMap;
 use std::mem;
 
+use bumpalo::Bump;
 #[allow(clippy::wildcard_imports)]
 use graphite::*;
 
 use crate::shape::{Intersectable, intersection::Its};
 use crate::util::either::Either;
+
+const MAX_LEAF_LEN: I = 4;
+const NUM_BUCKETS: usize = 24;
 
 #[derive(Debug)]
 pub struct BVH<S> {
@@ -37,10 +41,11 @@ impl<S> BVH<S> where S: Intersectable
         }).collect::<Vec<_>>();
 
         let mut idx_map = HashMap::with_capacity(elems.len());
-        let root = build(&mut build_infos[..], &mut idx_map);
+        let arena = Bump::with_capacity(elems.len() * mem::size_of::<BuildNode>());
+        let root = build(&mut build_infos[..], &mut idx_map, &arena);
 
         let mut nodes = Vec::with_capacity(root.size().conv());
-        flatten_tree(&root, &mut nodes, 0);
+        flatten_tree(root, &mut nodes, 0);
 
         let idx_ord = (0..elems.len().conv()).map(|i| idx_map[&i]);
         let mut elems_idx = elems.into_iter().zip(idx_ord).collect::<Vec<_>>();
@@ -94,16 +99,16 @@ impl<S> BVH<S> where S: Intersectable
     }
 }
 
-struct BuildNode {
+struct BuildNode<'a> {
     bbox:  BBox,
-    node:  BuildNodeType,
+    node:  BuildNodeType<'a>,
     sizel: I,
     sizer: I,
 }
 
-enum BuildNodeType {
+enum BuildNodeType<'a> {
     Leaf(I, I),
-    Tree(Dim, Box<BuildNode>, Box<BuildNode>),
+    Tree(Dim, &'a BuildNode<'a>, &'a BuildNode<'a>),
 }
 
 struct BuildInfo {
@@ -113,13 +118,13 @@ struct BuildInfo {
     isect_cost: F,
 }
 
-impl BuildNode { const fn size(&self) -> I { self.sizel + self.sizer + 1 } }
+impl BuildNode<'_> { const fn size(&self) -> I { self.sizel + self.sizer + 1 } }
 
 fn flatten_tree(tree: &BuildNode, nodes: &mut Vec<BVHNode>, mut offset: I) {
     offset += 1;
     let node = match tree.node {
         BuildNodeType::Leaf(idx, n) => BVHNodeType::Leaf(idx, i16::of(n)),
-        BuildNodeType::Tree(dim, ref treel, _) => {
+        BuildNodeType::Tree(dim, treel, _) => {
             BVHNodeType::Tree(offset + treel.size(), dim)
         }
     };
@@ -132,30 +137,25 @@ fn flatten_tree(tree: &BuildNode, nodes: &mut Vec<BVHNode>, mut offset: I) {
     }
 }
 
-const NUM_BUCKETS: usize = 24;
-
 #[derive(Clone, Copy)]
 struct Bucket {
     cost: F,
     bbox: BBox,
 }
 
-const MAX_LEAF_LEN: I = 4;
-
-fn build(build_infos: &mut [BuildInfo],
-         idx_map: &mut HashMap<I, I>)
-         -> BuildNode {
+fn build<'a>(build_infos: &mut [BuildInfo], idx_map: &mut HashMap<I, I>,
+             arena: &'a Bump) -> &'a BuildNode<'a> {
     let n = build_infos.len().conv();
 
     if n <= MAX_LEAF_LEN {
         build_infos.iter().for_each(|bi| {
                               idx_map.insert(bi.idx, idx_map.len().conv());
                           });
-        return BuildNode {
+        return arena.alloc(BuildNode {
             bbox: build_infos.iter().fold(BBox::ZERO, |bb, bi| bb | bi.bbox),
             node: BuildNodeType::Leaf(I::of(idx_map.len()) - n, n),
             sizel: 0, sizer: 0
-        }
+        })
     }
 
     let (bbox, centers_bbox) =
@@ -212,21 +212,20 @@ fn build(build_infos: &mut [BuildInfo],
                                         < mc_idx.conv()))
     };
 
-    let tree_l = build(&mut build_infos[..usize::of(pivot)], idx_map);
-    let tree_r = build(&mut build_infos[usize::of(pivot)..], idx_map);
+    let tree_l = build(&mut build_infos[..usize::of(pivot)], idx_map, arena);
+    let tree_r = build(&mut build_infos[usize::of(pivot)..], idx_map, arena);
 
-    BuildNode { bbox,
-                sizel: tree_l.size(),
-                sizer: tree_r.size(),
-                node: BuildNodeType::Tree(dim,
-                                          Box::new(tree_l),
-                                          Box::new(tree_r)) }
+    arena.alloc(BuildNode {
+        bbox,
+        sizel: tree_l.size(),
+        sizer: tree_r.size(),
+        node: BuildNodeType::Tree(dim, tree_l, tree_r),
+    })
 }
 
 impl<S> Intersectable for BVH<S> where S: Intersectable
 {
-    #[inline] fn bbox(&self) -> BBox
-    { self.elements.iter().fold(BBox::ZERO, |bbox, e| bbox | e.bbox()) }
+    #[inline] fn bbox(&self) -> BBox { self.nodes[0].bbox }
 
     #[inline] fn intersects(&self, ray: R) -> bool {
         self.fold(F3::from(ray.d).map(Num::is_pos),
@@ -261,11 +260,8 @@ impl<S> Intersectable for BVH<S> where S: Intersectable
     }
 }
 
-type Acc<'a> = (R, Option<Its<'a>>);
-#[inline]
-pub fn intersect_update<'a>((ray, acc): Acc<'a>,
-                            s: &'a impl Intersectable) -> Acc<'a>
-{
+#[inline] pub fn intersect_update((ray, acc): (R, Option<Its>),
+                                  s: &impl Intersectable) -> (R, Option<Its>) {
     s.intersect(ray)
      .map_or_else(|| (ray, acc), |it| (ray.clipped(it.t), Some(it)))
 }

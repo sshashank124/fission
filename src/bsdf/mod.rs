@@ -9,6 +9,7 @@ use graphite::*;
 use serde::Deserialize;
 
 use crate::color::Color;
+use crate::util::pdf::PDF;
 
 use dielectric::Dielectric;
 use diffuse::Diffuse;
@@ -33,9 +34,9 @@ impl BSDF {
         }
     }
 
-    // (color, wo, pdf, specular)
+    // (color+pdf, wo, specular)
     #[inline]
-    pub fn sample(&self, wi: V, uv: F2, s: F2) -> (Color, V, F, bool) {
+    pub fn sample(&self, wi: V, uv: F2, s: F2) -> (PDF<Color>, V, bool) {
         match self {
             Self::Dielectric(f) => f.sample(wi, s),
             Self::Diffuse(f) => f.sample(uv, s),

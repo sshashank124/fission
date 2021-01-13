@@ -18,4 +18,6 @@ impl<A, L> Gradient<A, L>
 {
     #[inline] pub fn eval(&self, s: F2) -> A
     { L::interp(self.vals, s[0]) }
+
+    #[inline] pub fn mean(&self) -> A { self.vals.mean() }
 }

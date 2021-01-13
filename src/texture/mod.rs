@@ -33,6 +33,15 @@ impl<A> Tex<A>
             Self::SmoothGradient(t) => t.eval(s),
         }
     }
+
+    #[inline] pub fn mean(&self) -> A {
+        match self {
+            Self::Checkerboard(t) => t.mean(),
+            Self::Constant(t) => t.mean(),
+            Self::LinearGradient(t) => t.mean(),
+            Self::SmoothGradient(t) => t.mean(),
+        }
+    }
 }
 
 impl<A> From<Checkerboard<A>> for Tex<A>

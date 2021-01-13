@@ -2,14 +2,13 @@ mod emitter;
 mod infinite;
 mod point;
 
-use std::sync::Arc;
-
 #[allow(clippy::wildcard_imports)]
 use graphite::*;
 use serde::Deserialize;
 
 use crate::color::Color;
 use crate::shape::{Shape, intersection::Its};
+use crate::util::pdf::PDF;
 
 use infinite::Infinite;
 use point::Point;
@@ -17,7 +16,7 @@ use point::Point;
 #[derive(Debug, Deserialize)]
 #[serde(tag="type")]
 pub enum Light {
-    #[serde(skip)] Area(Arc<Shape>),
+    #[serde(skip)] Area(&'static Shape),
     #[serde(rename="infinitelight")]
     Infinite(Infinite),
     #[serde(rename="pointlight")]
@@ -25,7 +24,7 @@ pub enum Light {
 }
 
 impl Light {
-    #[inline] pub fn sample(&self, its: &Its, s: F2) -> (Color, R, F) {
+    #[inline] pub fn sample(&self, its: &Its, s: F2) -> (PDF<Color>, R) {
         match self {
             Self::Area(l) => l.sample(its, s),
             Self::Infinite(l) => l.sample(its, s),
@@ -43,14 +42,20 @@ impl Light {
         }
     }
 
-    #[inline] pub const fn power() -> F { 1. }
+    #[inline] pub fn power(&self) -> F {
+        match self {
+            Self::Area(l) => l.power(),
+            Self::Infinite(l) => l.power(),
+            Self::Point(l) => l.power(),
+        }
+    }
 }
 
-impl From<Arc<Shape>> for Light
-{ #[inline] fn from(s: Arc<Shape>) -> Self { Self::Area(s) } }
+impl From<&'static Shape> for Light
+{ #[inline] fn from(s: &'static Shape) -> Self { Self::Area(s) } }
 
 impl From<Infinite> for Light
-{ #[inline] fn from(s: Infinite) -> Self { Self::Infinite(s) } }
+{ #[inline] fn from(l: Infinite) -> Self { Self::Infinite(l) } }
 
 impl From<Point> for Light
-{ #[inline] fn from(s: Point) -> Self { Self::Point(s) } }
+{ #[inline] fn from(l: Point) -> Self { Self::Point(l) } }

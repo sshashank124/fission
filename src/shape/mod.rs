@@ -2,10 +2,8 @@ pub mod intersection;
 mod mesh;
 mod sphere;
 
-use std::borrow::Borrow;
 use std::fmt;
 use std::ops::BitAnd;
-use std::sync::Arc;
 
 #[allow(clippy::wildcard_imports)]
 use graphite::*;
@@ -24,7 +22,7 @@ pub trait Intersectable {
 
     fn intersects(&self, ray: R) -> bool;
     fn intersect(&self, ray: R) -> Option<Its>;
-    fn hit_info<'a>(&'a self, its: Its<'a>) -> Its<'a>;
+    fn hit_info(&self, its: Its) -> Its;
 
     fn sample_surface(&self, s: F2) -> Its;
     fn surface_area(&self) -> F;
@@ -42,15 +40,11 @@ pub struct Shape {
     pub emission: Option<Tex<Color>>,
 }
 
-#[derive(Deserialize)]
-#[serde(tag="type", rename_all="snake_case")]
-enum Type {
-    None,
-    Mesh(Mesh),
-    Sphere(Sphere),
+impl Shape {
+    #[inline] pub const fn emits(&self) -> bool { self.emission.is_some() }
 }
 
-impl Intersectable for Shape {
+impl Intersectable for &'static Shape {
     #[inline] fn bbox(&self) -> BBox { self.shape.bbox() }
 
     #[inline] fn intersects(&self, ray: R) -> bool
@@ -59,7 +53,7 @@ impl Intersectable for Shape {
     #[inline] fn intersect(&self, ray: R) -> Option<Its>
     { self.shape.intersect(ray).map(|its| its.for_shape(self)) }
 
-    #[inline] fn hit_info<'a>(&'a self, its: Its<'a>) -> Its<'a>
+    #[inline] fn hit_info(&self, its: Its) -> Its
     { self.shape.hit_info(its) }
 
     #[inline] fn sample_surface(&self, s: F2) -> Its
@@ -72,6 +66,14 @@ impl Intersectable for Shape {
 
 pub static PLACEHOLDER: Shape = Shape { shape: Type::ZERO, bsdf: BSDF::ZERO,
                                         emission: None };
+
+#[derive(Deserialize)]
+#[serde(tag="type", rename_all="snake_case")]
+enum Type {
+    None,
+    Mesh(Mesh),
+    Sphere(Sphere),
+}
 
 impl Intersectable for Type {
     #[inline] fn bbox(&self) -> BBox {
@@ -98,7 +100,7 @@ impl Intersectable for Type {
         }
     }
 
-    #[inline] fn hit_info<'a>(&'a self, its: Its<'a>) -> Its<'a> {
+    #[inline] fn hit_info(&self, its: Its) -> Its {
         match self {
             Self::None => unreachable!(),
             Self::Mesh(s) => s.hit_info(its),
@@ -148,27 +150,6 @@ impl fmt::Debug for Type {
             Self::Sphere(_) => "Sphere",
         })
     }
-}
-
-impl Intersectable for Arc<Shape> {
-    #[inline] fn bbox(&self) -> BBox { Shape::borrow(self).bbox() }
-
-    #[inline] fn intersects(&self, ray: R) -> bool
-    { Shape::borrow(self).intersects(ray) }
-
-    #[inline] fn intersect(&self, ray: R) -> Option<Its>
-    { Shape::borrow(self).intersect(ray).map(|its| its.for_shape(self)) }
-
-    #[inline] fn hit_info<'a>(&'a self, its: Its<'a>) -> Its<'a>
-    { Shape::borrow(self).hit_info(its) }
-
-    #[inline] fn sample_surface(&self, s: F2) -> Its
-    { Shape::borrow(self).sample_surface(s) }
-
-    #[inline] fn surface_area(&self) -> F
-    { Shape::borrow(self).surface_area() }
-
-    fn intersection_cost(&self) -> F { Shape::borrow(self).intersection_cost() }
 }
 
 impl Intersectable for BBox {

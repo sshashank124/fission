@@ -5,6 +5,7 @@ use serde::Deserialize;
 use crate::color::Color;
 use crate::shape::intersection::Its;
 use crate::texture::Tex;
+use crate::util::pdf::PDF;
 
 #[derive(Debug, Deserialize)]
 pub struct Infinite {
@@ -12,10 +13,10 @@ pub struct Infinite {
 }
 
 impl Infinite {
-    #[inline] pub fn sample(&self, its: &Its, s: F2) -> (Color, R, F) {
+    #[inline] pub fn sample(&self, its: &Its, s: F2) -> (PDF<Color>, R) {
         let theta_phi = s * A2(F::PI, F::TWO_PI);
         let sray = R::unbounded(its.p, V::from(Frame::spher2cart(theta_phi)));
-        (self.intensity.eval(s), sray, Self::pdf(its, &sray))
+        (PDF::new(self.intensity.eval(s), Self::pdf(its, &sray)), sray)
     }
 
     #[inline] pub fn pdf(its: &Its, sray: &R) -> F
@@ -24,5 +25,10 @@ impl Infinite {
     #[inline] pub fn eval_env(&self, ray: &R) -> Color {
         let uv = Frame::cart2spher(F3::from(ray.d).swizzle(0, 2, 1));
         self.intensity.eval(uv * A2(F::INV_PI, F::INV_2PI))
+    }
+
+    #[inline] pub fn power(&self) -> F {
+        // TODO how to incorporate scene bsphere surface area?
+        self.intensity.mean().luminance() * F::PI * 100.
     }
 }

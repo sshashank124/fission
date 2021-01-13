@@ -23,7 +23,6 @@ impl Sphere {
 
     #[inline] fn cartesian2uv<A: Into<F3>>(x: A) -> F2 {
         let uv = Frame::cart2spher(x);
-        // A2(uv[X] * F::INV_PI, 0.5 + uv[Y] * F::INV_2PI)
         A2(uv[X] * F::INV_PI, uv[Y].mul_add(F::INV_2PI, 0.5))
     }
 }
@@ -40,7 +39,7 @@ impl Intersectable for Sphere {
             .map(|t| Its::new(ray.at(t), N::ZERO, F2::ZERO, t))
     }
 
-    #[inline] fn hit_info<'a>(&'a self, mut its: Its<'a>) -> Its<'a> {
+    #[inline] fn hit_info(&self, mut its: Its) -> Its {
         its.n = N::from(its.p - self.center);
         its.uv = Self::cartesian2uv(its.n);
         its

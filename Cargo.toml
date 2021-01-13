@@ -12,6 +12,7 @@ categories = ["graphics", "mathematics", "rendering"]
 [dependencies]
 anyhow = "^1"
 bincode = "^1"
+bumpalo = "^3"
 bytemuck = "^1"
 crossbeam-channel = "^0.5"
 ctrlc = "^3"
@@ -29,6 +30,9 @@ winit = "0.24"
 
 [build-dependencies]
 shaderc = "^0.7"
+
+[profile.dev]
+opt-level = 3
 
 [profile.release]
 panic = "abort"

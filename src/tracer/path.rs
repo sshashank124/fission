@@ -5,7 +5,6 @@ use serde::Deserialize;
 use crate::color::Color;
 use crate::sampler::Sampler;
 use crate::scene::Scene;
-use crate::util::either::Either;
 
 use super::direct;
 
@@ -17,35 +16,42 @@ pub struct Path {
 }
 
 impl Path {
-    #[inline]
-    pub fn trace(&self, scene: &Scene, sampler: &mut Sampler, ray: R) -> Color {
-        let init = (Color::ZERO, Color::ONE, ray, scene.intersect(ray), true);
-        if init.3.is_none() { return scene.lenv(&ray) }
+    #[inline] pub fn trace(&self, scene: &Scene, sampler: &mut Sampler, ray: R) -> Color {
+        let mut state = direct::BounceInfo { l: Color::ZERO, tp: Color::ONE,
+                                             its: scene.intersect(ray), ray, spec: true };
 
-        match (0..self.depth[1]).try_fold(init,
-            |(mut li, mut tp, ray, its, spec), depth|
-                its.map_or_else(move || Either::L(li + tp * scene.lenv(&ray)),
-                                |its| {
-                    if spec { li += tp * its.le(ray); }
-                    let (ld, lb, ray, its, spec) = direct::li(scene, sampler,
-                                                              &its, &ray);
-                    li += tp * ld;
-                    tp *= lb;
+        for depth in 0..self.depth[1] {
+            let its = match state.its {
+                None => { state.l += state.tp * scene.lenv(&state.ray); break }
+                Some(its) => its
+            };
 
-                    if its.is_none() {
-                        return Either::L(li + tp * scene.lenv(&ray))
-                    }
+            if state.spec { state.l += state.tp * its.l_emit(state.ray); }
 
-                    if depth > self.depth[0] {
-                        let q = F::min(tp.max_channel(), self.rr_tp);
-                        if sampler.rng() > q { return Either::L(li) }
-                        tp /= q;
-                    }
+            let frame = its.to_world();
+            let wo = frame / -state.ray.d;
 
-                    Either::R((li, tp, ray, its, spec))
-                }
-            )
-        ) { Either::L(li) | Either::R((li, _, _, _, _)) => li }
+            state.l += state.tp * direct::l_light(scene, &its, wo, frame, sampler.next_2d());
+
+            if depth > self.depth[0] {
+                let q = F::min(state.tp.max_channel(), self.rr_tp);
+                if sampler.rng() > q { break }
+                state.tp /= q;
+            }
+
+            let bounce = match direct::l_mat(scene, &its, wo, frame, sampler.next_2d()) {
+                None => break,
+                Some(bounce) => bounce,
+            };
+
+            state.l += state.tp * bounce.l;
+            state.tp *= bounce.tp;
+            state.spec = bounce.spec;
+            state.ray = bounce.ray;
+            state.its = bounce.its;
+        }
+
+        state.l
     }
 }
 
