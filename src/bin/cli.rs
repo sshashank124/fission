@@ -5,7 +5,7 @@ fn main() -> anyhow::Result<()> {
 
     let scene_file = match args.next() {
         Some(arg) => arg,
-        None => anyhow::bail!("Usage: fission <scene_description.yaml> [render_progress.state]"),
+        None => anyhow::bail!("Usage: cli <scene_description.yaml> [render_progress.state]"),
     };
     let state_file = args.next();
 

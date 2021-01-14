@@ -99,6 +99,5 @@ impl Intersectable for Triangle {
     fn intersection_cost(&self) -> F { 2. }
 }
 
-impl fmt::Debug for Triangle {
-    fn fmt(&self, f: &mut fmt::Formatter) -> fmt::Result { writeln!(f, "T") }
-}
+impl fmt::Debug for Triangle
+{ fn fmt(&self, f: &mut fmt::Formatter) -> fmt::Result { writeln!(f, "T") } }

@@ -65,7 +65,11 @@ impl TryFrom<MeshConfig> for Mesh {
 
     fn try_from(mc: MeshConfig) -> anyhow::Result<Self> {
         let to_world = T::product(mc.transforms.into_iter());
-        let (mesh_data, faces) = objloader::load_from_file(&mc.obj, to_world)?;
+        let obj_path = {
+            let mut path = crate::CONFIG_DIR.read().unwrap().clone();
+            path.push(mc.obj); path
+        };
+        let (mesh_data, faces) = objloader::load_from_file(obj_path.to_str().unwrap(), to_world)?;
         let mesh_data: &'static _ = Box::leak(Box::new(mesh_data));
         let triangles = faces.into_iter().map(|f| Triangle { f, mesh_data }).collect();
         let tris = BVH::new(triangles);

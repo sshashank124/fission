@@ -37,17 +37,22 @@ pub use graphite;
 
 use std::fs::File;
 use std::io::{BufReader, BufWriter};
-use std::path::Path;
-use std::sync::{Arc, atomic::AtomicBool};
+use std::path::{Path, PathBuf};
+use std::sync::{Arc, RwLock, atomic::AtomicBool};
 
 use renderer::{Renderer, RenderState};
 use util::progress::Progress;
 
-pub fn load_from_file(scene_file: impl AsRef<Path>,
-                      state_file: Option<impl AsRef<Path>>)
+lazy_static::lazy_static! {
+    pub static ref CONFIG_DIR: RwLock<PathBuf> = RwLock::new(PathBuf::new());
+}
+
+pub fn load_from_file<P1, P2>(scene_file: P1, state_file: Option<P2>)
     -> anyhow::Result<(Renderer, Arc<AtomicBool>)>
+where P1: AsRef<Path>,
+      P2: AsRef<Path>,
 {
-    let running = Arc::new(AtomicBool::new(true));
+    *CONFIG_DIR.write().unwrap() = scene_file.as_ref().parent().unwrap().to_path_buf();
 
     let integrator = {
         let _p = Progress::indeterminate("Loading scene description");
@@ -61,13 +66,14 @@ pub fn load_from_file(scene_file: impl AsRef<Path>,
         Some(bincode::deserialize_from(f)?)
     } else { None };
 
+    let running = Arc::new(AtomicBool::new(true));
     let renderer = Renderer::new(running.clone(), integrator, state);
 
     Ok((renderer, running))
 }
 
-pub fn save_to_file(scene_file: impl AsRef<Path>,
-                    state: &RenderState) -> anyhow::Result<()> {
+pub fn save_to_file<P>(scene_file: P, state: &RenderState) -> anyhow::Result<()>
+where P: AsRef<Path> {
     let scene_file = scene_file.as_ref();
     {
         let _p = Progress::indeterminate("Saving rendered image");
