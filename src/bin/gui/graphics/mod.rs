@@ -46,9 +46,7 @@ impl GPU {
     }
 
     pub fn update(&mut self, image: &Image) {
-        let data = image.pixels().map(Pixel::to_rgbw)
-                                 .collect::<Vec<_>>();
-
+        let data = image.pixels().map(Pixel::to_rgbw).collect::<Vec<_>>();
         self.blit.update(bytemuck::cast_slice(&data), &self.queue);
     }
 

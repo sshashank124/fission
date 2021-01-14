@@ -1,4 +1,3 @@
-why does gui stand-by take so much CPU?
 image texture + envmap
 add screenshots and examples in README.md (also in scenes)
 use GPU compute pipelines for parts of ray-tracing

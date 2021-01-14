@@ -3,7 +3,7 @@ use graphite::*;
 
 pub trait LowerBound<A> { fn lower_bound(&self, value: A) -> I; }
 
-impl<A> LowerBound<A> for Vec<A> where A: PartialOrd
+impl<A> LowerBound<A> for &[A] where A: PartialOrd
 {
     #[inline] fn lower_bound(&self, value: A) -> I {
         let mut l = self.len();
@@ -18,3 +18,6 @@ impl<A> LowerBound<A> for Vec<A> where A: PartialOrd
         I::of(a) + I::of(value > self[a])
     }
 }
+
+impl<A> LowerBound<A> for Box<[A]> where A: PartialOrd
+{ #[inline] fn lower_bound(&self, value: A) -> I { (&**self).lower_bound(value) } }

@@ -14,7 +14,7 @@ use crate::util::{dpdf::DiscretePDF, pdf::PDF};
 pub struct Scene {
     pub camera:      Camera,
         shapes:      BVH<&'static Shape>,
-    pub lights:      Vec<&'static Light>,
+    pub lights:      Box<[&'static Light]>,
         lights_dpdf: DiscretePDF,
         env:         Option<&'static Light>,
 }
@@ -69,6 +69,7 @@ impl From<SceneConfig> for Scene {
         let shapes = BVH::new(shapes);
         let lights_dpdf = DiscretePDF::new(&lights, |light| light.power());
         let env = lights.iter().copied().find(|light| light.is_env_light());
-        Self { shapes, camera: sc.camera, lights, lights_dpdf, env }
+        Self { shapes, camera: sc.camera,
+               lights: lights.into_boxed_slice(), lights_dpdf, env }
 }
 }

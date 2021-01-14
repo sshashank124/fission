@@ -7,7 +7,7 @@ use super::vec::LowerBound;
 
 #[derive(Debug, Default)]
 pub struct DiscretePDF {
-    cdf:   Vec<F>,
+    cdf:   Box<[F]>,
     total: F,
 }
 
@@ -21,7 +21,7 @@ impl DiscretePDF {
                                                             *c += a;
                                                             Some(*c)
                                                         }))
-                          .collect::<Vec<_>>();
+                          .collect::<Vec<_>>().into_boxed_slice();
         let total = *cdf.last().unwrap();
         cdf.iter_mut().for_each(|p| *p /= total);
         Self { cdf, total }

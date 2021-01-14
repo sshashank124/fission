@@ -13,8 +13,8 @@ const NUM_BUCKETS: usize = 24;
 
 #[derive(Debug)]
 pub struct BVH<S> {
-        nodes:    Vec<BVHNode>,
-    pub elements: Vec<S>,
+        nodes:    Box<[BVHNode]>,
+    pub elements: Box<[S]>,
 }
 
 #[derive(Debug)]
@@ -50,10 +50,10 @@ impl<S> BVH<S> where S: Intersectable
         let idx_ord = (0..elems.len().conv()).map(|i| idx_map[&i]);
         let mut elems_idx = elems.into_iter().zip(idx_ord).collect::<Vec<_>>();
         elems_idx.sort_unstable_by_key(|(_, i)| *i);
-        let elements =
-            elems_idx.into_iter().map(|(e, _)| e).collect::<Vec<_>>();
+        let elements = elems_idx.into_iter().map(|(e, _)| e)
+                                .collect::<Vec<_>>().into_boxed_slice();
 
-        Self { elements, nodes }
+        Self { elements, nodes: nodes.into_boxed_slice() }
     }
 
     #[inline] pub fn fold<'a, A>(&'a self,

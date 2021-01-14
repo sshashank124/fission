@@ -69,7 +69,7 @@ impl TryFrom<MeshConfig> for Mesh {
         let mesh_data: &'static _ = Box::leak(Box::new(mesh_data));
         let triangles = faces.into_iter().map(|f| Triangle { f, mesh_data }).collect();
         let tris = BVH::new(triangles);
-        let dpdf = DiscretePDF::new(&tris.elements, Triangle::surface_area);
+        let dpdf = DiscretePDF::new(&*tris.elements, Triangle::surface_area);
         Ok(Self { tris, dpdf })
     }
 }

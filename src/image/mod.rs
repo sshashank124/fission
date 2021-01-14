@@ -20,7 +20,7 @@ const BLOCK_SIZE: I2 = A2(64, 64);
 
 #[derive(Clone, Debug, Default, Deserialize, Serialize)]
 pub struct Block {
-        data: Vec<Pixel>,
+        data: Box<[Pixel]>,
     pub rect: Rect,
 }
 
@@ -31,7 +31,7 @@ impl Block {
     #[inline] pub fn from_iter<It>(rect: Rect, it: It) -> Self
         where It: IntoIterator<Item=(F2, Color)>
     {
-        let data = vec![Pixel::ZERO; rect.area().conv()];
+        let data = vec![Pixel::ZERO; rect.area().conv()].into_boxed_slice();
         let mut block = Self { data, rect };
         it.into_iter().for_each(|(pos, color)| block[pos] += color);
         block
