@@ -2,6 +2,7 @@ mod graphics;
 
 use std::cell::RefCell;
 use std::rc::Rc;
+use std::time::{Duration, Instant};
 
 use winit::dpi::PhysicalSize;
 use winit::event::{ElementState, Event, KeyboardInput, VirtualKeyCode,
@@ -14,7 +15,7 @@ use fission::graphite::{ConvFrom, U, U2};
 use fission::renderer::RenderState;
 use fission::util::progress::Progress;
 
-use graphics::GPU;
+const MIN_FRAME_UPDATE_MS: u64 = 20;
 
 fn main() -> anyhow::Result<()> {
     // Parse Args
@@ -45,7 +46,7 @@ fn main() -> anyhow::Result<()> {
             .with_resizable(false)
             .build(&event_loop).unwrap();
 
-        let pipeline = futures::executor::block_on(GPU::new(&window));
+        let pipeline = futures::executor::block_on(graphics::Context::new(&window));
         (window, pipeline)
     };
 
@@ -55,12 +56,11 @@ fn main() -> anyhow::Result<()> {
     let final_state_memo = final_state.clone();
 
     std::thread::spawn(move || {
-        for frame in frame_rx {
-            let _ = el_proxy.send_event(frame);
-        }
+        frame_rx.iter().for_each(|frame| { let _ = el_proxy.send_event(frame); });
     });
 
     // Event Loop
+    let mut last_update = Instant::now();
     event_loop.run_return(move |event, _, cflow| {
         *cflow = ControlFlow::Wait;
         match event {
@@ -81,7 +81,12 @@ fn main() -> anyhow::Result<()> {
                     _ => ()
                 }
             }
-            Event::MainEventsCleared => window.request_redraw(),
+            Event::MainEventsCleared => {
+                if last_update.elapsed() > Duration::from_millis(MIN_FRAME_UPDATE_MS) {
+                    window.request_redraw();
+                    last_update = Instant::now();
+                }
+            }
             _ => ()
         }
     });

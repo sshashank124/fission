@@ -8,7 +8,7 @@ use blit::Blit;
 
 const DISPLAY_FORMAT: wgpu::TextureFormat = wgpu::TextureFormat::Bgra8Unorm;
 
-pub struct GPU {
+pub struct Context {
     surface:         wgpu::Surface,
     device:          wgpu::Device,
     queue:           wgpu::Queue,
@@ -17,7 +17,7 @@ pub struct GPU {
     blit:            Blit,
 }
 
-impl GPU {
+impl Context {
     pub async fn new(window: &Window) -> Self {
         let dims = window.inner_size();
 
