@@ -7,7 +7,7 @@ use graphite::*;
 use rayon::iter::{ParallelBridge, ParallelIterator};
 use serde::{Deserialize, Serialize};
 
-use crate::image::{Block, Image};
+use crate::image::{Image, bitmap::Bitmap};
 use crate::sampler::Sampler;
 use crate::scene::Scene;
 use crate::tracer::Tracer;
@@ -61,7 +61,7 @@ impl Renderer {
                 state.img += state.img.rect.chunks().par_bridge().map(|rect| {
                     let mut sampler = sampler.for_rect(state.pass, &rect);
 
-                    Block::from_iter(rect, rect.positions().map(|pos| {
+                    Bitmap::from_iter(rect, rect.positions().map(|pos| {
                         sampler.prepare_for_pixel(pos);
 
                         let pos = F2::of(pos) + sampler.next_2d();

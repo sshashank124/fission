@@ -56,14 +56,11 @@ impl From<SceneConfig> for Scene {
             match elem {
                 Element::Shape(s) => {
                     let emitter = s.emission.is_some();
-                    let s: &Shape = Box::leak(Box::new(s));
-                    if emitter {
-                        let l: &Light = Box::leak(Box::new(s.into()));
-                        lights.push(l);
-                    }
+                    let s = &*Box::leak(Box::new(s));
                     shapes.push(s);
+                    if emitter { lights.push(&*Box::leak(Box::new(s.into()))); }
                 },
-                Element::Light(l) => lights.push(Box::leak(Box::new(l))),
+                Element::Light(l) => lights.push(&*Box::leak(Box::new(l))),
             }
         }
         let shapes = BVH::new(shapes);

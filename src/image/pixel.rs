@@ -26,16 +26,13 @@ impl Pixel {
 impl Zero for Pixel
 { const ZERO: Self = Self { val: Color::ZERO, w: F::ZERO }; }
 
-impl AddAssign<Color> for Pixel {
-    #[inline] fn add_assign(&mut self, color: Color) {
-        self.val += color;
-        self.w += 1.;
-    }
-}
-
 impl AddAssign for Pixel {
     #[inline] fn add_assign(&mut self, pixel: Self) {
         self.val += pixel.val;
         self.w += pixel.w;
     }
+}
+
+impl AddAssign<Color> for Pixel {
+    #[inline] fn add_assign(&mut self, color: Color) { *self += Pixel { val: color, w: 1. }; }
 }

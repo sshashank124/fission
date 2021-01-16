@@ -55,13 +55,15 @@ where P1: AsRef<Path>,
     *CONFIG_DIR.write().unwrap() = scene_file.as_ref().parent().unwrap().to_path_buf();
 
     let integrator = {
-        let _p = Progress::indeterminate("Loading scene description");
+        let msg = format!("Loading scene description ({})", scene_file.as_ref().display());
+        let _p = Progress::indeterminate(&msg);
         let f = BufReader::new(File::open(scene_file)?);
         serde_yaml::from_reader(f)?
     };
 
     let state = if let Some(state_file) = state_file {
-        let _p = Progress::indeterminate("Loading render state");
+        let msg = format!("Loading render state ({})", state_file.as_ref().display());
+        let _p = Progress::indeterminate(&msg);
         let f = BufReader::new(File::open(state_file)?);
         Some(bincode::deserialize_from(f)?)
     } else { None };
@@ -76,13 +78,15 @@ pub fn save_to_file<P>(scene_file: P, state: &RenderState) -> anyhow::Result<()>
 where P: AsRef<Path> {
     let scene_file = scene_file.as_ref();
     {
-        let _p = Progress::indeterminate("Saving rendered image");
         let img_save_path = scene_file.with_extension("exr");
+        let msg = format!("Saving rendered image ({})", img_save_path.display());
+        let _p = Progress::indeterminate(&msg);
         state.img.save_exr(img_save_path.to_str().unwrap())?;
     }
     {
-        let _p = Progress::indeterminate("Saving render state");
         let state_save_path = scene_file.with_extension("state");
+        let msg = format!("Saving render state ({})", state_save_path.display());
+        let _p = Progress::indeterminate(&msg);
         let f = BufWriter::new(File::create(state_save_path)?);
         bincode::serialize_into(f, state)?;
     }
