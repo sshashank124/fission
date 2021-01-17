@@ -46,11 +46,11 @@ impl BSDF {
     }
 
     #[inline] pub fn pdf(&self, wi: V, wo: V) -> F {
-        F::clamp_pos(match self {
+        F::max(match self {
             Self::Diffuse(_) => Diffuse::pdf(wo),
             Self::Microfacet(f) => f.pdf(wi, wo),
             _ => 0.,
-        })
+        }, 0.)
     }
 
     #[inline] pub const fn is_delta(&self) -> bool

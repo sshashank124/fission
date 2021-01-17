@@ -19,11 +19,11 @@ impl Diffuse {
     }
 
     #[inline] pub fn sample(&self, uv: F2, s: F2) -> (PDF<Color>, V, bool) {
-        let wo = V::from(CosineHemisphere::warp(s));
-        (PDF::new(self.albedo.eval(uv), Self::pdf(wo)), wo, false)
+        let wo = CosineHemisphere::warp(s);
+        (PDF::new(self.albedo.eval(uv), Self::pdf(wo)), wo.conv(), false)
     }
 
-    #[inline] pub fn pdf(wo: V) -> F { CosineHemisphere::pdf(wo) }
+    #[inline] pub fn pdf(wo: impl Conv<F3>) -> F { CosineHemisphere::pdf(wo) }
 }
 
 impl Zero for Diffuse { const ZERO: Self = Self { albedo: Tex::ZERO }; }

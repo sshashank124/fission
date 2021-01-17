@@ -165,7 +165,7 @@ fn build<'a>(build_infos: &mut [BuildInfo], idx_map: &mut HashMap<I, I>,
 
     let (extent, dim) = centers_bbox.max_extent();
 
-    let (dim, pivot) = if F::approx_zero(extent) { (dim, n / 2) } else {
+    let (dim, pivot) = if F::abs(extent) < F::EPS { (dim, n / 2) } else {
         let bucket_index = |build_info: &BuildInfo, dim: Dim| {
             let idx = I::of(F::of(NUM_BUCKETS)
                                    * ((build_info.center[dim]
@@ -228,7 +228,7 @@ impl<S> Intersectable for BVH<S> where S: Intersectable
     #[inline] fn bbox(&self) -> BBox { self.nodes[0].bbox }
 
     #[inline] fn intersects(&self, ray: R) -> bool {
-        self.fold(F3::from(ray.d).map(Num::is_pos),
+        self.fold(conv!(ray.d => F3).map(F::is_sign_positive),
                   false,
                   |_, node| node.bbox.intersects(ray),
                   |_, _, isectable| {
@@ -241,7 +241,7 @@ impl<S> Intersectable for BVH<S> where S: Intersectable
     }
 
     #[inline] fn intersect(&self, ray: R) -> Option<Its> {
-        self.fold(F3::from(ray.d).map(Num::is_pos),
+        self.fold(conv!(ray.d => F3).map(F::is_sign_positive),
                   (ray, None),
                   |(r, _), node| node.bbox.intersects(*r),
                   |acc, _, s| Either::R(intersect_update(acc, s)))

@@ -2,7 +2,7 @@
 use graphite::*;
 use serde::Deserialize;
 
-use crate::color::Color;
+use crate::color::{Color, RGB};
 use crate::sampler::Sampler;
 use crate::scene::Scene;
 
@@ -20,10 +20,11 @@ impl AmbientOcclusion {
             None => Color::ZERO,
             Some(its) => {
                 let f = its.to_world();
-                Color::gray(F::of((0..self.samples).filter(|_| {
-                    let wi = V::from(CosineHemisphere::warp(sampler.next_2d()));
+                let num_escaped = (0..self.samples).filter(|_| {
+                    let wi = conv!(CosineHemisphere::warp(sampler.next_2d()) => V);
                     !scene.intersects(R::r(its.p, f * wi, self.ray_length))
-                }).count()) / F::of(self.samples))
+                }).count();
+                conv!(conv!(num_escaped => F) / conv!(self.samples => F) => RGB => Color)
             }
         }
     }

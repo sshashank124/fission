@@ -1,3 +1,4 @@
+pub mod config;
 pub mod dpdf;
 pub mod either;
 pub mod pdf;

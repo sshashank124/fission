@@ -21,7 +21,7 @@ impl Shape {
     }
 
     #[inline] pub fn pdf(&'static self, its: &Its, sray: &R) -> F {
-        let ct = F3::dot(its.n, -sray.d);
+        let ct = F3::dot(its.n.conv(), (-sray.d).conv());
         if ct <= 0. { 0. } else { self.surface_pdf() * sray.t.sq() / ct }
     }
 

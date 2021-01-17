@@ -3,6 +3,7 @@ mod checkerboard;
 mod constant;
 mod gradient;
 
+use std::iter::Sum;
 use std::ops::{Add, Mul};
 
 #[allow(clippy::wildcard_imports)]
@@ -19,6 +20,7 @@ use crate::image::bitmap::Bitmap;
 #[serde(tag="type", rename_all="snake_case")]
 pub enum Tex<A> {
     #[serde(deserialize_with="bitmap::de_from_config")]
+    #[serde(bound(deserialize="A: ConvFrom<image::Rgba<u8>>"))]
     Bitmap(Bitmap<A>),
     Checkerboard(Checkerboard<A>),
     Constant(Constant<A>),
@@ -26,7 +28,7 @@ pub enum Tex<A> {
     SmoothGradient(Gradient<A, SmoothScale>),
 }
 
-impl<A> Tex<A> where A: Copy + Zero + Add<Output = A> + Mul<F, Output = A> {
+impl<A> Tex<A> where A: Copy + Zero + Add<Output=A> + Mul<F, Output=A> + Sum<A> {
     #[inline] pub fn eval(&self, s: F2) -> A {
         match self {
             Self::Bitmap(t) => t.eval(s),

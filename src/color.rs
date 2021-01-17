@@ -4,6 +4,7 @@ use std::ops::{Add, AddAssign, Div, DivAssign, Mul, MulAssign, Neg, Sub,
 
 #[allow(clippy::wildcard_imports)]
 use graphite::*;
+use image::Rgba;
 use serde::{Deserialize, Serialize};
 
 pub type Color = RGB;
@@ -16,9 +17,6 @@ impl Zero for RGB { const ZERO: Self = Self(F3::ZERO); }
 impl One for RGB { const ONE: Self = Self(F3::ONE); }
 
 impl RGB {
-    #[inline] pub const fn from_rgb(rgb: F3) -> Self { Self(rgb) }
-    #[inline] pub const fn gray(g: F) -> Self { Self(F3::rep(g)) }
-    #[inline] pub const fn to_rgb(self) -> Self { self }
     #[inline] pub fn max_channel(self) -> F { self.0.max() }
 
     const SENSITIVITIES: F3 = A3(0.212671, 0.715160, 0.072169);
@@ -55,3 +53,23 @@ impl Product for RGB {
     fn product<It>(it: It) -> Self where It: Iterator<Item=Self>
     { Self(it.map(|i| i.0).product()) }
 }
+
+/* Convert Types to RGB */
+impl Conv<RGB> for F3 { #[inline] fn conv(self) -> RGB { RGB(self) } }
+
+impl Conv<RGB> for F { #[inline] fn conv(self) -> RGB { RGB(F3::rep(self)) } }
+
+impl Conv<RGB> for A3<u8>
+{ #[inline] fn conv(self) -> RGB { RGB(self.map(F::of).map(|f| f / 255.).map(gamma_correct_inv)) } }
+
+impl Conv<RGB> for Rgba<u8>
+{ #[inline] fn conv(self) -> RGB { RGB::of(A3(self.0[0], self.0[1], self.0[2])) } }
+
+/* Convert RGB to Types */
+impl Conv<F3> for RGB { #[inline] fn conv(self) -> F3 { self.0 } }
+
+impl Conv<RGB> for RGB { #[inline] fn conv(self) -> Self { self } }
+
+
+#[inline] fn gamma_correct_inv(f: F) -> F
+{ if f <= 0.04045 { f / 12.92 } else { ((f + 0.055) / 1.055).powf(2.4) } }

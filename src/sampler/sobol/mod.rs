@@ -78,7 +78,7 @@ impl Sobol {
 
         if self.dim < 2 {
             f = f.mul_add(F::of(1 << self.m), F::of(self.block_pos[self.dim]));
-            f = Num::clamp_unit(f - F::of(self.pixel_pos[self.dim]));
+            f = F::clamp(f - F::of(self.pixel_pos[self.dim]), 0., 1.);
         }
 
         self.dim += 1;

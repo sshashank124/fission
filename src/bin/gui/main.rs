@@ -11,7 +11,7 @@ use winit::event_loop::{ControlFlow, EventLoop};
 use winit::platform::run_return::EventLoopExtRunReturn;
 use winit::window::WindowBuilder;
 
-use fission::graphite::{ConvFrom, U, U2};
+use fission::graphite::{conv, ConvFrom, U, U2};
 use fission::renderer::RenderState;
 use fission::util::progress::Progress;
 
@@ -36,8 +36,7 @@ fn main() -> anyhow::Result<()> {
     let el_proxy = event_loop.create_proxy();
     let (window, mut pipeline) = {
         let _p = Progress::indeterminate("Setting up Window and GPU Pipeline");
-        let dims = U2::of(renderer.state.img.rect.dims);
-        let size: PhysicalSize<u32> = <(U, U)>::from(dims).into();
+        let size: PhysicalSize<U> = conv!(renderer.state.img.rect.dims => U2 => (U, U)).into();
         let window = WindowBuilder::new()
             .with_title(format!("Fission - Rendering: {}", scene_file))
             .with_inner_size(size)

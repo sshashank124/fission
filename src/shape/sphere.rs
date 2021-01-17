@@ -14,14 +14,14 @@ impl Sphere {
     #[inline] pub fn intersection_point(&self, ray: R) -> Option<F> {
         let d = ray.o - self.center;
         quad(ray.d.norm2(),
-             2. * F3::dot(ray.d, d),
+             2. * F3::dot(ray.d.conv(), d.conv()),
              d.norm2() - self.radius.sq())
             .and_then(|t| if ray.range().bounds(t[0]) { Some(t[0]) }
                           else if ray.range().bounds(t[1]) { Some(t[1]) }
                           else { None })
     }
 
-    #[inline] fn cartesian2uv<A: Into<F3>>(x: A) -> F2 {
+    #[inline] fn cartesian2uv<A: Conv<F3>>(x: A) -> F2 {
         let uv = Frame::cart2spher(x);
         A2(uv[X] * F::INV_PI, uv[Y].mul_add(F::INV_2PI, 0.5))
     }
@@ -40,15 +40,14 @@ impl Intersectable for Sphere {
     }
 
     #[inline] fn hit_info(&self, mut its: Its) -> Its {
-        its.n = N::from(its.p - self.center);
+        its.n = (its.p - self.center).conv();
         its.uv = Self::cartesian2uv(its.n);
         its
     }
 
     #[inline] fn sample_surface(&self, s: F2) -> Its {
-        let d = V::from(UniformSphere::warp(s));
-        Its::new(self.center + d * self.radius, N::from(d),
-                 Self::cartesian2uv(d), 0.)
+        let d: V = UniformSphere::warp(s).conv();
+        Its::new(self.center + d * self.radius, d.conv(), Self::cartesian2uv(d), 0.)
     }
 
     #[inline] fn surface_area(&self) -> F

@@ -11,18 +11,18 @@ pub struct Rect {
 }
 
 impl Rect {
-    #[inline] pub const fn new(pos: I2, dims: I2) -> Self
-    { Self { pos, dims } }
+    #[inline] pub const fn new(pos: I2, dims: I2) -> Self { Self { pos, dims } }
+
+    #[inline] pub const fn at_origin(dims: I2) -> Self { Self::new(I2::ZERO, dims) }
 
     #[inline] pub fn area(&self) -> I { self.dims.product() }
 
-    #[inline] pub fn length(&self) -> I { self.dims.reduce(Num::max) }
+    #[inline] pub fn length(&self) -> I { self.dims.reduce(I::max) }
 
-    #[inline] pub fn flatten_rel_pos(&self, pos: I2) -> I
-    { pos[Y] * self.dims[X] + pos[X] }
+    #[inline] pub fn flatten_rel_pos(&self, pos: I2) -> I { pos[Y] * self.dims[X] + pos[X] }
 
     #[inline] pub fn flatten_abs_pos(&self, pos: I2) -> I
-    { self.flatten_rel_pos((pos - self.pos).zip(self.dims - 1, Num::min)) }
+    { self.flatten_rel_pos((pos - self.pos).zip(self.dims - 1, I::min)) }
 
     #[inline]
     pub fn chunks(&self) -> impl Iterator<Item=Self> {
@@ -32,7 +32,7 @@ impl Rect {
         (py..end[Y]).step_by(usize::of(BLOCK_SIZE[Y])).flat_map(move |y| {
             (px..end[X]).step_by(usize::of(BLOCK_SIZE[X])).map(move |x| {
                 let p = A2(x, y);
-                Self::new(p, BLOCK_SIZE.zip(end - p, Num::min))
+                Self::new(p, BLOCK_SIZE.zip(end - p, I::min))
             })
         })
     }

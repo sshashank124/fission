@@ -13,11 +13,16 @@ pub struct Bitmap<A> {
     pub rect: Rect,
 }
 
-impl<A> Bitmap<A> where A: Clone + Zero + AddAssign {
-    #[inline] pub fn new(dims: I2) -> Self
-    { Self::from_iter(Rect::new(I2::ZERO, dims), std::iter::empty()) }
+impl<A> Bitmap<A> {
+    #[inline] pub fn from_seq<It>(dims: I2, it: It) -> Self
+        where It: IntoIterator<Item=A>
+        { Self { rect: Rect::at_origin(dims), data: it.into_iter().collect() } }
+}
 
-    #[inline] pub fn from_iter<It>(rect: Rect, it: It) -> Self
+impl<A> Bitmap<A> where A: Clone + Zero + AddAssign {
+    #[inline] pub fn new(dims: I2) -> Self { Self::from_adhoc(Rect::at_origin(dims), None) }
+
+    #[inline] pub fn from_adhoc<It>(rect: Rect, it: It) -> Self
         where It: IntoIterator<Item=(F2, A)>
     {
         let data = vec![A::ZERO; rect.area().conv()].into_boxed_slice();

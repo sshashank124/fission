@@ -28,8 +28,8 @@ impl DiscretePDF {
     }
 
     #[inline] pub fn sample(&self, s: &mut F) -> (usize, F) {
-        let idx = usize::of(Num::clamp(self.cdf.lower_bound(*s) - 1,
-                                       0, I::of(self.cdf.len()) - 1));
+        let idx = usize::of(I::clamp(self.cdf.lower_bound(*s) - 1,
+                                     0, I::of(self.cdf.len()) - 1));
         let ci = self.cdf[idx];
         let cj = self.cdf[idx + 1];
         let prob = cj - ci;

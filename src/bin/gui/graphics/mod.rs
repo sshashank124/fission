@@ -2,7 +2,8 @@ mod blit;
 
 use winit::window::Window;
 
-use fission::image::{Image, pixel::Pixel};
+use fission::graphite::ConvFrom;
+use fission::image::Image;
 
 use blit::Blit;
 
@@ -46,7 +47,7 @@ impl Context {
     }
 
     pub fn update(&mut self, image: &Image) {
-        let data = image.pixels().map(Pixel::to_rgbw).collect::<Vec<_>>();
+        let data = image.pixels().copied().map(<[f32; 4]>::of).collect::<Vec<_>>();
         self.blit.update(bytemuck::cast_slice(&data), &self.queue);
     }
 

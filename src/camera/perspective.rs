@@ -17,11 +17,11 @@ pub struct Perspective {
 impl Perspective {
     #[inline]
     pub fn ray_at(&self, point: F2, sampler: &mut Sampler) -> R {
-        let d = V::from(F3::a2a(point * self.fov_scale, 1.));
+        let d = F3::a2a(point * self.fov_scale, 1.).conv();
         let ray = R::unbounded(P::ZERO, d);
-        if F::approx_zero(self.lens_radius) { ray } else {
+        if F::abs(self.lens_radius) < F::EPS { ray } else {
             let focus_point = ray.at(self.focal_distance / ray.d[Z]);
-            let o = P::from(F3::a2a(UniformDisk::warp(sampler.next_2d()) * self.lens_radius, 0.));
+            let o = F3::a2a(UniformDisk::warp(sampler.next_2d()) * self.lens_radius, 0.).conv();
             R::unbounded(o, focus_point - o)
         }
     }

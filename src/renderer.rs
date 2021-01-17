@@ -61,7 +61,7 @@ impl Renderer {
                 state.img += state.img.rect.chunks().par_bridge().map(|rect| {
                     let mut sampler = sampler.for_rect(state.pass, &rect);
 
-                    Bitmap::from_iter(rect, rect.positions().map(|pos| {
+                    Bitmap::from_adhoc(rect, rect.positions().map(|pos| {
                         sampler.prepare_for_pixel(pos);
 
                         let pos = F2::of(pos) + sampler.next_2d();

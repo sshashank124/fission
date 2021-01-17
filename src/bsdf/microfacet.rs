@@ -26,7 +26,7 @@ impl Microfacet {
     #[inline] fn smith_beckmann_g1(&self, v: V, n: V) -> F {
         let tt = Frame::tt(v);
         if tt == 0. { return 1. }
-        if F3::dot(n, v) * Frame::ct(v) <= 0. { return 0. }
+        if F3::dot(n.conv(), v.conv()) * Frame::ct(v) <= 0. { return 0. }
         let a = (self.alpha * tt).inv();
         if a >= 1.6 { return 1. }
         a.mul_add(3.535, 2.181 * a.sq())
@@ -39,7 +39,7 @@ impl Microfacet {
         if ct_i <= 0. || ct_o <= 0. { return Color::ZERO }
         let wh = (wi + wo).unit();
         let beck = self.beckmann(wh);
-        let fr = fresnel::eval(F3::dot(wh, wi), self.eta).0;
+        let fr = fresnel::eval(F3::dot(wh.conv(), wi.conv()), self.eta).0;
         let g = self.smith_beckmann_g1(wi, wh) * self.smith_beckmann_g1(wo, wh);
         self.kd * F::INV_PI * ct_o + (self.ks * beck * fr * g * 0.25) / ct_i
     }
@@ -47,10 +47,10 @@ impl Microfacet {
     #[inline]
     pub fn sample(&self, wi: V, s: F2) -> (PDF<Color>, V, bool) {
         let spec = |s| {
-            let n = V::from(BeckmannHemisphere::warp(s, self.alpha));
-            (n * 2. * F3::dot(n, wi) - wi).unit()
+            let n = conv!(BeckmannHemisphere::warp(s, self.alpha) => V);
+            (n * 2. * F3::dot(n.conv(), wi.conv()) - wi).unit()
         };
-        let diffuse = |s| V::from(CosineHemisphere::warp(s));
+        let diffuse = |s| conv!(CosineHemisphere::warp(s) => V);
         let wo = sampler::split_reuse_2d(s, self.ks, spec, diffuse);
         let p = self.pdf(wi, wo);
         let color = if p <= 0. { Color::ZERO } else { self.eval(wi, wo) / p };
@@ -60,7 +60,7 @@ impl Microfacet {
     #[inline] pub fn pdf(&self, wi: V, wo: V) -> F {
         let wh = (wi + wo).unit();
         let dp = CosineHemisphere::pdf(wo);
-        let sp = self.beckmann(wh) * Frame::ct(wh) * 0.25 / F3::dot(wh, wo);
+        let sp = self.beckmann(wh) * Frame::ct(wh) * 0.25 / F3::dot(wh.conv(), wo.conv());
         LinearScale::interp(A2(dp, sp), self.ks)
     }
 }

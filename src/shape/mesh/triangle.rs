@@ -42,29 +42,29 @@ impl Triangle {
 
     #[inline] fn eval(&self, uv: F2) -> (P, N, F2) {
         let bary = Self::bary(uv);
-        let p = A3::inner_product(self.abc(), bary);
-        let n = if self.mesh_data.n.is_empty() { N::from(self.n()) }
-                else { A3::inner_product(self.abcn(), bary) };
+        let p = A3::dot(self.abc(), bary);
+        let n = if self.mesh_data.n.is_empty() { self.n().conv() }
+                else { A3::dot(self.abcn(), bary) };
         let uv = if self.mesh_data.uv.is_empty() { F2::ZERO }
-                 else { A3::inner_product(self.abct(), bary) };
+                 else { A3::dot(self.abct(), bary) };
         (p, n, uv)
     }
 
     #[inline] fn intersection_point(&self, ray: R) -> Option<(F, F2)> {
         let pv = ray.d * self.ac();
-        let det = F3::dot(self.ab(), pv);
-        if F::approx_zero(det) { return None }
+        let det = F3::dot(self.ab().conv(), pv.conv());
+        if F::abs(det) < F::EPS { return None }
 
         let dinv = det.inv();
         let tv = ray.o - self.a();
-        let u = F3::dot(tv, pv) * dinv;
+        let u = F3::dot(tv.conv(), pv.conv()) * dinv;
         if !B::b(0., 1.).bounds(u) { return None }
 
         let q = tv * self.ab();
-        let v = F3::dot(ray.d, q) * dinv;
+        let v = F3::dot(ray.d.conv(), q.conv()) * dinv;
         if v < 0. || u + v > 1. { return None }
 
-        let t = F3::dot(self.ac(), q) * dinv;
+        let t = F3::dot(self.ac().conv(), q.conv()) * dinv;
         if ray.range().bounds(t) { Some((t, A2(u, v))) } else { None }
     }
 }

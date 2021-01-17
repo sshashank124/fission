@@ -8,7 +8,7 @@ use serde::Deserialize;
 
 use crate::aggregate::bvh::BVH;
 use crate::shape::{Intersectable, intersection::Its};
-use crate::util::{dpdf::DiscretePDF, either::Either};
+use crate::util::{config, dpdf::DiscretePDF, either::Either};
 
 use triangle::Triangle;
 
@@ -26,7 +26,7 @@ impl Intersectable for Mesh {
 
     #[inline] fn intersect(&self, ray: R) -> Option<Its> {
         self.tris
-            .fold(F3::from(ray.d).map(Num::is_pos),
+            .fold(conv!(ray.d => F3).map(F::is_sign_positive),
                   (ray, None),
                   |(r, _), node| node.bbox.intersects(*r),
                   |acc, i, s| Either::R(intersect_update(acc, (i, s))))
@@ -65,12 +65,9 @@ impl TryFrom<MeshConfig> for Mesh {
 
     fn try_from(mc: MeshConfig) -> anyhow::Result<Self> {
         let to_world = T::product(mc.transforms.into_iter());
-        let obj_path = {
-            let mut path = crate::CONFIG_DIR.read().unwrap().clone();
-            path.push(mc.obj); path
-        };
-        let (mesh_data, faces) = objloader::load_from_file(obj_path.to_str().unwrap(), to_world)?;
-        let mesh_data: &'static _ = Box::leak(Box::new(mesh_data));
+        let mesh_path = config::relative_path(mc.obj);
+        let (md, faces) = objloader::load_from_file(mesh_path.to_str().unwrap(), to_world)?;
+        let mesh_data: &'static _ = Box::leak(Box::new(md));
         let triangles = faces.into_iter().map(|f| Triangle { f, mesh_data }).collect();
         let tris = BVH::new(triangles);
         let dpdf = DiscretePDF::new(&*tris.elements, Triangle::surface_area);
