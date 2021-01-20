@@ -1,5 +1,6 @@
 use std::fmt;
 use std::ops::BitOr;
+use std::sync::Arc;
 
 #[allow(clippy::wildcard_imports)]
 use graphite::*;
@@ -9,7 +10,7 @@ use crate::shape::{Intersectable, intersection::Its};
 
 pub struct Triangle {
     pub f:         Face,
-    pub mesh_data: &'static MeshData,
+    pub mesh_data: Arc<MeshData>,
 }
 
 impl Triangle {
@@ -70,18 +71,16 @@ impl Triangle {
 }
 
 impl Intersectable for Triangle {
-    #[inline] fn bbox(&self) -> BBox
-    { self.abc().fold(BBox::ZERO, BitOr::bitor) }
+    #[inline] fn bbox(&self) -> BBox { self.abc().fold(BBox::ZERO, BitOr::bitor) }
 
-    #[inline] fn intersects(&self, ray: R) -> bool
-    { self.intersection_point(ray).is_some() }
+    #[inline] fn intersects(&self, ray: R) -> bool { self.intersection_point(ray).is_some() }
 
     #[inline] fn intersect(&self, ray: R) -> Option<Its> {
         self.intersection_point(ray)
             .map(|(t, uv)| Its::new(P::ZERO, N::ZERO, uv, t))
     }
 
-    #[inline] fn hit_info(&self, mut its: Its) -> Its {
+    #[inline] fn hit_info<'a>(&'a self, mut its: Its<'a>) -> Its<'a> {
         let (p, n, uv) = self.eval(its.uv);
         its.p = p;
         its.n = n;

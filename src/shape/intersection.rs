@@ -8,32 +8,33 @@ use crate::color::Color;
 use crate::shape::{self, Intersectable, Shape};
 use crate::util::pdf::PDF;
 
-pub type ShapeRef = (&'static Shape, I);
+pub type ShapeRef<'a> = (&'a Shape, I);
 static SHAPE_REF_PH: ShapeRef = (&shape::PLACEHOLDER, 0);
 
 #[derive(Debug)]
-pub struct Its {
+pub struct Its<'a> {
     pub p:     P,
     pub n:     N,
     pub uv:    F2,
     pub t:     F,
-    pub shape: ShapeRef,
+    pub shape: ShapeRef<'a>,
 }
 
-impl Its {
+impl<'a> Its<'a> {
     // Constructors
-    #[inline] pub const fn its(p: P, n: N, uv: F2, t: F, shape: ShapeRef) -> Self
+    #[inline] pub const fn its(p: P, n: N, uv: F2, t: F, shape: ShapeRef<'a>) -> Self
     { Self { p, n, uv, t, shape } }
 
     #[inline] pub fn new(p: P, n: N, uv: F2, t: F) -> Self { Self::its(p, n, uv, t, SHAPE_REF_PH) }
 
-    #[inline] pub const fn for_shape(mut self, s: &'static Shape) -> Self
+    #[inline] pub const fn for_shape(mut self, s: &'a Shape) -> Self
     { self.shape = (s, self.shape.1); self }
 
     #[inline] pub fn for_idx(mut self, idx: usize) -> Self
     { self.shape = (self.shape.0, I::of(idx)); self }
 
-    #[inline] pub fn with_hit_info(self) -> Self { <&Shape>::clone(&self.shape.0).hit_info(self) }
+    #[inline] pub fn with_hit_info(self) -> Self
+    { <&'a Shape>::clone(&self.shape.0).hit_info(self) }
 
     // Generators
     #[inline] pub fn to_world(&self) -> T { T::from_frame(self.n) }
@@ -63,14 +64,14 @@ impl Its {
     { self.bsdf().sample(wi, self.uv, s) }
 }
 
-impl Mul<Its> for T {
-    type Output = Its;
+impl<'a> Mul<Its<'a>> for T {
+    type Output = Its<'a>;
     #[inline] fn mul(self, Its { p, n, uv, t, shape }: Its) -> Its
     { Its::its(self * p, self * n, uv, t, shape) }
 }
 
-impl Div<Its> for T {
-    type Output = Its;
+impl<'a> Div<Its<'a>> for T {
+    type Output = Its<'a>;
     #[inline] fn div(self, Its { p, n, uv, t, shape }: Its) -> Its
     { Its::its(self / p, self / n, uv, t, shape) }
 }

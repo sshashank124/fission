@@ -4,6 +4,7 @@ mod sphere;
 
 use std::fmt;
 use std::ops::BitAnd;
+use std::sync::Arc;
 
 #[allow(clippy::wildcard_imports)]
 use graphite::*;
@@ -22,7 +23,7 @@ pub trait Intersectable {
 
     fn intersects(&self, ray: R) -> bool;
     fn intersect(&self, ray: R) -> Option<Its>;
-    fn hit_info(&self, its: Its) -> Its;
+    fn hit_info<'a>(&'a self, its: Its<'a>) -> Its<'a>;
 
     fn sample_surface(&self, s: F2) -> Its;
     fn surface_area(&self) -> F;
@@ -44,20 +45,17 @@ impl Shape {
     #[inline] pub const fn emits(&self) -> bool { self.emission.is_some() }
 }
 
-impl Intersectable for &'static Shape {
+impl Intersectable for Shape {
     #[inline] fn bbox(&self) -> BBox { self.shape.bbox() }
 
-    #[inline] fn intersects(&self, ray: R) -> bool
-    { self.shape.intersects(ray) }
+    #[inline] fn intersects(&self, ray: R) -> bool { self.shape.intersects(ray) }
 
     #[inline] fn intersect(&self, ray: R) -> Option<Its>
     { self.shape.intersect(ray).map(|its| its.for_shape(self)) }
 
-    #[inline] fn hit_info(&self, its: Its) -> Its
-    { self.shape.hit_info(its) }
+    #[inline] fn hit_info<'a>(&'a self, its: Its<'a>) -> Its<'a> { self.shape.hit_info(its) }
 
-    #[inline] fn sample_surface(&self, s: F2) -> Its
-    { self.shape.sample_surface(s) }
+    #[inline] fn sample_surface(&self, s: F2) -> Its { self.shape.sample_surface(s) }
 
     #[inline] fn surface_area(&self) -> F { self.shape.surface_area() }
 
@@ -100,7 +98,7 @@ impl Intersectable for Type {
         }
     }
 
-    #[inline] fn hit_info(&self, its: Its) -> Its {
+    #[inline] fn hit_info<'a>(&'a self, its: Its<'a>) -> Its<'a> {
         match self {
             Self::None => unreachable!(),
             Self::Mesh(s) => s.hit_info(its),
@@ -150,6 +148,17 @@ impl fmt::Debug for Type {
             Self::Sphere(_) => "Sphere",
         })
     }
+}
+
+impl Intersectable for Arc<Shape> {
+    #[inline] fn bbox(&self) -> BBox { self.as_ref().bbox() }
+    #[inline] fn intersects(&self, ray: R) -> bool { self.as_ref().intersects(ray) }
+    #[inline] fn intersect(&self, ray: R) -> Option<Its>
+    { self.as_ref().intersect(ray).map(|its| its.for_shape(self)) }
+    #[inline] fn hit_info<'a>(&'a self, its: Its<'a>) -> Its<'a> { self.as_ref().hit_info(its) }
+    #[inline] fn sample_surface(&self, s: F2) -> Its { self.as_ref().sample_surface(s) }
+    #[inline] fn surface_area(&self) -> F { self.as_ref().surface_area() }
+    #[inline] fn intersection_cost(&self) -> F { self.as_ref().intersection_cost() }
 }
 
 impl Intersectable for BBox {

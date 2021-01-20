@@ -31,15 +31,14 @@ impl Intersectable for Sphere {
     #[inline] fn bbox(&self) -> BBox
     { BBox::ZERO | (self.center - self.radius) | (self.center + self.radius) }
 
-    #[inline] fn intersects(&self, ray: R) -> bool
-    { self.intersection_point(ray).is_some() }
+    #[inline] fn intersects(&self, ray: R) -> bool { self.intersection_point(ray).is_some() }
 
     #[inline] fn intersect(&self, ray: R) -> Option<Its> {
         self.intersection_point(ray)
             .map(|t| Its::new(ray.at(t), N::ZERO, F2::ZERO, t))
     }
 
-    #[inline] fn hit_info(&self, mut its: Its) -> Its {
+    #[inline] fn hit_info<'a>(&'a self, mut its: Its<'a>) -> Its<'a> {
         its.n = (its.p - self.center).conv();
         its.uv = Self::cartesian2uv(its.n);
         its
@@ -50,8 +49,7 @@ impl Intersectable for Sphere {
         Its::new(self.center + d * self.radius, d.conv(), Self::cartesian2uv(d), 0.)
     }
 
-    #[inline] fn surface_area(&self) -> F
-    { F::FOUR_PI * self.radius.sq() }
+    #[inline] fn surface_area(&self) -> F { F::FOUR_PI * self.radius.sq() }
 
     fn intersection_cost(&self) -> F { 2. }
 }

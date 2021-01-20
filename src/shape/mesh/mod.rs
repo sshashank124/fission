@@ -1,6 +1,7 @@
 mod triangle;
 
 use std::convert::TryFrom;
+use std::sync::Arc;
 
 #[allow(clippy::wildcard_imports)]
 use graphite::*;
@@ -33,7 +34,7 @@ impl Intersectable for Mesh {
             .1
     }
 
-    #[inline] fn hit_info(&self, i: Its) -> Its
+    #[inline] fn hit_info<'a>(&'a self, i: Its<'a>) -> Its<'a>
     { self.tris.elements[usize::of(i.shape.1)].hit_info(i) }
 
     #[inline] fn sample_surface(&self, mut s: F2) -> Its {
@@ -46,8 +47,10 @@ impl Intersectable for Mesh {
     fn intersection_cost(&self) -> F { self.tris.intersection_cost() }
 }
 
-#[inline] pub fn intersect_update((ray, acc): (R, Option<Its>),
-                                  (i, s): (usize, &impl Intersectable)) -> (R, Option<Its>) {
+#[inline] pub fn intersect_update<'a>((ray, acc): (R, Option<Its<'a>>),
+                                      (i, s): (usize, &'a impl Intersectable))
+    -> (R, Option<Its<'a>>)
+{
     s.intersect(ray)
      .map_or_else(|| (ray, acc), |it| (ray.clipped(it.t), Some(it.for_idx(i))))
 }
@@ -67,8 +70,9 @@ impl TryFrom<MeshConfig> for Mesh {
         let to_world = T::product(mc.transforms.into_iter());
         let mesh_path = config::relative_path(mc.obj);
         let (md, faces) = objloader::load_from_file(mesh_path.to_str().unwrap(), to_world)?;
-        let mesh_data: &'static _ = Box::leak(Box::new(md));
-        let triangles = faces.into_iter().map(|f| Triangle { f, mesh_data }).collect();
+        let mesh_data = Arc::new(md);
+        let triangles = faces.into_iter().map(|f| Triangle { f, mesh_data: mesh_data.clone() })
+                                         .collect();
         let tris = BVH::new(triangles);
         let dpdf = DiscretePDF::new(&*tris.elements, Triangle::surface_area);
         Ok(Self { tris, dpdf })

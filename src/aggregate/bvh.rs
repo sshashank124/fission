@@ -29,8 +29,7 @@ pub enum BVHNodeType {
     Tree(I, Dim),
 }
 
-impl<S> BVH<S> where S: Intersectable
-{
+impl<S> BVH<S> where S: Intersectable {
     pub fn new(elems: Vec<S>) -> Self {
         assert!(!elems.is_empty());
 
@@ -56,12 +55,9 @@ impl<S> BVH<S> where S: Intersectable
         Self { elements, nodes: nodes.into_boxed_slice() }
     }
 
-    #[inline] pub fn fold<'a, A>(&'a self,
-                       trav_order: A3<bool>,
-                       mut acc: A,
-                       pred: impl Fn(&mut A, &BVHNode) -> bool,
-                       f: impl Fn(A, usize, &'a S) -> Either<A, A>)
-                       -> A {
+    #[inline] pub fn fold<'a, A>(&'a self, trav_order: A3<bool>, mut acc: A,
+                                 pred: impl Fn(&mut A, &BVHNode) -> bool,
+                                 f: impl Fn(A, usize, &'a S) -> Either<A, A>) -> A {
         let mut idx = 0;
         let mut stack: [I; 32] = [0; 32];
         let mut sp = 0;
@@ -223,8 +219,7 @@ fn build<'a>(build_infos: &mut [BuildInfo], idx_map: &mut HashMap<I, I>,
     })
 }
 
-impl<S> Intersectable for BVH<S> where S: Intersectable
-{
+impl<S> Intersectable for BVH<S> where S: Intersectable {
     #[inline] fn bbox(&self) -> BBox { self.nodes[0].bbox }
 
     #[inline] fn intersects(&self, ray: R) -> bool {
@@ -260,8 +255,8 @@ impl<S> Intersectable for BVH<S> where S: Intersectable
     }
 }
 
-#[inline] pub fn intersect_update((ray, acc): (R, Option<Its>),
-                                  s: &impl Intersectable) -> (R, Option<Its>) {
+#[inline] pub fn intersect_update<'a>((ray, acc): (R, Option<Its<'a>>),
+                                      s: &'a impl Intersectable) -> (R, Option<Its<'a>>) {
     s.intersect(ray)
      .map_or_else(|| (ray, acc), |it| (ray.clipped(it.t), Some(it)))
 }

@@ -21,15 +21,16 @@ use crate::util::pdf::PDF;
 }
 
 #[derive(Debug)]
-pub struct BounceInfo {
+pub struct BounceInfo<'a> {
     pub l:    Color,
     pub tp:   Color,
-    pub its:  Option<Its>,
+    pub its:  Option<Its<'a>>,
     pub ray:  R,
     pub spec: bool,
 }
 
-#[inline] pub fn l_mat(scene: &Scene, its: &Its, wo: V, frame: T, s: F2) -> Option<BounceInfo> {
+#[inline]
+pub fn l_mat<'a>(scene: &'a Scene, its: &Its, wo: V, frame: T, s: F2) -> Option<BounceInfo<'a>> {
     let (bsdf, wi, spec) = its.sample_bsdf(wo, s);
     if bsdf.pdf > 0. && bsdf.val != Color::ZERO {
         let ray = its.spawn_ray(frame * wi);
