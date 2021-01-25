@@ -37,22 +37,18 @@ pub use graphite;
 
 use std::fs::File;
 use std::io::{BufReader, BufWriter};
-use std::path::{Path, PathBuf};
-use std::sync::{Arc, RwLock, atomic::AtomicBool};
+use std::path::Path;
+use std::sync::{Arc, atomic::AtomicBool};
 
 use renderer::{Renderer, RenderState};
-use util::progress::Progress;
-
-lazy_static::lazy_static! {
-    pub static ref CONFIG_DIR: RwLock<PathBuf> = RwLock::new(PathBuf::new());
-}
+use util::{config, progress::Progress};
 
 pub fn load_from_file<P1, P2>(scene_file: P1, state_file: Option<P2>)
     -> anyhow::Result<(Renderer, Arc<AtomicBool>)>
 where P1: AsRef<Path>,
       P2: AsRef<Path>,
 {
-    *CONFIG_DIR.write().unwrap() = scene_file.as_ref().parent().unwrap().to_path_buf();
+    config::set_scene_root_dir(&scene_file);
 
     let integrator = {
         let msg = format!("Loading scene description ({})", scene_file.as_ref().display());
