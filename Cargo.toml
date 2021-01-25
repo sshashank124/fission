@@ -10,28 +10,28 @@ keywords = ["ray-tracing", "rendering", "realistic", "path-tracing", "graphics"]
 categories = ["graphics", "mathematics", "rendering"]
 
 [dependencies]
-anyhow = "^1"
-bincode = "^1"
-bumpalo = "^3"
-bytemuck = "^1"
-crossbeam-channel = "^0.5"
-ctrlc = "^3"
-exr = "^1"
-futures = "^0.3"
+anyhow = "1"
+bincode = "1"
+bumpalo = "3"
+bytemuck = "1"
+crossbeam-channel = "0.5"
+ctrlc = "3"
+exr = "1"
+futures = "0.3"
 graphite = { git = "https://github.com/sshashank124/graphite", features = ["serde-derive"] }
-image = "^0.23"
-lazy_static = "^1"
+image = "0.23"
 objloader = { git = "https://github.com/sshashank124/objloader" }
-rand_core = "^0.6"
-rand_pcg = "^0.3"
-rayon = "^1"
-serde = { version = "^1", features = ["derive"] }
-serde_yaml = "^0.8"
-wgpu = "^0.6"
+once_cell = "1"
+rand_core = "0.6"
+rand_pcg = "0.3"
+rayon = "1"
+serde = { version = "1", features = ["derive"] }
+serde_yaml = "0.8"
+wgpu = "0.6"
 winit = "0.24"
 
 [build-dependencies]
-shaderc = "^0.7"
+shaderc = "0.7"
 
 [profile.dev]
 opt-level = 3
