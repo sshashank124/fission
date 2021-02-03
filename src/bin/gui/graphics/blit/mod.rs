@@ -30,20 +30,22 @@ impl Blit {
             wgpu::BindGroupLayoutEntry {
                 binding: 0,
                 visibility: wgpu::ShaderStage::FRAGMENT,
-                ty: wgpu::BindingType::StorageBuffer {
-                    dynamic: false,
+                ty: wgpu::BindingType::Buffer {
+                    ty: wgpu::BufferBindingType::Storage {
+                        read_only: true,
+                    },
+                    has_dynamic_offset: false,
                     min_binding_size: std::num::NonZeroU64::new(ELEM_SIZE as _),
-                    readonly: true,
                 },
                 count: None,
             },
             wgpu::BindGroupLayoutEntry {
                 binding: 1,
                 visibility: wgpu::ShaderStage::FRAGMENT,
-                ty: wgpu::BindingType::UniformBuffer {
-                    dynamic: false,
-                    min_binding_size:
-                        std::num::NonZeroU64::new(mem::size_of::<u32>() as _),
+                ty: wgpu::BindingType::Buffer {
+                    ty: wgpu::BufferBindingType::Uniform,
+                    has_dynamic_offset: false,
+                    min_binding_size: std::num::NonZeroU64::new(mem::size_of::<u32>() as _),
                 },
                 count: None,
             }
@@ -61,20 +63,19 @@ impl Blit {
             entries: &[
                 wgpu::BindGroupEntry {
                     binding: 0,
-                    resource: wgpu::BindingResource::Buffer(img_buf.slice(..)),
+                    resource: img_buf.as_entire_binding(),
                 },
                 wgpu::BindGroupEntry {
                     binding: 1,
-                    resource:
-                        wgpu::BindingResource::Buffer(width_buf.slice(..)),
+                    resource: width_buf.as_entire_binding(),
                 }
             ],
         });
 
         let vs_module = device.create_shader_module(
-            wgpu::include_spirv!("shader.vert.spv"));
+            &wgpu::include_spirv!("shader.vert.spv"));
         let fs_module = device.create_shader_module(
-            wgpu::include_spirv!("shader.frag.spv"));
+            &wgpu::include_spirv!("shader.frag.spv"));
 
         let rpl = device.create_pipeline_layout(
             &wgpu::PipelineLayoutDescriptor {
@@ -87,30 +88,28 @@ impl Blit {
             &wgpu::RenderPipelineDescriptor {
                 label: Some("bitmap_render_pipeline"),
                 layout: Some(&rpl),
-                vertex_stage: wgpu::ProgrammableStageDescriptor {
+                vertex: wgpu::VertexState {
                     module: &vs_module,
                     entry_point: "main",
+                    buffers: &[],
                 },
-                fragment_stage: Some(wgpu::ProgrammableStageDescriptor {
+                primitive: wgpu::PrimitiveState {
+                    topology: wgpu::PrimitiveTopology::TriangleStrip,
+                    strip_index_format: Some(wgpu::IndexFormat::Uint16),
+                    .. Default::default()
+                },
+                depth_stencil: None,
+                multisample: Default::default(),
+                fragment: Some(wgpu::FragmentState {
                     module: &fs_module,
                     entry_point: "main",
+                    targets: &[wgpu::ColorTargetState {
+                        format: super::DISPLAY_FORMAT,
+                        alpha_blend: Default::default(),
+                        color_blend: Default::default(),
+                        write_mask: Default::default(),
+                    }],
                 }),
-                rasterization_state: None,
-                primitive_topology: wgpu::PrimitiveTopology::TriangleStrip,
-                color_states: &[wgpu::ColorStateDescriptor {
-                    format: super::DISPLAY_FORMAT,
-                    alpha_blend: wgpu::BlendDescriptor::default(),
-                    color_blend: wgpu::BlendDescriptor::default(),
-                    write_mask: wgpu::ColorWrite::default(),
-                }],
-                depth_stencil_state: None,
-                vertex_state: wgpu::VertexStateDescriptor {
-                    index_format: wgpu::IndexFormat::Uint16,
-                    vertex_buffers: &[],
-                },
-                sample_count: 1,
-                sample_mask: !0,
-                alpha_to_coverage_enabled: false,
         });
 
         let mut render_bundle_encoder = device.create_render_bundle_encoder(

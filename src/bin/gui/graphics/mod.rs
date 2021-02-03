@@ -34,7 +34,7 @@ impl Context {
             &wgpu::DeviceDescriptor::default(), None).await.unwrap();
 
         let sc_desc = wgpu::SwapChainDescriptor {
-            usage: wgpu::TextureUsage::OUTPUT_ATTACHMENT,
+            usage: wgpu::TextureUsage::RENDER_ATTACHMENT,
             format: DISPLAY_FORMAT,
             width: dims.width, height: dims.height,
             present_mode: wgpu::PresentMode::Mailbox,
@@ -68,6 +68,7 @@ impl Context {
 
         let render_pass = encoder.begin_render_pass(
             &wgpu::RenderPassDescriptor {
+                label: Some("render_pass"),
                 color_attachments: &[wgpu::RenderPassColorAttachmentDescriptor {
                     attachment: &frame.view,
                     resolve_target: None,

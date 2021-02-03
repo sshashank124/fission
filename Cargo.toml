@@ -27,7 +27,7 @@ rand_pcg = "0.3"
 rayon = "1"
 serde = { version = "1", features = ["derive"] }
 serde_yaml = "0.8"
-wgpu = "0.6"
+wgpu = "0.7"
 winit = "0.24"
 
 [build-dependencies]
