@@ -72,10 +72,11 @@ impl Blit {
             ],
         });
 
-        let vs_module = device.create_shader_module(
-            &wgpu::include_spirv!("shader.vert.spv"));
-        let fs_module = device.create_shader_module(
-            &wgpu::include_spirv!("shader.frag.spv"));
+        let shader = device.create_shader_module(&wgpu::ShaderModuleDescriptor {
+            label: Some("shader"),
+            source: wgpu::ShaderSource::Wgsl(include_str!("shader.wgsl").into()),
+            flags: Default::default(),
+        });
 
         let rpl = device.create_pipeline_layout(
             &wgpu::PipelineLayoutDescriptor {
@@ -89,8 +90,8 @@ impl Blit {
                 label: Some("bitmap_render_pipeline"),
                 layout: Some(&rpl),
                 vertex: wgpu::VertexState {
-                    module: &vs_module,
-                    entry_point: "main",
+                    module: &shader,
+                    entry_point: "vs_main",
                     buffers: &[],
                 },
                 primitive: wgpu::PrimitiveState {
@@ -98,11 +99,9 @@ impl Blit {
                     strip_index_format: Some(wgpu::IndexFormat::Uint16),
                     .. Default::default()
                 },
-                depth_stencil: None,
-                multisample: Default::default(),
                 fragment: Some(wgpu::FragmentState {
-                    module: &fs_module,
-                    entry_point: "main",
+                    module: &shader,
+                    entry_point: "fs_main",
                     targets: &[wgpu::ColorTargetState {
                         format: super::DISPLAY_FORMAT,
                         alpha_blend: Default::default(),
@@ -110,6 +109,8 @@ impl Blit {
                         write_mask: Default::default(),
                     }],
                 }),
+                depth_stencil: None,
+                multisample: Default::default(),
         });
 
         let mut render_bundle_encoder = device.create_render_bundle_encoder(

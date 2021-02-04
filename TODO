@@ -2,4 +2,3 @@ image texture + envmap
 add screenshots and examples in README.md (also in scenes)
 volumetric path tracer
 use GPU compute pipelines for parts of ray-tracing
-use wgsl in wgpu 0.7
