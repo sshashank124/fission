@@ -30,9 +30,6 @@ serde_yaml = "0.8"
 wgpu = "0.7"
 winit = "0.24"
 
-[build-dependencies]
-shaderc = "0.7"
-
 [profile.dev]
 opt-level = 3
 
