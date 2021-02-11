@@ -6,12 +6,12 @@ use graphite::*;
 use super::vec::LowerBound;
 
 #[derive(Debug, Default)]
-pub struct DiscretePDF {
+pub struct DiscretePdf {
     cdf:   Box<[F]>,
     total: F,
 }
 
-impl DiscretePDF {
+impl DiscretePdf {
     pub fn new<'a, A, C>(iter: C, p: impl Fn(&'a A) -> F) -> Self
         where A: 'a,
               C: IntoIterator<Item=&'a A>,

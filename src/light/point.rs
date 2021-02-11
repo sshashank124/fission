@@ -4,7 +4,7 @@ use serde::Deserialize;
 
 use crate::color::Color;
 use crate::shape::intersection::Its;
-use crate::util::pdf::PDF;
+use crate::util::pdf::Pdf;
 
 #[derive(Debug, Deserialize)]
 pub struct Point {
@@ -14,9 +14,9 @@ pub struct Point {
 }
 
 impl Point {
-    #[inline] pub fn sample(&self, its: &Its) -> (PDF<Color>, R) {
+    #[inline] pub fn sample(&self, its: &Its) -> (Pdf<Color>, R) {
         let sray = R::p2(its.p, self.position);
-        (PDF::sole(self.intensity / sray.t.sq()), sray)
+        (Pdf::sole(self.intensity / sray.t.sq()), sray)
     }
 
     #[inline] pub fn power(&self) -> F { self.intensity.luminance() * F::FOUR_PI }

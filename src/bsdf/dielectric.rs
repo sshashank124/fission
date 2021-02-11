@@ -3,7 +3,7 @@ use graphite::*;
 use serde::Deserialize;
 
 use crate::color::Color;
-use crate::util::pdf::PDF;
+use crate::util::pdf::Pdf;
 
 use super::fresnel;
 
@@ -15,11 +15,11 @@ pub struct Dielectric {
 
 impl Dielectric {
     #[inline]
-    pub fn sample(&self, wi: V, s: F2) -> (PDF<Color>, V, bool) {
+    pub fn sample(&self, wi: V, s: F2) -> (Pdf<Color>, V, bool) {
         let (fr, ctt, eta) = fresnel::eval(Frame::ct(wi), self.eta);
         let (wo, p) = if s[0] <= fr { (conv!(Frame::reflect(wi) => V), fr) }
                       else { (conv!(A3(-eta * wi[X], -eta * wi[Y], ctt) => V).unit(), 1. - fr) };
-        (PDF::new(Color::ONE, p), wo, true)
+        (Pdf::new(Color::ONE, p), wo, true)
     }
 }
 

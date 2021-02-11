@@ -2,7 +2,7 @@
 use graphite::*;
 
 use crate::color::Color;
-use crate::util::pdf::PDF;
+use crate::util::pdf::Pdf;
 
-#[inline] pub fn sample(wi: V) -> (PDF<Color>, V, bool)
-{ (PDF::sole(Color::ONE), Frame::reflect(wi).conv(), true) }
+#[inline] pub fn sample(wi: V) -> (Pdf<Color>, V, bool)
+{ (Pdf::sole(Color::ONE), Frame::reflect(wi).conv(), true) }

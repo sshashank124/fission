@@ -5,7 +5,7 @@ use crate::color::Color;
 use crate::sampler::Sampler;
 use crate::scene::Scene;
 use crate::shape::intersection::Its;
-use crate::util::pdf::PDF;
+use crate::util::pdf::Pdf;
 
 #[inline] pub fn l_light(scene: &Scene, its: &Its, wo: V, frame: T, s: F2) -> Color {
     if !its.bsdf().is_delta() {
@@ -36,9 +36,9 @@ pub fn l_mat<'a>(scene: &'a Scene, its: &Its, wo: V, frame: T, s: F2) -> Option<
         let ray = its.spawn_ray(frame * wi);
         let its = scene.intersect(ray);
         let light = match &its {
-            None => PDF::sole(scene.lenv(&ray)),
+            None => Pdf::sole(scene.lenv(&ray)),
             Some(its) if its.emits() => its.l_emit_pdf(ray),
-            _ => PDF::ZERO,
+            _ => Pdf::ZERO,
         };
         let l = if light.pdf > 0. && light.val != Color::ZERO && !spec {
             bsdf.val * light.val * PowerScale::balance2(bsdf.pdf, light.pdf)

@@ -1,7 +1,7 @@
 #[allow(clippy::wildcard_imports)]
 use graphite::*;
 
-use crate::color::{Color, RGB};
+use crate::color::{Color, Rgb};
 use crate::scene::Scene;
 
 #[inline] pub fn trace(scene: &Scene, ray: R) -> Color {
@@ -9,7 +9,7 @@ use crate::scene::Scene;
         None => Color::ZERO,
         Some(its) => {
             let abs_dir = conv!(its.n => F3).map(F::abs);
-            conv!(abs_dir => RGB => Color)
+            conv!(abs_dir => Rgb => Color)
         }
     }
 }

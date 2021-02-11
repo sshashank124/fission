@@ -3,20 +3,20 @@ use graphite::*;
 
 use crate::color::Color;
 use crate::shape::{Intersectable, Shape, intersection::Its};
-use crate::util::pdf::PDF;
+use crate::util::pdf::Pdf;
 
 impl Shape {
     #[inline] pub fn eval(&self, uv: F2) -> Color
     { self.emission.as_ref().map_or(Color::ZERO, |e| e.eval(uv)) }
 
-    #[inline] pub fn sample<'a>(&'a self, its: &Its<'a>, s: F2) -> (PDF<Color>, R) {
+    #[inline] pub fn sample<'a>(&'a self, its: &Its<'a>, s: F2) -> (Pdf<Color>, R) {
         if let Some(emission) = &self.emission {
             let surface = self.sample_surface(s);
             let sray = R::p2(its.p, surface.p);
             let p = self.pdf(&surface, &sray);
             let color = if p <= 0. { Color::ZERO }
                         else { emission.eval(surface.uv) / p };
-            (PDF::new(color, p), sray)
+            (Pdf::new(color, p), sray)
         } else { unreachable!() }
     }
 

@@ -4,20 +4,20 @@ use std::sync::Arc;
 use graphite::*;
 use serde::Deserialize;
 
-use crate::aggregate::bvh::BVH;
+use crate::aggregate::bvh::Bvh;
 use crate::camera::Camera;
 use crate::color::Color;
 use crate::light::Light;
 use crate::shape::{Intersectable, Shape, intersection::Its};
-use crate::util::{dpdf::DiscretePDF, pdf::PDF};
+use crate::util::{dpdf::DiscretePdf, pdf::Pdf};
 
 #[derive(Debug, Deserialize)]
 #[serde(from="SceneConfig")]
 pub struct Scene {
     pub camera:      Camera,
-        shapes:      BVH<Arc<Shape>>,
+        shapes:      Bvh<Arc<Shape>>,
     pub lights:      Box<[Arc<Light>]>,
-        lights_dpdf: DiscretePDF,
+        lights_dpdf: DiscretePdf,
         env:         Option<Arc<Light>>,
 }
 
@@ -25,7 +25,7 @@ impl Scene {
     #[inline] pub fn intersects(&self, r: R) -> bool { self.shapes.intersects(r) }
     #[inline] pub fn intersect(&self, r: R) -> Option<Its> { self.shapes.intersect(r) }
 
-    #[inline] pub fn sample_random_light(&self, its: &Its, mut s: F2) -> (PDF<Color>, R) {
+    #[inline] pub fn sample_random_light(&self, its: &Its, mut s: F2) -> (Pdf<Color>, R) {
         let (idx, prob) = self.lights_dpdf.sample(&mut s[0]);
         let (l_light, sray) = self.lights[idx].sample(its, s);
         (l_light.scale(prob), sray)
@@ -64,8 +64,8 @@ impl From<SceneConfig> for Scene {
                 Element::Light(l) => lights.push(Arc::new(l)),
             }
         }
-        let shapes = BVH::new(shapes);
-        let lights_dpdf = DiscretePDF::new(&lights, |light| light.power());
+        let shapes = Bvh::new(shapes);
+        let lights_dpdf = DiscretePdf::new(&lights, |light| light.power());
         let env = lights.iter().find(|light| light.is_env_light()).map(Arc::clone);
         Self { shapes, camera: sc.camera,
                lights: lights.into_boxed_slice(), lights_dpdf, env }

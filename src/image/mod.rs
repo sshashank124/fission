@@ -9,7 +9,7 @@ use graphite::*;
 use bitmap::Bitmap;
 use pixel::Pixel;
 
-use crate::color::{Color, RGB};
+use crate::color::{Color, Rgb};
 
 const BLOCK_SIZE: I2 = A2(32, 32);
 
@@ -25,7 +25,7 @@ impl Image {
         let dims = conv!(self.rect.dims => A2<usize> => (usize, usize));
         write_rgb_f32_file(filename, dims, |x, y| {
             let idx = conv!(A2(x, y) => I2);
-            conv!(self[idx] => Color => RGB => F3 => A3<f32> => (f32, f32, f32))
+            conv!(self[idx] => Color => Rgb => F3 => A3<f32> => (f32, f32, f32))
         })?;
         Ok(())
     }

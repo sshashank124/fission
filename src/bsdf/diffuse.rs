@@ -4,7 +4,7 @@ use serde::Deserialize;
 
 use crate::color::Color;
 use crate::texture::Tex;
-use crate::util::pdf::PDF;
+use crate::util::pdf::Pdf;
 
 #[derive(Debug, Default, Deserialize)]
 pub struct Diffuse {
@@ -18,9 +18,9 @@ impl Diffuse {
         else { self.albedo.eval(uv) * F::INV_PI * cto }
     }
 
-    #[inline] pub fn sample(&self, uv: F2, s: F2) -> (PDF<Color>, V, bool) {
+    #[inline] pub fn sample(&self, uv: F2, s: F2) -> (Pdf<Color>, V, bool) {
         let wo = CosineHemisphere::warp(s);
-        (PDF::new(self.albedo.eval(uv), Self::pdf(wo)), wo.conv(), false)
+        (Pdf::new(self.albedo.eval(uv), Self::pdf(wo)), wo.conv(), false)
     }
 
     #[inline] pub fn pdf(wo: impl Conv<F3>) -> F { CosineHemisphere::pdf(wo) }

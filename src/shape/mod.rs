@@ -10,7 +10,7 @@ use std::sync::Arc;
 use graphite::*;
 use serde::Deserialize;
 
-use crate::bsdf::BSDF;
+use crate::bsdf::Bsdf;
 use crate::color::Color;
 use crate::texture::Tex;
 
@@ -37,7 +37,7 @@ pub trait Intersectable {
 pub struct Shape {
     #[serde(flatten)]
         shape:    Type,
-    pub bsdf:     BSDF,
+    pub bsdf:     Bsdf,
     pub emission: Option<Tex<Color>>,
 }
 
@@ -62,7 +62,7 @@ impl Intersectable for Shape {
     fn intersection_cost(&self) -> F { self.shape.intersection_cost() }
 }
 
-pub static PLACEHOLDER: Shape = Shape { shape: Type::ZERO, bsdf: BSDF::ZERO,
+pub static PLACEHOLDER: Shape = Shape { shape: Type::ZERO, bsdf: Bsdf::ZERO,
                                         emission: None };
 
 #[derive(Deserialize)]

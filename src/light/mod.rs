@@ -10,7 +10,7 @@ use serde::Deserialize;
 
 use crate::color::Color;
 use crate::shape::{Shape, intersection::Its};
-use crate::util::pdf::PDF;
+use crate::util::pdf::Pdf;
 
 use infinite::Infinite;
 use point::Point;
@@ -26,7 +26,7 @@ pub enum Light {
 }
 
 impl Light {
-    #[inline] pub fn sample<'a>(&'a self, its: &Its<'a>, s: F2) -> (PDF<Color>, R) {
+    #[inline] pub fn sample<'a>(&'a self, its: &Its<'a>, s: F2) -> (Pdf<Color>, R) {
         match self {
             Self::Area(l) => l.sample(its, s),
             Self::Infinite(l) => l.sample(its, s),

@@ -4,7 +4,7 @@ use serde::Deserialize;
 
 use crate::color::Color;
 use crate::sampler;
-use crate::util::pdf::PDF;
+use crate::util::pdf::Pdf;
 
 use super::fresnel;
 
@@ -45,7 +45,7 @@ impl Microfacet {
     }
 
     #[inline]
-    pub fn sample(&self, wi: V, s: F2) -> (PDF<Color>, V, bool) {
+    pub fn sample(&self, wi: V, s: F2) -> (Pdf<Color>, V, bool) {
         let spec = |s| {
             let n = conv!(BeckmannHemisphere::warp(s, self.alpha) => V);
             (n * 2. * F3::dot(n.conv(), wi.conv()) - wi).unit()
@@ -54,7 +54,7 @@ impl Microfacet {
         let wo = sampler::split_reuse_2d(s, self.ks, spec, diffuse);
         let p = self.pdf(wi, wo);
         let color = if p <= 0. { Color::ZERO } else { self.eval(wi, wo) / p };
-        (PDF::new(color, p), wo, false)
+        (Pdf::new(color, p), wo, false)
     }
 
     #[inline] pub fn pdf(&self, wi: V, wo: V) -> F {

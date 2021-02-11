@@ -3,10 +3,10 @@ use std::ops::{Div, Mul};
 #[allow(clippy::wildcard_imports)]
 use graphite::*;
 
-use crate::bsdf::BSDF;
+use crate::bsdf::Bsdf;
 use crate::color::Color;
 use crate::shape::{self, Intersectable, Shape};
-use crate::util::pdf::PDF;
+use crate::util::pdf::Pdf;
 
 pub type ShapeRef<'a> = (&'a Shape, I);
 static SHAPE_REF_PH: ShapeRef = (&shape::PLACEHOLDER, 0);
@@ -49,18 +49,18 @@ impl<'a> Its<'a> {
     { if Frame::same_hemisphere(self.n, ray.d) { Color::ZERO }
       else { self.shape.0.eval(self.uv) } }
 
-    #[inline] pub fn l_emit_pdf(&self, ray: R) -> PDF<Color>
-    { PDF::new(self.l_emit(ray), self.shape.0.pdf(self, &ray.clipped(self.t))) }
+    #[inline] pub fn l_emit_pdf(&self, ray: R) -> Pdf<Color>
+    { Pdf::new(self.l_emit(ray), self.shape.0.pdf(self, &ray.clipped(self.t))) }
 
-    //// BSDF Queries
-    #[inline] pub const fn bsdf(&self) -> &BSDF { &self.shape.0.bsdf }
+    //// Bsdf Queries
+    #[inline] pub const fn bsdf(&self) -> &Bsdf { &self.shape.0.bsdf }
 
     #[inline] pub fn bsdf_f(&self, wi: V, wo: V) -> Color { self.bsdf().eval(wi, wo, self.uv) }
 
-    #[inline] pub fn bsdf_f_pdf(&self, wi: V, wo: V) -> PDF<Color>
-    { PDF::new(self.bsdf_f(wi, wo), self.bsdf().pdf(wi, wo)) }
+    #[inline] pub fn bsdf_f_pdf(&self, wi: V, wo: V) -> Pdf<Color>
+    { Pdf::new(self.bsdf_f(wi, wo), self.bsdf().pdf(wi, wo)) }
 
-    #[inline] pub fn sample_bsdf(&self, wi: V, s: F2) -> (PDF<Color>, V, bool)
+    #[inline] pub fn sample_bsdf(&self, wi: V, s: F2) -> (Pdf<Color>, V, bool)
     { self.bsdf().sample(wi, self.uv, s) }
 }
 

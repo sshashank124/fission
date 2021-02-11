@@ -7,17 +7,17 @@ use std::sync::Arc;
 use graphite::*;
 use serde::Deserialize;
 
-use crate::aggregate::bvh::BVH;
+use crate::aggregate::bvh::Bvh;
 use crate::shape::{Intersectable, intersection::Its};
-use crate::util::{config, dpdf::DiscretePDF, either::Either};
+use crate::util::{config, dpdf::DiscretePdf, either::Either};
 
 use triangle::Triangle;
 
 #[derive(Debug, Deserialize)]
 #[serde(try_from="MeshConfig")]
 pub struct Mesh {
-    tris: BVH<Triangle>,
-    dpdf: DiscretePDF,
+    tris: Bvh<Triangle>,
+    dpdf: DiscretePdf,
 }
 
 impl Intersectable for Mesh {
@@ -73,8 +73,8 @@ impl TryFrom<MeshConfig> for Mesh {
         let mesh_data = Arc::new(md);
         let triangles = faces.into_iter().map(|f| Triangle { f, mesh_data: mesh_data.clone() })
                                          .collect();
-        let tris = BVH::new(triangles);
-        let dpdf = DiscretePDF::new(&*tris.elements, Triangle::surface_area);
+        let tris = Bvh::new(triangles);
+        let dpdf = DiscretePdf::new(&*tris.elements, Triangle::surface_area);
         Ok(Self { tris, dpdf })
     }
 }

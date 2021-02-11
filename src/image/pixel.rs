@@ -4,7 +4,7 @@ use std::ops::AddAssign;
 use graphite::*;
 use serde::{Deserialize, Serialize};
 
-use crate::color::{Color, RGB};
+use crate::color::{Color, Rgb};
 
 #[repr(C)]
 #[derive(Clone, Copy, Debug, Default, PartialEq, Deserialize, Serialize)]
@@ -27,11 +27,11 @@ impl AddAssign<Color> for Pixel
 { #[inline] fn add_assign(&mut self, color: Color) { *self += Self { val: color, w: 1. }; } }
 
 impl Conv<Color> for Pixel
-{ #[inline] fn conv(self) -> RGB { if self.w == 0. { Color::ZERO } else { self.val / self.w } } }
+{ #[inline] fn conv(self) -> Rgb { if self.w == 0. { Color::ZERO } else { self.val / self.w } } }
 
 impl Conv<[f32; 4]> for Pixel {
     #[inline] fn conv(self) -> [f32; 4] {
-        let rgb = conv!(self.val => RGB => F3 => A3<f32>);
+        let rgb = conv!(self.val => Rgb => F3 => A3<f32>);
         [rgb.0, rgb.1, rgb.2, conv!(self.w => f32)]
     }
 }

@@ -5,7 +5,7 @@ use serde::Deserialize;
 use crate::color::Color;
 use crate::shape::intersection::Its;
 use crate::texture::Tex;
-use crate::util::pdf::PDF;
+use crate::util::pdf::Pdf;
 
 #[derive(Debug, Deserialize)]
 pub struct Infinite {
@@ -13,10 +13,10 @@ pub struct Infinite {
 }
 
 impl Infinite {
-    #[inline] pub fn sample(&self, its: &Its, s: F2) -> (PDF<Color>, R) {
+    #[inline] pub fn sample(&self, its: &Its, s: F2) -> (Pdf<Color>, R) {
         let theta_phi = s * A2(F::PI, F::TWO_PI);
         let sray = R::unbounded(its.p, Frame::spher2cart(theta_phi).conv());
-        (PDF::new(self.intensity.eval(s), Self::pdf(its, &sray)), sray)
+        (Pdf::new(self.intensity.eval(s), Self::pdf(its, &sray)), sray)
     }
 
     #[inline] pub fn pdf(its: &Its, sray: &R) -> F

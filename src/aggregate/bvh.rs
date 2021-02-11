@@ -12,24 +12,24 @@ const MAX_LEAF_LEN: I = 4;
 const NUM_BUCKETS: usize = 24;
 
 #[derive(Debug)]
-pub struct BVH<S> {
-        nodes:    Box<[BVHNode]>,
+pub struct Bvh<S> {
+        nodes:    Box<[Node]>,
     pub elements: Box<[S]>,
 }
 
 #[derive(Debug)]
-pub struct BVHNode {
+pub struct Node {
     pub bbox: BBox,
-        node: BVHNodeType,
+        node: NodeType,
 }
 
 #[derive(Debug)]
-pub enum BVHNodeType {
+pub enum NodeType {
     Leaf(I, i16),
     Tree(I, Dim),
 }
 
-impl<S> BVH<S> where S: Intersectable {
+impl<S> Bvh<S> where S: Intersectable {
     pub fn new(elems: Vec<S>) -> Self {
         assert!(!elems.is_empty());
 
@@ -56,7 +56,7 @@ impl<S> BVH<S> where S: Intersectable {
     }
 
     #[inline] pub fn fold<'a, A>(&'a self, trav_order: A3<bool>, mut acc: A,
-                                 pred: impl Fn(&mut A, &BVHNode) -> bool,
+                                 pred: impl Fn(&mut A, &Node) -> bool,
                                  f: impl Fn(A, usize, &'a S) -> Either<A, A>) -> A {
         let mut idx = 0;
         let mut stack: [I; 32] = [0; 32];
@@ -65,13 +65,13 @@ impl<S> BVH<S> where S: Intersectable {
             let node = &self.nodes[usize::of(idx)];
             if pred(&mut acc, node) {
                 match node.node {
-                    BVHNodeType::Tree(ri, dim) => {
+                    NodeType::Tree(ri, dim) => {
                         let ii = A2(ri, idx + 1);
                         stack[sp] = ii[!trav_order[dim]];
                         sp += 1;
                         idx = ii[trav_order[dim]];
                     }
-                    BVHNodeType::Leaf(i, n) => {
+                    NodeType::Leaf(i, n) => {
                         for j in usize::of(i)..usize::of(i + I::of(n)) {
                             acc = match f(acc, j, &self.elements[j]) {
                                 Either::L(b) => return b,
@@ -116,16 +116,16 @@ struct BuildInfo {
 
 impl BuildNode<'_> { const fn size(&self) -> I { self.sizel + self.sizer + 1 } }
 
-fn flatten_tree(tree: &BuildNode, nodes: &mut Vec<BVHNode>, mut offset: I) {
+fn flatten_tree(tree: &BuildNode, nodes: &mut Vec<Node>, mut offset: I) {
     offset += 1;
     let node = match tree.node {
-        BuildNodeType::Leaf(idx, n) => BVHNodeType::Leaf(idx, i16::of(n)),
+        BuildNodeType::Leaf(idx, n) => NodeType::Leaf(idx, i16::of(n)),
         BuildNodeType::Tree(dim, treel, _) => {
-            BVHNodeType::Tree(offset + treel.size(), dim)
+            NodeType::Tree(offset + treel.size(), dim)
         }
     };
 
-    nodes.push(BVHNode { bbox: tree.bbox, node });
+    nodes.push(Node { bbox: tree.bbox, node });
 
     if let BuildNodeType::Tree(_, treel, treer) = &tree.node {
         flatten_tree(treel, nodes, offset);
@@ -219,7 +219,7 @@ fn build<'a>(build_infos: &mut [BuildInfo], idx_map: &mut HashMap<I, I>,
     })
 }
 
-impl<S> Intersectable for BVH<S> where S: Intersectable {
+impl<S> Intersectable for Bvh<S> where S: Intersectable {
     #[inline] fn bbox(&self) -> BBox { self.nodes[0].bbox }
 
     #[inline] fn intersects(&self, ray: R) -> bool {
