@@ -21,3 +21,7 @@ Features:
 Front-Ends:
 - GUI Renderer
 - CLI Renderer
+
+Sample Renders:
+
+![Diamond Bowl and Glass with multiple soft lighting](examples/diamond_bowl_and_glass.png)
